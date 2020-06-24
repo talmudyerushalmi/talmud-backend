@@ -7,11 +7,14 @@ export class Page {
   @ObjectIdColumn()
   _id: string;
 
+  // id that represents a page
+  // 001_1 , 001_2, 002_2, etc.
   @PrimaryColumn()
   id: string;
 
   @Column()
-  lines: PageLine[]
+  lines: PageLine[];
+
 
 
 }

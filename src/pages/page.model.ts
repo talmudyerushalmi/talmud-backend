@@ -1,21 +1,16 @@
 
-export interface SynopsisLine {
+export class SynopsisLine {
   text: string;
   manuscript: string;
 }
-export interface PageLine {
+export class PageLine {
   lineNumber: number;
   sourceReference?: string;
   mainLine: {
     text: string;
-  }
+  };
   synopsis?: SynopsisLine[]
 
-}
-
-export interface Page {
-  id: string;
-  lines: PageLine[]
-}
+};
 
 

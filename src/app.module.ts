@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { TypeOrmModule} from '@nestjs/typeorm';
 import { Page } from './pages/page.entity';
 import { PagesModule } from './pages/pages.module';
+import { Chapter } from './pages/chapter.entity';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { PagesModule } from './pages/pages.module';
       synchronize: true,
       useUnifiedTopology: true,
       entities: [
-        Page
+        Page, Chapter
       ]
     }),
     PagesModule
