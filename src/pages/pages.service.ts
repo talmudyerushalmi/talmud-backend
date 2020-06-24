@@ -10,8 +10,8 @@ export class PagesService {
     @InjectRepository(PageEntity) private pageRepository: Repository<PageEntity>) {
   }
 
-  getPage(page: string):any {
-    return 'test';
+  async getPage(id: string):Promise<Page> {
+    return this.pageRepository.findOne({where:{id}})
   }
 
   async createPage(createPageDto:CreatePageDto): Promise<Page> {

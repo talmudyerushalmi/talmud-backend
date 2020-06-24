@@ -1,31 +1,9 @@
-
-
-// {
-//   lineNumber:3,
-//     sourceReference: 'משנה, מעשר שני א ב',
-//   mainLine: {
-//   text:"נשים פוטרות צרותיהן וצרות צרותיהן מן החליצה ומן הייבום עד סוף העולם."
-// },
-//   nosach:'<p><strong>״ובעל מום״</strong> - אולי צריך להוסיף ולהגיה: ״ובעל מום &lt;חי&gt;״, אבל ייתכן שלפנינו לשון קצרה.</p>',
-//     synopsis: [
-//   {
-//     text: "נשים פוטרות צרותיהן וצרות צרותיהן מן החליצה ומן היבום עד סוף העולם.",
-//     manuscript: "כתב יד ליידן"
-//   },
-//   {
-//     text: "נשים פוטרות צרותיהן וצרות צרותיהן מן החליצה עד סוף העולם.",
-//     manuscript: "כתב יד רומי"
-//
-//   },
-//   {
-//     text: "נשים פוטרות את צרותיהן וצרות צרותיהן מן החליצה ומן היבום עד סוף העולם.",
-//     manuscript: "כתב יד ליידן2"
-//   },
-// ]
-// },
 import { PageLine } from '../page.model';
+import { IsNotEmpty } from 'class-validator';
 
 export class CreatePageDto {
+  @IsNotEmpty()
   id: string;
+  @IsNotEmpty()
   lines: PageLine[];
 }

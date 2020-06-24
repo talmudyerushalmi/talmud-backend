@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { PagesService } from './pages.service';
 import { CreatePageDto } from './dto/create-page.dto';
 
@@ -14,6 +14,7 @@ export class PagesController {
   }
 
   @Post()
+  @UsePipes(ValidationPipe)
   createPage(@Body() createPageDto: CreatePageDto) {
     console.log(createPageDto);
     return this.pagesService.createPage(createPageDto);
