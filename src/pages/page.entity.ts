@@ -1,4 +1,5 @@
 import { Column, Entity, ObjectIdColumn, PrimaryColumn } from 'typeorm';
+import { PageLine } from './page.model';
 
 @Entity()
 export class Page {
@@ -10,7 +11,7 @@ export class Page {
   id: string;
 
   @Column()
-  title: string;
+  lines: PageLine[]
 
 
 }
