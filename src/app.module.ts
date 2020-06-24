@@ -9,7 +9,14 @@ import { PagesModule } from './pages/pages.module';
   imports: [
     TypeOrmModule.forRoot({
       type: 'mongodb',
-      url: 'mongodb://localhost/talmud',
+      //url: 'mongodb://root:root@localhost/talmud',
+      port: 27017,
+      host: 'localhost',
+      database: 'talmud',
+      username: "root",
+      authSource: 'admin',
+      password: "root",
+
       synchronize: true,
       useUnifiedTopology: true,
       entities: [
