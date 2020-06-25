@@ -12,12 +12,38 @@ export class PagesService {
   )
  {  }
 
-  async getPage(id: string):Promise<PageEntity> {
-    const page:PageEntity = await this.pageRepository.findOne({ where: { id } })
-    if (!page) {
-      throw new NotFoundException("Page not found");
+  async getPage(tractate: string, chapter:string, page_id: string):Promise<any> {
+    // const page:PageEntity = await this.pageRepository.findOne({ where: { id:page_id } })
+    // if (!page) {
+    //   throw new NotFoundException("Page not found");
+    // }
+    // return page;
+    return {
+      tractate,
+      chapter,
+      page_id
     }
-    return page;
+  }
+  async getChapter(tractate: string, chapter:string):Promise<any> {
+    // const page:PageEntity = await this.pageRepository.findOne({ where: { id:page_id } })
+    // if (!page) {
+    //   throw new NotFoundException("Page not found");
+    // }
+    // return page;
+    return {
+      tractate,
+      chapter
+    }
+  }
+  async getTractate(tractate: string,):Promise<any> {
+    // const page:PageEntity = await this.pageRepository.findOne({ where: { id:page_id } })
+    // if (!page) {
+    //   throw new NotFoundException("Page not found");
+    // }
+    // return page;
+    return {
+      tractate,
+    }
   }
 
   async createPage(createPageDto:CreatePageDto): Promise<PageEntity> {
