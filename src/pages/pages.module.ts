@@ -1,15 +1,16 @@
 import { Module } from '@nestjs/common';
 import { PagesController } from './pages.controller';
 import { PagesService } from './pages.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Page } from './page.entity';
-import { Chapter } from './chapter.entity';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Page , PageSchema } from './schemas/page.schema';
+import { Tractate, TractateSchema } from './schemas/tractate.schema';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      Page,
-      Chapter
+    MongooseModule.forFeature([
+      { name: Tractate.name, schema: TractateSchema },
+      { name: Page.name, schema: PageSchema }
+
     ])
   ],
   controllers: [PagesController],

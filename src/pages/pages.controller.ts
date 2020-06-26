@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
 import { PagesService } from './pages.service';
 import { CreatePageDto } from './dto/create-page.dto';
 
@@ -29,13 +29,25 @@ export class PagesController {
     return this.pagesService.getTractate(tractate);
   }
 
-  @Post()
+  @Post('/:tractate/:chapter/:page')
   @UsePipes(ValidationPipe)
-  createPage(@Body() createPageDto: CreatePageDto) {
+  createPage(
+    @Param('tractate') tractate: string,
+    @Param('chapter') chapter: string,
+    @Param('page') page: string,
+    @Body() createPageDto: CreatePageDto) {
     console.log(createPageDto);
-    return this.pagesService.createPage(createPageDto);
+    return this.pagesService.createPage(tractate, chapter, page,createPageDto);
   }
 
+  @Put('/:tractate/:chapter/:page')
+  updatePage(
+    @Param('tractate') tractate: string,
+    @Param('chapter') chapter: string,
+    @Param('page') page: string,
+    @Body() createPageDto: CreatePageDto) {
+    return this.pagesService.updatePage(createPageDto);
+  }
 
 
 

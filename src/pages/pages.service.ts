@@ -1,14 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePageDto } from './dto/create-page.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Page as PageEntity } from './page.entity';
-import { Repository } from 'typeorm';
-import { Chapter } from './chapter.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import { Page } from './schemas/page.schema';
+import { Model, Types } from 'mongoose';
+import { Tractate } from './schemas/tractate.schema';
+import { UpdatePageDto } from './dto/update-page.dto';
 @Injectable()
 export class PagesService {
   constructor(
-    @InjectRepository(PageEntity) private pageRepository: Repository<PageEntity>,
-    @InjectRepository(Chapter) private chapterRepository: Repository<Chapter>
+    @InjectModel(Tractate.name) private tractateModel: Model<Tractate>,
+    @InjectModel(Page.name) private pageModel: Model<Page>
   )
  {  }
 
@@ -46,23 +47,69 @@ export class PagesService {
     }
   }
 
-  async createPage(createPageDto:CreatePageDto): Promise<PageEntity> {
-    const {id, lines} = createPageDto;
-    const page = this.pageRepository.create({
-      id,
-      lines,
+  async updatePageInTractate(tractate: string, chapter_id:string, pageRef:Page) {
+    console.log('updating in tractate');
+    // if reference exists - return
+    const tractateReference = await this.tractateModel.findOne({
+      id: tractate}
+    );
+    console.log('found ', tractateReference);
+    if (!tractateReference) {
+      return;
+    }
+    const chapter = tractateReference.chapters.find(chapter=>chapter.id===chapter_id);
+    const page = chapter.pages.find(page=>page.id === pageRef.id);
+    if (!page) {
+      chapter.pages.push(
+        {
+          id: pageRef.id,
+          pagesRef: pageRef._id
+        }
+      );
+      await this.tractateModel.updateOne({id:tractate},{
+        chapters: tractateReference.chapters
+      });
+    }
+  }
+  // async test() {
+  //
+  // }
+  async createPage(
+    tractate,
+    chapter,
+    page,
+    createPageDto:CreatePageDto): Promise<any> {
+
+    // if doesnt exist - create page
+    const { lines } = createPageDto;
+
+
+
+    const pageDocument = await this.pageModel.findOneAndUpdate({id:page}, {
+      id:page,
+      lines
+    }, {
+      upsert:true,
+      new:true,
+      setDefaultsOnInsert:true
     });
 
-    await this.pageRepository.save(page);
-    const chapter = this.chapterRepository.create({
-      id:'tet',
-      pages: [page],
-      page_ids: [page._id]
-    });
-    await this.chapterRepository.save(chapter);
-    return page;
+
+    await this.updatePageInTractate(tractate,chapter,pageDocument);
+    return {
+      tractate,
+      chapter,
+      page,
+      pageDocument
+    }
   }
 
+  async updatePage(updatePageDto: UpdatePageDto){
+    return {
+      updatePageDto
+    }
+
+  }
   // async getChapter() {
   //
   // }
