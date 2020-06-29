@@ -114,6 +114,10 @@ export class PagesService {
 
   }
 
+  async createPage2(test: string){
+    console.log('creatng page2 ', test);
+  }
+
   @Command({
     command: 'do <action>',
     description: 'Do anything'

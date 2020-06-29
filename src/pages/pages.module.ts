@@ -16,6 +16,7 @@ import { ConsoleModule } from 'nestjs-console';
     ConsoleModule
   ],
   controllers: [PagesController],
-  providers: [PagesService]
+  providers: [PagesService],
+  exports: [PagesService]
 })
 export class PagesModule {}
