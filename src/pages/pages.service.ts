@@ -5,6 +5,9 @@ import { Page } from './schemas/page.schema';
 import { Model, Types } from 'mongoose';
 import { Tractate } from './schemas/tractate.schema';
 import { UpdatePageDto } from './dto/update-page.dto';
+import { Command, Console } from 'nestjs-console';
+
+@Console()
 @Injectable()
 export class PagesService {
   constructor(
@@ -108,6 +111,15 @@ export class PagesService {
     return {
       updatePageDto
     }
+
+  }
+
+  @Command({
+    command: 'do <action>',
+    description: 'Do anything'
+  })
+  async doCli(dowhat: string) {
+    console.log('do cli ',dowhat);
 
   }
   // async getChapter() {

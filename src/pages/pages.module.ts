@@ -4,6 +4,7 @@ import { PagesService } from './pages.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Page , PageSchema } from './schemas/page.schema';
 import { Tractate, TractateSchema } from './schemas/tractate.schema';
+import { ConsoleModule } from 'nestjs-console';
 
 @Module({
   imports: [
@@ -11,7 +12,8 @@ import { Tractate, TractateSchema } from './schemas/tractate.schema';
       { name: Tractate.name, schema: TractateSchema },
       { name: Page.name, schema: PageSchema }
 
-    ])
+    ]),
+    ConsoleModule
   ],
   controllers: [PagesController],
   providers: [PagesService]
