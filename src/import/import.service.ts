@@ -45,12 +45,18 @@ export class ImportService {
     }
     console.log(`chapter ${chapter}, mishna: ${mishna}, line: ${piska}_${line_no}:`, this.reverseString(text));
 
-    return this.pageService.setMainLine({
+    const tractate  = 'yevamot';
+    // const mishnaDocument = await this.pageService.upsertMishna(
+    //   tractate,chapter,mishna, {
+    //   });
+    return this.pageService.setLine(
+      tractate,
       chapter,
       mishna,
-      line: `${piska}_${line_no}`,
-      text
-    });
+      {
+        line: `${piska}_${line_no}`,
+        text
+      });
   }
 
   @Command({
@@ -66,7 +72,6 @@ export class ImportService {
     this.data.forEach(
       (line,index) => promises.push(this.processLine(line,index)));
     await Promise.all(promises);
-    console.log('promises ',promises);
 
     //console.log('data os ', this.data[0]);
     this.pageService.createPage2(filename);

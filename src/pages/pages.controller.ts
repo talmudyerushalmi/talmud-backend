@@ -39,7 +39,7 @@ export class PagesController {
     @Body() createMishnaDto: CreateMishnaDto) {
 
     console.log(createMishnaDto);
-    return this.pagesService.createMishna(tractate, chapter, mishna,createMishnaDto);
+    return this.pagesService.upsertMishna(tractate, chapter, mishna,createMishnaDto);
   }
 
   @Put('/:tractate/:chapter/:mishna')

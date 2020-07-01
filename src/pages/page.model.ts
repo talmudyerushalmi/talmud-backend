@@ -5,8 +5,7 @@ export class SynopsisLine {
   manuscript: string;
 }
 export class Line {
-  @IsNotEmpty()
-  lineNumber: number;
+  lineNumber?: number;
   sourceReference?: string;
 
   @IsNotEmpty()

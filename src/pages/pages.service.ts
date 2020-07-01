@@ -81,20 +81,20 @@ export class PagesService {
   getMishnaId(tractate: string, chapter: string, mishna:string) {
     return `${tractate}_${chapter}_${mishna}`;
   }
-  async createMishna(
+  async upsertMishna(
     tractate: string,
     chapter: string,
     mishna: string,
     createMishnaDto:CreateMishnaDto): Promise<any> {
 
-    // if doesnt exist - create page
-    const { lines } = createMishnaDto;
 
 
     const id = this.getMishnaId(
       tractate,
       chapter,
       mishna)
+
+    console.log('adding ', {...createMishnaDto});
 
     const mishnaDocument = await this.mishnaModel.findOneAndUpdate({id}, {
       id,
@@ -104,15 +104,8 @@ export class PagesService {
       new:true,
       setDefaultsOnInsert:true
     });
+    return mishnaDocument;
 
-
-    // await this.updatePageInTractate(tractate,chapter,pageDocument);
-    // return {
-    //   tractate,
-    //   chapter,
-    //   page,
-    //   pageDocument
-    // }
   }
 
   async updatePage(updatePageDto: UpdatePageDto){
@@ -126,13 +119,15 @@ export class PagesService {
     console.log('creatng page2 ', test);
   }
 
-  async setMainLine(setLineDto: SetLineDto ) {
+  async setLine(
+    tractate: string,
+    chapter:string,
+    mishna:string,
+    setLineDto: SetLineDto ) {
 
-    console.log('setting line ', setLineDto);
-    const id = `${setLineDto.chapter}_${setLineDto.mishna}`;
-    const mishnaDocument = await this.mishnaModel.findOne({
-      id: setLineDto.mishna
-    });
+
+    const mishnaDocument = await this.upsertMishna(tractate,
+      chapter,mishna,{})
     console.log('mishna ',mishnaDocument )
 
 

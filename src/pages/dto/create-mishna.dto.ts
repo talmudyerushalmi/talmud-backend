@@ -6,13 +6,11 @@ export class CreateMishnaDto {
 
   @ValidateNested({each:true})
   @Type(()=>Line)
-  lines: Line[];
+  lines?: Line[];
 
   @ValidateNested({each:true})
   @Type(()=>Line)
-  test: Line;
+  test?: Line;
 
-  @ValidateNested()
-  @Type(()=>Line)
-  test2: Line;
+  test2?: string;
 }
