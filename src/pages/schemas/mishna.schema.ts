@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { PageLine } from '../page.model';
+import { Line } from '../page.model';
 
 @Schema()
 export class Mishna extends Document {
@@ -8,7 +8,7 @@ export class Mishna extends Document {
   id: string;
 
   @Prop()
-  lines: PageLine[];
+  lines: Line[];
 }
 
 export const MishnaSchema = SchemaFactory.createForClass(Mishna);

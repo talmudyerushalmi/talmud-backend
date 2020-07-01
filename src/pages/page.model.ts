@@ -1,16 +1,17 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class SynopsisLine {
   text: string;
   manuscript: string;
 }
-export class PageLine {
+export class Line {
   @IsNotEmpty()
   lineNumber: number;
   sourceReference?: string;
-  mainLine: {
-    text: string;
-  };
+
+  @IsNotEmpty()
+  @IsString()
+  mainLine: string;
   synopsis?: SynopsisLine[]
 
 };

@@ -1,14 +1,18 @@
-import { PageLine } from '../page.model';
-import { IsNotEmpty, ValidateNested } from 'class-validator';
+import { Line } from '../page.model';
+import { ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateMishnaDto {
-  @ValidateNested()
-  lines: PageLine[];
+
+  @ValidateNested({each:true})
+  @Type(()=>Line)
+  lines: Line[];
+
+  @ValidateNested({each:true})
+  @Type(()=>Line)
+  test: Line;
 
   @ValidateNested()
-  test: PageLine;
-
-  @Type(()=>PageLine)
-  test2: PageLine;
+  @Type(()=>Line)
+  test2: Line;
 }
