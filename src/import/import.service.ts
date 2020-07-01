@@ -26,7 +26,7 @@ export class ImportService {
    reverseString(str) {
     return str.split("").reverse().join("");
   }
-  processLine(line,index) {
+  async processLine(line,index) {
     if (index===0) {return;}
     console.log('processing ',index, '>\n');
     // read metadata
@@ -45,6 +45,12 @@ export class ImportService {
     }
     console.log(`chapter ${chapter}, mishna: ${mishna}, line: ${piska}_${line_no}:`, this.reverseString(text));
 
+    return this.pageService.setMainLine({
+      chapter,
+      mishna,
+      line: `${piska}_${line_no}`,
+      text
+    });
   }
 
   @Command({
@@ -56,7 +62,11 @@ export class ImportService {
     this.readFile(filename);
 
    // console.log('data ', this.data);
-    this.data.forEach((line,index) => this.processLine(line,index));
+    const promises = [];
+    this.data.forEach(
+      (line,index) => promises.push(this.processLine(line,index)));
+    await Promise.all(promises);
+    console.log('promises ',promises);
 
     //console.log('data os ', this.data[0]);
     this.pageService.createPage2(filename);

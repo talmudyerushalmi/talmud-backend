@@ -1,18 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreatePageDto } from './dto/create-page.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Page } from './schemas/page.schema';
 import { Model, Types } from 'mongoose';
 import { Tractate } from './schemas/tractate.schema';
 import { UpdatePageDto } from './dto/update-page.dto';
-import { Command, Console } from 'nestjs-console';
+import { SetLineDto } from './dto/set-line.dto';
+import { Mishna } from './schemas/mishna.schema';
+import { CreateMishnaDto } from './dto/create-mishna.dto';
 
-@Console()
 @Injectable()
 export class PagesService {
   constructor(
     @InjectModel(Tractate.name) private tractateModel: Model<Tractate>,
-    @InjectModel(Page.name) private pageModel: Model<Page>
+    @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>
   )
  {  }
 
@@ -50,7 +49,8 @@ export class PagesService {
     }
   }
 
-  async updatePageInTractate(tractate: string, chapter_id:string, pageRef:Page) {
+
+  async updatePageInTractate(tractate: string, chapter_id:string, pageRef:Mishna) {
     console.log('updating in tractate');
     // if reference exists - return
     const tractateReference = await this.tractateModel.findOne({
@@ -77,20 +77,28 @@ export class PagesService {
   // async test() {
   //
   // }
-  async createPage(
-    tractate,
-    chapter,
-    page,
-    createPageDto:CreatePageDto): Promise<any> {
+
+  getMishnaId(tractate: string, chapter: string, mishna:string) {
+    return `${tractate}_${chapter}_${mishna}`;
+  }
+  async createMishna(
+    tractate: string,
+    chapter: string,
+    mishna: string,
+    createMishnaDto:CreateMishnaDto): Promise<any> {
 
     // if doesnt exist - create page
-    const { lines } = createPageDto;
+    const { lines } = createMishnaDto;
 
 
+    const id = this.getMishnaId(
+      tractate,
+      chapter,
+      mishna)
 
-    const pageDocument = await this.pageModel.findOneAndUpdate({id:page}, {
-      id:page,
-      lines
+    const mishnaDocument = await this.mishnaModel.findOneAndUpdate({id}, {
+      id,
+      ...createMishnaDto
     }, {
       upsert:true,
       new:true,
@@ -98,13 +106,13 @@ export class PagesService {
     });
 
 
-    await this.updatePageInTractate(tractate,chapter,pageDocument);
-    return {
-      tractate,
-      chapter,
-      page,
-      pageDocument
-    }
+    // await this.updatePageInTractate(tractate,chapter,pageDocument);
+    // return {
+    //   tractate,
+    //   chapter,
+    //   page,
+    //   pageDocument
+    // }
   }
 
   async updatePage(updatePageDto: UpdatePageDto){
@@ -118,16 +126,28 @@ export class PagesService {
     console.log('creatng page2 ', test);
   }
 
-  @Command({
-    command: 'do <action>',
-    description: 'Do anything'
-  })
-  async doCli(dowhat: string) {
-    console.log('do cli ',dowhat);
+  async setMainLine(setLineDto: SetLineDto ) {
 
+    console.log('setting line ', setLineDto);
+    const id = `${setLineDto.chapter}_${setLineDto.mishna}`;
+    const mishnaDocument = await this.mishnaModel.findOne({
+      id: setLineDto.mishna
+    });
+    console.log('mishna ',mishnaDocument )
+
+
+    return "inserted";
+
+    // const pageDocument = await this.pageModel.findOneAndUpdate({id:page}, {
+    //   id:page,
+    //   lines
+    // }, {
+    //   upsert:true,
+    //   new:true,
+    //   setDefaultsOnInsert:true
+    // });
   }
-  // async getChapter() {
-  //
-  // }
+
+
 
 }

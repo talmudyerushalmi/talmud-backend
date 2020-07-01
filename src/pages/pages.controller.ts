@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
 import { PagesService } from './pages.service';
-import { CreatePageDto } from './dto/create-page.dto';
+import { CreateMishnaDto } from './dto/create-mishna.dto';
+import { UpdatePageDto } from './dto/update-page.dto';
 
 @Controller('page')
 export class PagesController {
@@ -8,13 +9,13 @@ export class PagesController {
 
   }
 
-  @Get('/:tractate/:chapter/:page')
+  @Get('/:tractate/:chapter/:mishna')
   getPage(
     @Param('tractate') tractate: string,
     @Param('chapter') chapter: string,
-    @Param('page') page: string
+    @Param('mishna') mishna: string
   ) {
-    return this.pagesService.getPage(tractate,chapter,page);
+    return this.pagesService.getPage(tractate,chapter,mishna);
   }
   @Get('/:tractate/:chapter')
   getChapter(
@@ -29,24 +30,25 @@ export class PagesController {
     return this.pagesService.getTractate(tractate);
   }
 
-  @Post('/:tractate/:chapter/:page')
+  @Post('/:tractate/:chapter/:mishna')
   @UsePipes(ValidationPipe)
   createPage(
     @Param('tractate') tractate: string,
     @Param('chapter') chapter: string,
-    @Param('page') page: string,
-    @Body() createPageDto: CreatePageDto) {
-    console.log(createPageDto);
-    return this.pagesService.createPage(tractate, chapter, page,createPageDto);
+    @Param('mishna') mishna: string,
+    @Body() createMishnaDto: CreateMishnaDto) {
+
+    console.log(createMishnaDto);
+    return this.pagesService.createMishna(tractate, chapter, mishna,createMishnaDto);
   }
 
-  @Put('/:tractate/:chapter/:page')
+  @Put('/:tractate/:chapter/:mishna')
   updatePage(
     @Param('tractate') tractate: string,
     @Param('chapter') chapter: string,
     @Param('page') page: string,
-    @Body() createPageDto: CreatePageDto) {
-    return this.pagesService.updatePage(createPageDto);
+    @Body() updatePageDto: UpdatePageDto) {
+    return this.pagesService.updatePage(updatePageDto);
   }
 
 

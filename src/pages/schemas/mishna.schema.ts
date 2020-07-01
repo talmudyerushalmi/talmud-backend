@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 import { PageLine } from '../page.model';
 
 @Schema()
-export class Page extends Document {
+export class Mishna extends Document {
   @Prop()
   id: string;
 
@@ -11,4 +11,4 @@ export class Page extends Document {
   lines: PageLine[];
 }
 
-export const PageSchema = SchemaFactory.createForClass(Page);
+export const MishnaSchema = SchemaFactory.createForClass(Mishna);
