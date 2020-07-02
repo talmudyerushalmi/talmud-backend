@@ -49,7 +49,7 @@ export class ImportService {
     // const mishnaDocument = await this.pageService.upsertMishna(
     //   tractate,chapter,mishna, {
     //   });
-    return this.pageService.setLine(
+    await this.pageService.setLine(
       tractate,
       chapter,
       mishna,
@@ -57,6 +57,7 @@ export class ImportService {
         line: `${piska}_${line_no}`,
         text
       });
+    return "ok"
   }
 
   @Command({
@@ -68,10 +69,13 @@ export class ImportService {
     this.readFile(filename);
 
    // console.log('data ', this.data);
-    const promises = [];
-    this.data.forEach(
-      (line,index) => promises.push(this.processLine(line,index)));
-    await Promise.all(promises);
+    for (let i=0;i<this.data.length;i++) {
+      await this.processLine(this.data[i],i);
+    }
+    // const promises = [];
+    // this.data.forEach(
+    //   async (line,index) => await this.processLine(line,index));
+    // await Promise.all(promises);
 
     //console.log('data os ', this.data[0]);
     this.pageService.createPage2(filename);

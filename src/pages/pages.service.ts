@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Tractate } from './schemas/tractate.schema';
@@ -6,6 +6,7 @@ import { UpdatePageDto } from './dto/update-page.dto';
 import { SetLineDto } from './dto/set-line.dto';
 import { Mishna } from './schemas/mishna.schema';
 import { CreateMishnaDto } from './dto/create-mishna.dto';
+import * as _ from 'lodash';
 
 @Injectable()
 export class PagesService {
@@ -78,14 +79,14 @@ export class PagesService {
   //
   // }
 
-  getMishnaId(tractate: string, chapter: string, mishna:string) {
+  getMishnaId(tractate: string, chapter: string, mishna:string):string {
     return `${tractate}_${chapter}_${mishna}`;
   }
   async upsertMishna(
     tractate: string,
     chapter: string,
     mishna: string,
-    createMishnaDto:CreateMishnaDto): Promise<any> {
+    createMishnaDto:CreateMishnaDto): Promise<Mishna> {
 
 
 
@@ -125,13 +126,30 @@ export class PagesService {
     mishna:string,
     setLineDto: SetLineDto ) {
 
-
     const mishnaDocument = await this.upsertMishna(tractate,
-      chapter,mishna,{})
-    console.log('mishna ',mishnaDocument )
+      chapter,mishna,{});
+    const found = mishnaDocument.lines.findIndex(line => line.lineNumber === setLineDto.line);
+    if (found!==-1) {
+      console.log('found ', found);
+      mishnaDocument.lines[found] = {
+        lineNumber:setLineDto.line,
+        mainLine: setLineDto.text
+      }
+    }
+     else {
+       const t = [];
+       console.log('pushing to ',mishnaDocument.id,' >', setLineDto.line, 'l ', mishnaDocument.lines.length)
+       mishnaDocument.lines.push({
+        lineNumber: setLineDto.line,
+        mainLine: setLineDto.text
+      });
+      mishnaDocument.lines = _.orderBy(mishnaDocument.lines,
+        ['lineNumber'],['asc']);
+    }
 
+     await mishnaDocument.save();
+     return "saved";
 
-    return "inserted";
 
     // const pageDocument = await this.pageModel.findOneAndUpdate({id:page}, {
     //   id:page,

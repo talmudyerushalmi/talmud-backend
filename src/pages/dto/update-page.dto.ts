@@ -1,4 +1,4 @@
-import { Line } from '../page.model';
+import { Line } from '../line.model';
 import { IsNotEmpty } from 'class-validator';
 
 export class UpdatePageDto {

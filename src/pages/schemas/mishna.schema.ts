@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { Line } from '../page.model';
+import { Line } from '../line.model';
 
 @Schema()
 export class Mishna extends Document {
