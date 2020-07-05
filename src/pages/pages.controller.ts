@@ -10,12 +10,12 @@ export class PagesController {
   }
 
   @Get('/:tractate/:chapter/:mishna')
-  getPage(
+  getMishna(
     @Param('tractate') tractate: string,
     @Param('chapter') chapter: string,
     @Param('mishna') mishna: string
   ) {
-    return this.pagesService.getPage(tractate,chapter,mishna);
+    return this.pagesService.getMishna(tractate,chapter,mishna);
   }
   @Get('/:tractate/:chapter')
   getChapter(

@@ -8,27 +8,27 @@ import { Mishna } from './schemas/mishna.schema';
 import { CreateMishnaDto } from './dto/create-mishna.dto';
 import * as _ from 'lodash';
 import { TractateRepository } from './tractate.repository';
+import { MishnaRepository } from './misha.repository';
 
 @Injectable()
 export class PagesService {
   constructor(
     private tractateRepository: TractateRepository,
+    private mishnaRepository: MishnaRepository,
     @InjectModel(Tractate.name) private tractateModel: Model<Tractate>,
     @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>
   )
  {  }
 
-  async getPage(tractate: string, chapter:string, page_id: string):Promise<any> {
+  async getMishna(tractate: string, chapter:string, mishna: string):Promise<Mishna> {
+
+    return this.mishnaRepository.find(tractate, chapter, mishna);
     // const page:PageEntity = await this.pageRepository.findOne({ where: { id:page_id } })
     // if (!page) {
     //   throw new NotFoundException("Page not found");
     // }
     // return page;
-    return {
-      tractate,
-      chapter,
-      page_id
-    }
+
   }
   async getChapter(tractate: string, chapter:string):Promise<any> {
     // const page:PageEntity = await this.pageRepository.findOne({ where: { id:page_id } })
@@ -53,9 +53,7 @@ export class PagesService {
   }
 
 
-  getMishnaId(tractate: string, chapter: string, mishna:string):string {
-    return `${tractate}_${chapter}_${mishna}`;
-  }
+  
   getChapterId(tractate: string, chapter: string, mishna:string):string {
     return `${tractate}_${chapter}_${mishna}`;
   }
@@ -65,7 +63,7 @@ export class PagesService {
     mishna: string,
     createMishnaDto:CreateMishnaDto): Promise<Mishna> {
 
-    const id = this.getMishnaId(
+    const id = this.mishnaRepository.getID(
       tractate,
       chapter,
       mishna)
@@ -90,7 +88,7 @@ export class PagesService {
     mishna: string,
     createMishnaDto:CreateMishnaDto): Promise<Tractate> {
 
-    const id = this.getMishnaId(
+    const id = this.mishnaRepository.getID(
       tractate,
       chapter,
       mishna)
