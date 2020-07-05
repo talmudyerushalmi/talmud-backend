@@ -6,6 +6,7 @@ import {  MishnaSchema } from './schemas/mishna.schema';
 import { Tractate, TractateSchema } from './schemas/tractate.schema';
 import { ConsoleModule } from 'nestjs-console';
 import { Mishna } from './schemas/mishna.schema';
+import { TractateRepository } from './tractate.repository';
 
 @Module({
   imports: [
@@ -17,7 +18,10 @@ import { Mishna } from './schemas/mishna.schema';
     ConsoleModule
   ],
   controllers: [PagesController],
-  providers: [PagesService],
+  providers: [
+    PagesService,
+    TractateRepository
+  ],
   exports: [PagesService]
 })
 export class PagesModule {}
