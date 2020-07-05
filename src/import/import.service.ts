@@ -26,7 +26,7 @@ export class ImportService {
    reverseString(str) {
     return str.split("").reverse().join("");
   }
-  async processLine(line,index) {
+  async processLine(line: string,index: number) {
     if (index===0) {return;}
     console.log('processing ',index, '>\n');
     // read metadata
@@ -46,9 +46,7 @@ export class ImportService {
     console.log(`chapter ${chapter}, mishna: ${mishna}, line: ${piska}_${line_no}:`, this.reverseString(text));
 
     const tractate  = 'yevamot';
-    // const mishnaDocument = await this.pageService.upsertMishna(
-    //   tractate,chapter,mishna, {
-    //   });
+
     await this.pageService.setLine(
       tractate,
       chapter,

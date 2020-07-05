@@ -1,15 +1,16 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document,  Types } from 'mongoose';
+import { Mishna } from './mishna.schema';
 
 
 export class Chapter {
   id: string;
-  pages: PageRef[]
+  mishnaiot: MishnaRef[]
 }
 
-class PageRef {
+class MishnaRef {
   id:string;
-  pagesRef: Types.ObjectId
+  mishbaRef: Types.ObjectId
 }
 @Schema()
 export class Tractate extends Document {
@@ -18,8 +19,11 @@ export class Tractate extends Document {
 
   @Prop()
   name: string;
-  @Prop()
+  @Prop({
+    default: []
+  })
   chapters: Chapter[]
+
 }
 
 export const TractateSchema = SchemaFactory.createForClass(Tractate);
