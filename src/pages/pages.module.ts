@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { PagesController } from './pages.controller';
+import { MishnaController } from './mishna.controller';
 import { PagesService } from './pages.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import {  MishnaSchema } from './schemas/mishna.schema';
@@ -18,7 +18,7 @@ import { MishnaRepository } from './misha.repository';
     ]),
     ConsoleModule
   ],
-  controllers: [PagesController],
+  controllers: [MishnaController],
   providers: [
     PagesService,
     TractateRepository,

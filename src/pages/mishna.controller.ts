@@ -3,8 +3,8 @@ import { PagesService } from './pages.service';
 import { CreateMishnaDto } from './dto/create-mishna.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
 
-@Controller('page')
-export class PagesController {
+@Controller('mishna')
+export class MishnaController {
   constructor(private pagesService: PagesService) {
 
   }
