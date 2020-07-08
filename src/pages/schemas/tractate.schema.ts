@@ -10,6 +10,7 @@ export class Chapter {
 
 class MishnaRef {
   id:string;
+  mishna: string;
   mishbaRef: Types.ObjectId
 }
 @Schema()

@@ -53,6 +53,7 @@ export class TractateRepository {
     if (indexMishna === -1) {
       chapters[indexChapter].mishnaiot.push({
         id: mishnaDocument.id,
+        mishna: mishnaDocument.mishna,
         mishbaRef: mishnaDocument._id,
       });
       chapters[indexChapter].mishnaiot = _.orderBy(
