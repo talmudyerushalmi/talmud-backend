@@ -11,6 +11,9 @@ export class TractateRepository {
     @InjectModel(Tractate.name) private tractateModel: Model<Tractate>,
   ) {}
 
+  async get(tractate: string): Promise<Tractate> {
+    return this.tractateModel.findOne({id:tractate});
+  }
   async upsert(tractate: string): Promise<Tractate> {
     return this.tractateModel.findOneAndUpdate(
       { id: tractate },

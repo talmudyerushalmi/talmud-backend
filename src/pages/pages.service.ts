@@ -41,15 +41,8 @@ export class PagesService {
       chapter
     }
   }
-  async getTractate(tractate: string,):Promise<any> {
-    // const page:PageEntity = await this.pageRepository.findOne({ where: { id:page_id } })
-    // if (!page) {
-    //   throw new NotFoundException("Page not found");
-    // }
-    // return page;
-    return {
-      tractate,
-    }
+  async getTractate(tractate: string,):Promise<Tractate> {
+    return this.tractateRepository.get(tractate);
   }
 
 
