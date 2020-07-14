@@ -10,6 +10,10 @@ import * as _ from 'lodash';
 import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './misha.repository';
 
+export interface iTractate {
+  title_eng: string;
+  title_heb: string;
+}
 @Injectable()
 export class PagesService {
   constructor(
@@ -75,28 +79,6 @@ export class PagesService {
     return mishnaDocument;
   }
 
-  async upsertTractate(
-    tractate: string,
-    chapter: string,
-    mishna: string,
-    createMishnaDto:CreateMishnaDto): Promise<Tractate> {
-
-    const id = this.mishnaRepository.getID(
-      tractate,
-      chapter,
-      mishna)
-
-    const tractateDocument = await this.tractateModel.findOneAndUpdate({id}, {
-      id,
-      ...createMishnaDto
-    }, {
-      upsert:true,
-      new:true,
-      setDefaultsOnInsert:true
-    });
-    return tractateDocument;
-  }
-
   
   async updateMishnaInTractate(mishnaDocument: Mishna) {
     // get tractate
@@ -118,12 +100,12 @@ export class PagesService {
 
 
   async setLine(
-    tractate: string,
+    tractate: iTractate,
     chapter:string,
     mishna:string,
     setLineDto: SetLineDto ) {
 
-    const mishnaDocument = await this.upsertMishna(tractate,
+    const mishnaDocument = await this.upsertMishna(tractate.title_eng,
       chapter,mishna,{});
     const found = mishnaDocument.lines.findIndex(line => line.lineNumber === setLineDto.line);
     if (found!==-1) {

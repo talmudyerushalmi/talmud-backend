@@ -14,11 +14,12 @@ export class TractateRepository {
   async get(tractate: string): Promise<Tractate> {
     return this.tractateModel.findOne({id:tractate});
   }
-  async upsert(tractate: string): Promise<Tractate> {
+  async upsert(tractate: string, updateDto:Object | null = null): Promise<Tractate> {
     return this.tractateModel.findOneAndUpdate(
       { id: tractate },
       {
         id: tractate,
+        ...updateDto
       },
       {
         upsert: true,
