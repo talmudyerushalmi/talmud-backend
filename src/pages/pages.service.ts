@@ -118,6 +118,7 @@ export class PagesService {
      else {
        mishnaDocument.lines.push({
         lineNumber: setLineDto.line,
+        originalLineNumber: setLineDto.originalLineNumber,
         mainLine: setLineDto.text
       });
       mishnaDocument.lines = _.orderBy(mishnaDocument.lines,

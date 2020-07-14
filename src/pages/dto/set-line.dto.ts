@@ -4,6 +4,9 @@ export class SetLineDto {
 
 
   @IsString()
+  originalLineNumber?: string;
+
+  @IsString()
   line: string;
 
   @IsString()

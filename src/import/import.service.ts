@@ -13,6 +13,8 @@ export class ImportService {
   readonly structureRegex = /^(\d{2})(\d{4})(\d{3})(\d{3})/;
   readonly pageRegex = /\|([א-ת]),([א-ת])\|/;
   currentTractate = null;
+  tractateOrder = 0;
+  lineOrder = 1;
 
 
   private data: string[];
@@ -74,6 +76,8 @@ export class ImportService {
           title_heb: metaData.title_heb,
           title_eng: metaData.title_eng
       }
+      this.tractateOrder++;
+      this.lineOrder = 1;
       return;
     }
     // fix problem with hebrew rtl
@@ -90,19 +94,22 @@ export class ImportService {
     }
     console.log(`chapter ${chapter}, mishna: ${mishna}, line: ${piska}_${line_no}:`, this.reverseString(text));
 
-    if (parseInt(piska) > 1000) {
-      piska = numeral(parseInt(piska) - 1000).format('0000');
-    }
+  
 
     await this.pageService.setLine(
       this.currentTractate,
       chapter,
       mishna,
       {
-        line: `${piska}_${line_no}`,
+        originalLineNumber: `${piska}_${line_no}`,
+        line: numeral(this.lineOrder++).format('00000'),
         text
       });
-    await this.tractateRepo.upsert(this.currentTractate.title_eng, {title_heb: this.currentTractate.title_heb});   
+    await this.tractateRepo.upsert(this.currentTractate.title_eng,
+       {title_heb: this.currentTractate.title_heb,
+        order: this.tractateOrder
+      }
+       );   
       
   }
 

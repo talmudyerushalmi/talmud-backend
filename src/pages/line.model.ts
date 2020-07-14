@@ -5,6 +5,7 @@ export class SynopsisLine {
   manuscript: string;
 }
 export class Line {
+  originalLineNumber?: string;
   lineNumber?: string;
   sourceReference?: string;
 

@@ -19,6 +19,9 @@ export class Tractate extends Document {
   id: string;
 
   @Prop()
+  order: number;
+
+  @Prop()
   title_heb: string;
   @Prop({
     default: []
