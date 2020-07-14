@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Command, Console } from 'nestjs-console';
 import { PagesService } from '../pages/pages.service';
 import * as fs from 'fs';
+import * as numeral from 'numeral';
 import { TractateRepository } from 'src/pages/tractate.repository';
 
 @Console()
@@ -51,7 +52,6 @@ export class ImportService {
     }
     metaData = line.match(this.tractateMetadata);
     if (metaData) {
-      console.log('tractate ', metaData);
       const [, title_heb, title_eng] = metaData;
       return {
         type: 'tractate',
@@ -68,7 +68,7 @@ export class ImportService {
     console.log('processing ',index, '>\n');
     // read metadata
     const metaData = this.matchRegex(line);
-    console.log('meta ', metaData);
+   // console.log('meta ', metaData);
     if (metaData?.type === 'tractate') {
       this.currentTractate = {
           title_heb: metaData.title_heb,
@@ -79,7 +79,8 @@ export class ImportService {
     // fix problem with hebrew rtl
     if (metaData?.type !== 'line') {return}
 
-    const { line_no, piska, mishna, chapter } = metaData.meta;
+    const {  mishna, chapter } = metaData.meta;
+    let { line_no, piska } = metaData.meta;
     let text = metaData.text;
     const pageMatch = text.match(this.pageRegex);
     if (pageMatch) {
@@ -89,6 +90,9 @@ export class ImportService {
     }
     console.log(`chapter ${chapter}, mishna: ${mishna}, line: ${piska}_${line_no}:`, this.reverseString(text));
 
+    if (parseInt(piska) > 1000) {
+      piska = numeral(parseInt(piska) - 1000).format('0000');
+    }
 
     await this.pageService.setLine(
       this.currentTractate,
