@@ -1,27 +1,34 @@
-import { Body, Controller, Get, Param, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { PagesService } from './pages.service';
 import { CreateMishnaDto } from './dto/create-mishna.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
+import { UpdateMishnaLineDto } from './dto/save-mishna-line.dto';
 
 @Controller('mishna')
 export class MishnaController {
-  constructor(private pagesService: PagesService) {
-
-  }
+  constructor(private pagesService: PagesService) {}
 
   @Get('/:tractate/:chapter/:mishna')
   getMishna(
     @Param('tractate') tractate: string,
     @Param('chapter') chapter: string,
-    @Param('mishna') mishna: string
+    @Param('mishna') mishna: string,
   ) {
-    return this.pagesService.getMishna(tractate,chapter,mishna);
+    return this.pagesService.getMishna(tractate, chapter, mishna);
   }
   @Get('/:tractate/:chapter')
   getChapter(
     @Param('tractate') tractate: string,
     @Param('chapter') chapter: string,
-
   ) {
     return this.pagesService.getChapter(tractate, chapter);
   }
@@ -36,10 +43,15 @@ export class MishnaController {
     @Param('tractate') tractate: string,
     @Param('chapter') chapter: string,
     @Param('mishna') mishna: string,
-    @Body() createMishnaDto: CreateMishnaDto) {
-
+    @Body() createMishnaDto: CreateMishnaDto,
+  ) {
     console.log(createMishnaDto);
-    return this.pagesService.upsertMishna(tractate, chapter, mishna,createMishnaDto);
+    return this.pagesService.upsertMishna(
+      tractate,
+      chapter,
+      mishna,
+      createMishnaDto,
+    );
   }
 
   @Put('/:tractate/:chapter/:mishna')
@@ -47,10 +59,24 @@ export class MishnaController {
     @Param('tractate') tractate: string,
     @Param('chapter') chapter: string,
     @Param('page') page: string,
-    @Body() updatePageDto: UpdatePageDto) {
+    @Body() updatePageDto: UpdatePageDto,
+  ) {
     return this.pagesService.updatePage(updatePageDto);
   }
 
-
-
+  @Put('/:tractate/:chapter/:mishna/:line')
+  @UsePipes(ValidationPipe)
+  async updateLine(
+    @Param('tractate') tractate: string,
+    @Param('chapter') chapter: string,
+    @Param('mishna') mishna: string,
+    @Param('line') line: string,
+    @Body() updateMishnaLineDto: UpdateMishnaLineDto,
+  ) {
+    return this.pagesService.updateMishnaLine(
+      tractate,
+      line,
+      updateMishnaLineDto,
+    );
+  }
 }

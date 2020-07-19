@@ -9,6 +9,7 @@ import { CreateMishnaDto } from './dto/create-mishna.dto';
 import * as _ from 'lodash';
 import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './misha.repository';
+import { UpdateMishnaLineDto } from './dto/save-mishna-line.dto';
 
 export interface iTractate {
   title_eng: string;
@@ -130,6 +131,22 @@ export class PagesService {
      await this.updateMishnaInTractate(mishnaDocument);
 
      return "saved";
+  }
+
+  async updateMishnaLine(
+    tractate: string,
+    line:string,
+    updateMishnaLine: UpdateMishnaLineDto
+  ): Promise<any>{
+    const mishnaDoc = await this.mishnaModel.findOne({
+      tractate,
+      "lines.lineNumber": line,
+    });
+    const lineIndex = mishnaDoc.lines.findIndex(lineItem=>lineItem.lineNumber === line);
+    mishnaDoc.lines[lineIndex].sublines = updateMishnaLine.sublines;
+    mishnaDoc.markModified('lines')
+    return mishnaDoc.save();
+
   }
 
 

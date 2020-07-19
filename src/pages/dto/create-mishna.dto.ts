@@ -14,9 +14,4 @@ export class CreateMishnaDto {
   @Type(()=>Line)
   lines?: Line[];
 
-  @ValidateNested({each:true})
-  @Type(()=>Line)
-  test?: Line;
-
-  test2?: string;
 }

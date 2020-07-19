@@ -22,8 +22,8 @@ import { MishnaRepository } from './misha.repository';
   providers: [
     PagesService,
     TractateRepository,
-    MishnaRepository
+    MishnaRepository,
   ],
-  exports: [PagesService, TractateRepository]
+  exports: [PagesService, TractateRepository,MishnaRepository]
 })
 export class PagesModule {}

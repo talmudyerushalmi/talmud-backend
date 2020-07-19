@@ -1,18 +1,22 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document,  Types } from 'mongoose';
+import { Document,  Types, Schema as MongooseSchema } from 'mongoose';
 import { Mishna } from './mishna.schema';
 
-
-export class Chapter {
-  id: string;
-  mishnaiot: MishnaRef[]
-}
-
+@Schema()
 class MishnaRef {
   id:string;
   mishna: string;
-  mishbaRef: Types.ObjectId
+  @Prop( { type: MongooseSchema.Types.ObjectId , ref: Mishna.name })
+  mishnaRef: Types.ObjectId
 }
+@Schema()
+export class Chapter {
+  id: string;
+  @Prop({default:[]})
+  mishnaiot: MishnaRef[]
+}
+
+
 @Schema()
 export class Tractate extends Document {
   @Prop()
@@ -23,9 +27,7 @@ export class Tractate extends Document {
 
   @Prop()
   title_heb: string;
-  @Prop({
-    default: []
-  })
+  @Prop({ default:[]})
   chapters: Chapter[]
 
 }

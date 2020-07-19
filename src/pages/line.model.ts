@@ -4,6 +4,11 @@ export class SynopsisLine {
   text: string;
   manuscript: string;
 }
+
+export class SubLine {
+  text: string;
+}
+
 export class Line {
   originalLineNumber?: string;
   lineNumber?: string;
@@ -13,6 +18,8 @@ export class Line {
   @IsString()
   mainLine: string;
   synopsis?: SynopsisLine[]
+
+  sublines?: SubLine[]
 
 };
 

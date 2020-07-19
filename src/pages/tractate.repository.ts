@@ -4,6 +4,9 @@ import { Tractate } from './schemas/tractate.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Mishna } from './schemas/mishna.schema';
 import * as _ from 'lodash';
+import { Line } from './line.model';
+import { LineMarkDto } from './dto/line-mark.dto';
+import * as numeral from 'numeral';
 
 @Injectable()
 export class TractateRepository {
@@ -11,8 +14,15 @@ export class TractateRepository {
     @InjectModel(Tractate.name) private tractateModel: Model<Tractate>,
   ) {}
 
-  async get(tractate: string): Promise<Tractate> {
-    return this.tractateModel.findOne({id:tractate});
+  async get(tractate: string, populated?: boolean): Promise<Tractate> {
+    if (!populated) {
+      return this.tractateModel.findOne({id:tractate});
+    } else {
+      return this.tractateModel.findOne({id:tractate})
+     .populate({path:'chapters.mishnaiot.mishnaRef',model:'Mishna'});
+
+    }
+    
   }
   async upsert(tractate: string, updateDto:Object | null = null): Promise<Tractate> {
     return this.tractateModel.findOneAndUpdate(
@@ -55,7 +65,7 @@ export class TractateRepository {
       chapters[indexChapter].mishnaiot.push({
         id: mishnaDocument.id,
         mishna: mishnaDocument.mishna,
-        mishbaRef: mishnaDocument._id,
+        mishnaRef: mishnaDocument._id,
       });
       chapters[indexChapter].mishnaiot = _.orderBy(
         chapters[indexChapter].mishnaiot,

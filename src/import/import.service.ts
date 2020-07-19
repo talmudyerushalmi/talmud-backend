@@ -4,6 +4,10 @@ import { PagesService } from '../pages/pages.service';
 import * as fs from 'fs';
 import * as numeral from 'numeral';
 import { TractateRepository } from 'src/pages/tractate.repository';
+import { Mishna } from 'src/pages/schemas/mishna.schema';
+import { Tractate } from 'src/pages/schemas/tractate.schema';
+import { LineMarkDto } from 'src/pages/dto/line-mark.dto';
+import { MishnaRepository } from 'src/pages/misha.repository';
 
 @Console()
 @Injectable()
@@ -15,12 +19,19 @@ export class ImportService {
   currentTractate = null;
   tractateOrder = 0;
   lineOrder = 1;
+  currentTractateDoc: Tractate;
+  currentChapterIndex = 0;
+  currentMishnaIndex = 0;
+  currentLineIndex = 0;
+  lineMark: LineMarkDto;
+  linesBuffer: any[] = [];
 
 
   private data: string[];
   constructor(
     private pageService: PagesService,
-    private tractateRepo: TractateRepository
+    private tractateRepo: TractateRepository,
+    private mishnaRepo: MishnaRepository
   ) {
   }
 
@@ -64,6 +75,37 @@ export class ImportService {
     }
 
     return null;
+  }
+  async processSubLine(subline:string, index: number) {
+
+    const lineRegex = /^\/\/\/(.*)/;
+    let sublineText = subline;
+
+    const metadata = subline.match(lineRegex);
+    if (metadata) {
+
+      try {
+      // save buffer
+      await this.pageService.updateMishnaLine(this.lineMark.tractate, this.lineMark.line, {
+        sublines: this.linesBuffer
+      }) }
+      catch(e) {
+        console.log('ERROR ',e);
+      }
+      console.log('save buffer ', this.lineMark.line);
+      this.linesBuffer = []
+      // new line
+      sublineText = metadata[1];
+      console.log('NEW LINE ');
+     // this.lineMark = await this.tractateRepo.getNextLine(this.lineMark);
+      this.lineMark = await this.mishnaRepo.getNextLine(this.lineMark);
+      console.log('line mark', this.lineMark);
+
+    }
+
+    this.linesBuffer.push({text:sublineText});
+    
+
   }
   async processLine(line: string,index: number) {
   //  if (index===0) {return;}
@@ -114,11 +156,10 @@ export class ImportService {
   }
 
   @Command({
-    command: 'import <filename>',
+    command: 'import:tractates <filename>',
     description: 'Import tractate'
   })
-  async import(filename:string){
-    console.log('import ',filename);
+  async importTractates(filename:string){
     this.readFile(filename);
 
     for (let i=0;i<this.data.length;i++) {
@@ -127,6 +168,30 @@ export class ImportService {
     
 
     this.pageService.createPage2(filename);
+  }
+
+  @Command({
+    command: 'import:sublines <filename>',
+    description: 'Import sublines'
+  })
+  async import(filename:string){
+    this.readFile(filename);
+    this.lineMark = {
+      tractate: 'yevamot',
+      chapter: '001',
+      mishna: '001',
+      line: '00000'
+    }
+    this.currentTractateDoc  = await this.tractateRepo.get('yevamot', true);
+  
+
+
+    for (let i=0;i<this.data.length;i++) {
+      await this.processSubLine(this.data[i],i);
+    }
+    console.log(this.currentTractateDoc);
+    
+
   }
 
 }
