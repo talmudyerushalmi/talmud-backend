@@ -8,6 +8,7 @@ import { ConsoleModule } from 'nestjs-console';
 import { Mishna } from './schemas/mishna.schema';
 import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './misha.repository';
+import { EditMishnaController } from './edit.mishna.controller';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { MishnaRepository } from './misha.repository';
     ]),
     ConsoleModule
   ],
-  controllers: [MishnaController],
+  controllers: [MishnaController, EditMishnaController],
   providers: [
     PagesService,
     TractateRepository,

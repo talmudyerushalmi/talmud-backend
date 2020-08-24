@@ -10,6 +10,8 @@ import * as _ from 'lodash';
 import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './misha.repository';
 import { UpdateMishnaLineDto } from './dto/save-mishna-line.dto';
+import { tractateSettings } from './inc/tractates.settings';
+import { synopsisList } from './inc/tractates.synopsis';
 
 export interface iTractate {
   title_eng: string;
@@ -26,30 +28,25 @@ export class PagesService {
  {  }
 
   async getMishna(tractate: string, chapter:string, mishna: string):Promise<Mishna> {
-
     return this.mishnaRepository.find(tractate, chapter, mishna);
-    // const page:PageEntity = await this.pageRepository.findOne({ where: { id:page_id } })
-    // if (!page) {
-    //   throw new NotFoundException("Page not found");
-    // }
-    // return page;
-
   }
   async getChapter(tractate: string, chapter:string):Promise<any> {
-    // const page:PageEntity = await this.pageRepository.findOne({ where: { id:page_id } })
-    // if (!page) {
-    //   throw new NotFoundException("Page not found");
-    // }
-    // return page;
     return {
       tractate,
       chapter
     }
   }
+
   async getTractate(tractate: string,):Promise<Tractate> {
     return this.tractateRepository.get(tractate);
   }
 
+  getTractateSettings(tractate: string): any {
+   return {
+     ...tractateSettings[tractate],
+     synopsisList
+    };
+  }
 
   
   getChapterId(tractate: string, chapter: string, mishna:string):string {
