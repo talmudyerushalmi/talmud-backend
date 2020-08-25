@@ -165,9 +165,7 @@ export class ImportService {
     for (let i=0;i<this.data.length;i++) {
       await this.processLine(this.data[i],i);
     }
-    
 
-    this.pageService.createPage2(filename);
   }
 
   @Command({

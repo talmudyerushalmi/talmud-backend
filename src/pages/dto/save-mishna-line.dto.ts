@@ -1,5 +1,5 @@
-import { SubLine } from '../line.model';
-import { ValidateNested, IsString, IsNotEmpty } from 'class-validator';
+import { SubLine } from '../models/line.model';
+import { ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class UpdateMishnaLineDto {

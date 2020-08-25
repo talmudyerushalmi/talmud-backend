@@ -1,5 +1,5 @@
-import { Line } from '../line.model';
-import { ValidateNested, IsString, IsNotEmpty } from 'class-validator';
+import { Line } from '../models/line.model';
+import { ValidateNested, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateMishnaDto {
