@@ -36,22 +36,22 @@ export class ImportService {
   }
 
 
-  readFile(filename: string) {
+  readFile(filename: string): void {
     this.data = fs.readFileSync(filename,
       {encoding:'utf8'})
       .split('\n');
   }
-   reverseString(str) {
+   reverseString(str:string): string {
     return str.split("").reverse().join("");
   }
-  matchRegex(line:string) {
+  matchRegex(line:string): any {
     let metaData;
 
     metaData = line.match(this.metadata);
     if (metaData) {
       const matchStructure = metaData[1].match(this.structureRegex);
       const [, line_no, piska, mishna, chapter] = matchStructure;
-      let text = metaData[3];
+      const text = metaData[3];
       return {
         type: 'line',
         meta: {
@@ -76,7 +76,7 @@ export class ImportService {
 
     return null;
   }
-  async processSubLine(subline:string, index: number) {
+  async processSubLine(subline:string, index: number): Promise<void> {
 
     const lineRegex = /^\/\/\/(.*)/;
     let sublineText = subline;
@@ -107,7 +107,7 @@ export class ImportService {
     
 
   }
-  async processLine(line: string,index: number) {
+  async processLine(line: string,index: number):Promise<void> {
   //  if (index===0) {return;}
     console.log('processing ',index, '>\n');
     // read metadata
@@ -126,7 +126,7 @@ export class ImportService {
     if (metaData?.type !== 'line') {return}
 
     const {  mishna, chapter } = metaData.meta;
-    let { line_no, piska } = metaData.meta;
+    const { line_no, piska } = metaData.meta;
     let text = metaData.text;
     const pageMatch = text.match(this.pageRegex);
     if (pageMatch) {
@@ -159,7 +159,7 @@ export class ImportService {
     command: 'import:tractates <filename>',
     description: 'Import tractate'
   })
-  async importTractates(filename:string){
+  async importTractates(filename:string):Promise<void>{
     this.readFile(filename);
 
     for (let i=0;i<this.data.length;i++) {
@@ -174,7 +174,7 @@ export class ImportService {
     command: 'import:sublines <filename>',
     description: 'Import sublines'
   })
-  async import(filename:string){
+  async import(filename:string):Promise<void>{
     this.readFile(filename);
     this.lineMark = {
       tractate: 'yevamot',

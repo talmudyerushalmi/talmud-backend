@@ -34,6 +34,19 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## import
+```
+node dist/console.js
+```
+import all
+```
+node dist/console.js import:tractates ./entire.txt
+```
+import sublines
+```
+node dist/console.js import:sublines ./sub_lines.txt
+```
+
 ## Test
 
 ```bash
