@@ -4,7 +4,6 @@ import { Tractate } from './schemas/tractate.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Mishna } from './schemas/mishna.schema';
 import * as _ from 'lodash';
-import { Line } from './line.model';
 import { LineMarkDto } from './dto/line-mark.dto';
 import * as numeral from 'numeral';
 
@@ -14,7 +13,7 @@ export class TractateRepository {
     @InjectModel(Tractate.name) private tractateModel: Model<Tractate>,
   ) {}
 
-  async get(tractate: string, populated?: boolean): Promise<Tractate> {
+  async get(tractate: string, populated = false): Promise<Tractate> {
     if (!populated) {
       return this.tractateModel.findOne({id:tractate});
     } else {
