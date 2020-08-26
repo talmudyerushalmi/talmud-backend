@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Mishna } from "./schemas/mishna.schema";
-import { Model } from "mongoose";
+import { Model, DocumentQuery } from "mongoose";
 import { LineMarkDto } from "./dto/line-mark.dto";
 import * as numeral from 'numeral';
 
@@ -22,16 +22,17 @@ export class MishnaRepository {
         tractate:string,
         chapter: string,
         mishna: string
-    ){
+    ): DocumentQuery<Mishna,any>{
         const id = this.getID(tractate, chapter, mishna);
         return this.mishnaModel.findOne({id});
 
     }
     
     // for import
-    async saveSublines() {
-
+    getAll(): DocumentQuery<Mishna[],any> {
+        return this.mishnaModel.find({});
     }
+   
 
     async getNextLine(lineMark: LineMarkDto): Promise<LineMarkDto>{
         const nextLine = numeral(parseInt(lineMark.line) + 1).format('00000');

@@ -12,6 +12,8 @@ import { MishnaRepository } from './misha.repository';
 import { UpdateMishnaLineDto } from './dto/save-mishna-line.dto';
 import { tractateSettings } from './inc/tractates.settings';
 import { synopsisList } from './inc/tractates.synopsis';
+import * as numeral from 'numeral';
+import { MishnaLink } from './models/mishna.link.model';
 
 export interface iTractate {
   title_eng: string;
@@ -78,7 +80,7 @@ export class PagesService {
   }
 
   
-  async updateMishnaInTractate(mishnaDocument: Mishna) {
+  async updateMishnaInTractate(mishnaDocument: Mishna): Promise<void> {
     // get tractate
     const tractateDocument = await this.tractateRepository.upsert(mishnaDocument.tractate);
     this.tractateRepository.addMishnaToChapter(tractateDocument, mishnaDocument);
@@ -92,16 +94,12 @@ export class PagesService {
 
   }
 
-  async createPage2(test: string){
-    console.log('creatng page2 ', test);
-  }
-
 
   async setLine(
     tractate: iTractate,
     chapter:string,
     mishna:string,
-    setLineDto: SetLineDto ) {
+    setLineDto: SetLineDto ): Promise<void> {
 
     const mishnaDocument = await this.upsertMishna(tractate.title_eng,
       chapter,mishna,{});
@@ -122,12 +120,20 @@ export class PagesService {
       mishnaDocument.lines = _.orderBy(mishnaDocument.lines,
         ['lineNumber'],['asc']);
     }
+     mishnaDocument.previous = {
+      tractate: tractate.title_eng, 
+      chapter,
+      mishna
+     }
+     mishnaDocument.next = {
+      tractate: tractate.title_eng, 
+      chapter,
+      mishna
+     }
      await mishnaDocument.save();
 
      // now update reference in tractate
      await this.updateMishnaInTractate(mishnaDocument);
-
-     return "saved";
   }
 
   async updateMishnaLine(
@@ -147,5 +153,65 @@ export class PagesService {
   }
 
 
+  async getPreviousMishna(tractate: string, chapter:string, mishna: string):Promise<MishnaLink> {
+    if (mishna==='001' && chapter === '001') {
+      return null;
+    }
+    if (mishna!=='001') {
+      return {
+        tractate,
+        chapter,
+        mishna: numeral(parseInt(mishna)-1).format('000')
+      }
+    }
+    // if need to go back one chapter
+    const tractateDoc = await this.tractateRepository.get(tractate);
+    const previousChapter = tractateDoc.chapters.find(
+      c=>(c.id === (numeral(parseInt(chapter)-1)).format('000')))
+    const lastMishnaInPreviousChapter = 
+     previousChapter.mishnaiot[previousChapter.mishnaiot.length-1];
 
+
+    return {
+      tractate,
+      chapter: previousChapter.id,
+      mishna: lastMishnaInPreviousChapter.mishna,
+    }
+  }
+
+
+
+
+  async getNextMishna(tractate: string, chapter:string, mishna: string):Promise<MishnaLink> {
+    let nextChapter = chapter;
+    // increment mishna
+    let nextMishna = numeral(parseInt(mishna)+1).format('000');
+    let nextMishnaDoc = await this.mishnaRepository.find(
+      tractate,
+      chapter,
+      nextMishna
+    );
+    if (!nextMishnaDoc) {
+        // increment a chapter
+    nextChapter = numeral(parseInt(chapter)+1).format('000');
+    nextMishna = '001';
+    nextMishnaDoc = await this.mishnaRepository.find(
+      tractate,
+      nextChapter,
+      nextMishna
+    );
+     
+    }
+
+  
+    if (nextMishnaDoc) {
+      return {
+        tractate,
+        chapter: nextChapter,
+        mishna:nextMishna
+      }
+    }
+    return null;
+
+  }
 }

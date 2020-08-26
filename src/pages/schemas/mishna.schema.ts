@@ -1,8 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { Line } from '../line.model';
+import { Line } from '../models/line.model';
 import { ObjectID } from 'mongodb';
+import { MishnaLink } from '../models/mishna.link.model';
 
+ 
 @Schema()
 export class Mishna extends Document {
 
@@ -23,6 +25,12 @@ export class Mishna extends Document {
 
   @Prop()
   lines: Line[];
+
+  @Prop()
+  previous?: MishnaLink
+
+  @Prop()
+  next?: MishnaLink
 }
 
 export const MishnaSchema = SchemaFactory.createForClass(Mishna);

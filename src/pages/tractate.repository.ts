@@ -4,7 +4,6 @@ import { Tractate } from './schemas/tractate.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Mishna } from './schemas/mishna.schema';
 import * as _ from 'lodash';
-import { Line } from './line.model';
 import { LineMarkDto } from './dto/line-mark.dto';
 import * as numeral from 'numeral';
 
