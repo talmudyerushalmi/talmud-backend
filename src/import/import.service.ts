@@ -183,7 +183,7 @@ export class ImportService {
           mishna.chapter,
           mishna.mishna,
         );
-        mishna.next = next;console.log(next);
+        mishna.next = next;
         return mishna.save();
       }),
     );
