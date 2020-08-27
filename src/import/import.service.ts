@@ -6,7 +6,7 @@ import * as numeral from 'numeral';
 import { TractateRepository } from 'src/pages/tractate.repository';
 import { Tractate } from 'src/pages/schemas/tractate.schema';
 import { LineMarkDto } from 'src/pages/dto/line-mark.dto';
-import { MishnaRepository } from 'src/pages/misha.repository';
+import { MishnaRepository } from 'src/pages/mishna.repository';
 
 @Console()
 @Injectable()

@@ -7,7 +7,7 @@ import { Tractate, TractateSchema } from './schemas/tractate.schema';
 import { ConsoleModule } from 'nestjs-console';
 import { Mishna } from './schemas/mishna.schema';
 import { TractateRepository } from './tractate.repository';
-import { MishnaRepository } from './misha.repository';
+import { MishnaRepository } from './mishna.repository';
 import { EditMishnaController } from './edit.mishna.controller';
 
 @Module({

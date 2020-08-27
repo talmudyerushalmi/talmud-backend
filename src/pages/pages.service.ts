@@ -1,14 +1,14 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { Tractate, Chapter } from './schemas/tractate.schema';
+import { Model } from 'mongoose';
+import { Tractate } from './schemas/tractate.schema';
 import { UpdatePageDto } from './dto/update-page.dto';
 import { SetLineDto } from './dto/set-line.dto';
 import { Mishna } from './schemas/mishna.schema';
 import { CreateMishnaDto } from './dto/create-mishna.dto';
 import * as _ from 'lodash';
 import { TractateRepository } from './tractate.repository';
-import { MishnaRepository } from './misha.repository';
+import { MishnaRepository } from './mishna.repository';
 import { UpdateMishnaLineDto } from './dto/save-mishna-line.dto';
 import { tractateSettings } from './inc/tractates.settings';
 import { synopsisList } from './inc/tractates.synopsis';
