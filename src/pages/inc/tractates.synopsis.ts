@@ -123,7 +123,7 @@ export const synopsisList = {
     kricha_14: {
         type: "direct_sources",
         code: "kricha", 
-        button_code: "kricha_13",
+        button_code: "kricha_14",
         name: "קטע כריכה יד׳",
         letter: "יד",
     },
