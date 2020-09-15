@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { PagesService } from './pages.service';
 import { CreateMishnaDto } from './dto/create-mishna.dto';
-import { UpdatePageDto } from './dto/update-page.dto';
+import { UpdateMishnaDto } from './dto/update-mishna.dto';
 import { UpdateMishnaLineDto } from './dto/save-mishna-line.dto';
 
 @Controller('mishna')
@@ -60,9 +60,9 @@ export class MishnaController {
     @Param('tractate') tractate: string,
     @Param('chapter') chapter: string,
     @Param('page') page: string,
-    @Body() updatePageDto: UpdatePageDto,
+    @Body() updateMishnaDto: UpdateMishnaDto,
   ) {
-    return this.pagesService.updatePage(updatePageDto);
+    return this.pagesService.updatePage(updateMishnaDto);
   }
 
   @Put('/:tractate/:chapter/:mishna/:line')

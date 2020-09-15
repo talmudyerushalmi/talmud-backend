@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Tractate } from './schemas/tractate.schema';
-import { UpdatePageDto } from './dto/update-page.dto';
+import { UpdateMishnaDto } from './dto/update-mishna.dto';
 import { SetLineDto } from './dto/set-line.dto';
 import { Mishna } from './schemas/mishna.schema';
 import { CreateMishnaDto } from './dto/create-mishna.dto';
@@ -94,9 +94,9 @@ export class PagesService {
     await tractateDocument.save();
   }
 
-  async updatePage(updatePageDto: UpdatePageDto) {
+  async updatePage(updateMishnaDto: UpdateMishnaDto) {
     return {
-      updatePageDto,
+      updateMishnaDto,
     };
   }
 
