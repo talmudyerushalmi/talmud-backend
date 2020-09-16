@@ -9,6 +9,8 @@ import { Mishna } from './schemas/mishna.schema';
 import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './mishna.repository';
 import { EditMishnaController } from './edit.mishna.controller';
+import { EditMishnaExcerptController } from './edit.excerpt.controller';
+import { DraftJsService } from 'src/services/draftjs.service';
 
 @Module({
   imports: [
@@ -19,9 +21,10 @@ import { EditMishnaController } from './edit.mishna.controller';
     ]),
     ConsoleModule
   ],
-  controllers: [MishnaController, EditMishnaController],
+  controllers: [MishnaController, EditMishnaController, EditMishnaExcerptController],
   providers: [
     PagesService,
+    DraftJsService,
     TractateRepository,
     MishnaRepository,
   ],

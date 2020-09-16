@@ -3,6 +3,7 @@ import { Document } from 'mongoose';
 import { Line } from '../models/line.model';
 import { ObjectID } from 'mongodb';
 import { MishnaLink } from '../models/mishna.link.model';
+import { MishnaExcerpt } from '../models/mishna.excerpt.model';
 
  
 @Schema()
@@ -31,6 +32,9 @@ export class Mishna extends Document {
 
   @Prop()
   next?: MishnaLink
+
+  @Prop({default: []})
+  excerpts?: MishnaExcerpt[]
 }
 
 export const MishnaSchema = SchemaFactory.createForClass(Mishna);

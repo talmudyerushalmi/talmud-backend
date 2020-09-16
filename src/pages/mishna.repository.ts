@@ -4,6 +4,7 @@ import { Mishna } from "./schemas/mishna.schema";
 import { Model, DocumentQuery } from "mongoose";
 import { LineMarkDto } from "./dto/line-mark.dto";
 import * as numeral from 'numeral';
+import { SaveMishnaExcerptDto } from "./dto/save-mishna-excerpt.dto";
 
 
 @Injectable()
@@ -33,6 +34,48 @@ export class MishnaRepository {
         return this.mishnaModel.find({});
     }
    
+
+    async saveExcerpt(
+        tractate:string,
+        chapter: string,
+        mishna: string,
+        excerptToSave: SaveMishnaExcerptDto
+    ) : Promise<any> {
+
+        const mishnaDoc = await this.find(tractate, chapter, mishna);
+
+        if (excerptToSave.key) {
+            const indexExcerpt = mishnaDoc.excerpts.findIndex(excerpt=>excerpt.key===excerptToSave.key);
+            console.log('got ', indexExcerpt);
+            if (indexExcerpt!==-1) {
+                mishnaDoc.excerpts[indexExcerpt] = excerptToSave
+                mishnaDoc.markModified('excerpts');
+            }
+        } else {
+            excerptToSave.key = Date.now();
+            mishnaDoc.excerpts.push(excerptToSave);
+        }
+
+        await mishnaDoc.save();
+        return excerptToSave;
+
+    }
+
+    async deleteExcerpt(
+        tractate:string,
+        chapter: string,
+        mishna: string,
+        excerptKey: number
+    ) : Promise<any> {
+
+        const mishnaDoc = await this.find(tractate, chapter, mishna);
+        if (mishnaDoc) {
+          const newExcerpts = mishnaDoc.excerpts.filter(excerpt=> (excerpt.key!==excerptKey));
+          mishnaDoc.excerpts = newExcerpts;
+          mishnaDoc.markModified('excerpts');
+        }
+       return mishnaDoc.save();
+    }
 
     async getNextLine(lineMark: LineMarkDto): Promise<LineMarkDto>{
         const nextLine = numeral(parseInt(lineMark.line) + 1).format('00000');

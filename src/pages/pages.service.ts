@@ -33,7 +33,7 @@ export class PagesService {
     chapter: string,
     mishna: string,
   ): Promise<Mishna> {
-    return this.mishnaRepository.find(tractate, chapter, mishna);
+    return this.mishnaRepository.find(tractate, chapter, mishna).lean();
   }
   async getChapter(tractate: string, chapter: string): Promise<any> {
     return {
