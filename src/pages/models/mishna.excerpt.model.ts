@@ -1,12 +1,15 @@
-import { IsNotEmpty, IsString, IsBoolean, IsNumber, IsObject, IsOptional } from 'class-validator';
-import { iSelection } from '../models/mishna.excerpt.model';
+import { IsNotEmpty, IsString, IsBoolean, IsNumber } from 'class-validator';
 
-
-export class SaveMishnaExcerptDto {
-  @IsOptional()
-  @IsNumber()
+export interface iSelection {
+  fromLine: number;
+  fromWord: string;
+  fromOffset: number;
+  toLine: number;
+  toWord: string;
+  toOffset: number;
+}
+export class MishnaExcerpt {
   key: number;
-  @IsString()
   type: string;
   @IsBoolean()
   seeReference: boolean;
@@ -15,15 +18,11 @@ export class SaveMishnaExcerptDto {
   sourceName: string;
   @IsString()
   sourceLocation: string;
-  @IsObject()
   editorStateFullQuote: Record<string, unknown>;
-  @IsObject()
   editorStateShortQuote : Record<string, unknown>;
   @IsString()
   synopsis: string;
-  @IsObject()
   editorStateComments:Record<string, unknown>;
-  @IsObject()
   selection: iSelection;
 
 };
