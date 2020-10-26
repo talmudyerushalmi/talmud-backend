@@ -35,3 +35,4 @@ lerna-debug.log*
 
 config/local.yml
 /dump
+restore.sh

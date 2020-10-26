@@ -28,6 +28,10 @@ export class MishnaRepository {
         return this.mishnaModel.findOne({id});
 
     }
+
+    findByLine(tractate:string,line:string): DocumentQuery<Mishna,any> {
+        return this.mishnaModel.findOne({tractate,'lines.lineNumber':line});
+    }
     
     // for import
     getAll(): DocumentQuery<Mishna[],any> {

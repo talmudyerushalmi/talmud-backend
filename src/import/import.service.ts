@@ -7,7 +7,8 @@ import { TractateRepository } from 'src/pages/tractate.repository';
 import { Tractate } from 'src/pages/schemas/tractate.schema';
 import { LineMarkDto } from 'src/pages/dto/line-mark.dto';
 import { MishnaRepository } from 'src/pages/mishna.repository';
-
+import { CsvParser } from 'nest-csv-parser';
+import ImportedExcerpt from './cls/ImportedExcerpt';
 @Console()
 @Injectable()
 export class ImportService {
@@ -27,6 +28,7 @@ export class ImportService {
 
   private data: string[];
   constructor(
+    private readonly csvParser: CsvParser,
     private pageService: PagesService,
     private tractateRepo: TractateRepository,
     private mishnaRepo: MishnaRepository,
@@ -193,7 +195,8 @@ export class ImportService {
     command: 'import:sublines <filename>',
     description: 'Import sublines',
   })
-  async import(filename: string): Promise<void> {
+  // todo make general  - now it's specifically for Yevamot
+  async importSublines(filename: string): Promise<void> {
     this.readFile(filename);
     this.lineMark = {
       tractate: 'yevamot',
@@ -207,5 +210,64 @@ export class ImportService {
       await this.processSubLine(this.data[i]);
     }
     console.log(this.currentTractateDoc);
+  }
+
+  @Command({
+    command: 'import:excerpts <filename>',
+    description: 'Import excerpts',
+  })
+  async importExcerpts(filename: string): Promise<void> {
+
+      // Create stream from file (or get it from S3)
+      const stream = fs.createReadStream(filename)
+      const excerpts = await this.csvParser.parse(stream, ImportedExcerpt, null, null,{ strict: true, separator: ',' })
+   
+      for await (const excerpt of excerpts.list) {
+        console.log('excerpt', excerpt)
+        const chapter =  await this.mishnaRepo.findByLine(excerpt.tractate,excerpt.fromLineFormatted());
+        if (chapter) {
+          const fromLineText = chapter.lines.find(line => line.lineNumber === excerpt.fromLineFormatted()).mainLine;
+          const fromLineIndex = chapter.lines.findIndex(line => line.lineNumber === excerpt.fromLineFormatted());
+          const toLineText = chapter.lines.find(line => line.lineNumber === excerpt.toLineFormatted()).mainLine;
+          const toLineIndex = chapter.lines.findIndex(line => line.lineNumber === excerpt.toLineFormatted());
+          console.log('chapter', chapter.tractate)
+          console.log('chapter', chapter.chapter)
+          console.log('chapter', chapter.mishna)
+          console.log('line', fromLineText)
+          console.log('toWordComputed', excerpt.toWordComputed(fromLineText));
+
+          const fromOffset = fromLineText.indexOf(excerpt.fromWordComputed(fromLineText))
+          const toOffset =   toLineText.indexOf(excerpt.toWordComputed(fromLineText)) + excerpt.toWordComputed(fromLineText).length;
+
+          await this.mishnaRepo.saveExcerpt(chapter.tractate,chapter.chapter,chapter.mishna,{
+            key:null,
+            editorStateFullQuote: excerpt.formatContent(excerpt.excerpt),
+            editorStateComments:excerpt.formatContent(""),
+            editorStateShortQuote:excerpt.formatContent(""),
+            synopsis:null,
+            selection:{
+              fromLine: fromLineIndex,
+              fromWord: excerpt.fromWordComputed(fromLineText),
+              toLine: toLineIndex,
+              toWord: excerpt.toWordComputed(fromLineText),
+              fromOffset: fromOffset,
+              toOffset:toOffset
+            },
+            type: 'MUVAA',
+            seeReference: false,
+            sourceName: excerpt.composition,
+            sourceLocation: excerpt.compositionLocation,
+          })
+        }
+     
+       // await entity.findChapter();
+      }
+      
+      // entities.list.forEach(async entity=>{
+
+      //   await entity.findChapter();
+      // });
+    // console.log('entities ', entities.list);
+   
   }
 }

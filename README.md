@@ -21,6 +21,11 @@
 $ npm install
 ```
 
+## DB
+
+```mongodump -d talmud <connection_string>```
+```mongorestore -d <db_name> <dump directory> <connection_string>```
+
 ## Running the app
 
 ```bash
@@ -35,6 +40,11 @@ $ npm run start:prod
 ```
 
 ## import
+For dev:
+```
+ts-node -r tsconfig-paths/register src/console.ts
+```
+
 ```
 node dist/console.js
 ```
