@@ -46,6 +46,10 @@ export class PagesService {
     return this.tractateRepository.get(tractate);
   }
 
+  async getAllTractates(): Promise<any> {
+    return this.tractateRepository.getAll();
+  }
+
   getTractateSettings(tractate: string): any {
     return {
       ...tractateSettings[tractate],

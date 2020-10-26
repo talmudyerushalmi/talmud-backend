@@ -23,6 +23,10 @@ export class TractateRepository {
     }
     
   }
+
+  async getAll() : Promise<any> {
+    return this.tractateModel.find();
+  }
   async upsert(tractate: string, updateDto:Object | null = null): Promise<Tractate> {
     return this.tractateModel.findOneAndUpdate(
       { id: tractate },

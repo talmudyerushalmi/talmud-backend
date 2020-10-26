@@ -19,10 +19,12 @@ import {
 
         const mishnaDoc = await this.pagesService.getMishna(tractate, chapter, mishna);
         const tractateSettings = this.pagesService.getTractateSettings(tractate);
+        const allTractates = await this.pagesService.getAllTractates();
 
       return {
           mishnaDoc,
-          tractateSettings
+          tractateSettings,
+          allTractates
       }
     }
 
