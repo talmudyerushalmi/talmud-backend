@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { PagesModule } from './pages/pages.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ImportModule } from './import/import.module';
+import { SettingsModule } from './settings/settings.module';
 import * as config from 'config';
 
 const dbConfig = config.get('db');
@@ -15,7 +16,8 @@ const dbConfig = config.get('db');
         "pass": dbConfig.password,
         useNewUrlParser: true}),
     PagesModule,
-    ImportModule
+    ImportModule,
+    SettingsModule
   ],
   controllers: [AppController],
   providers: [AppService],

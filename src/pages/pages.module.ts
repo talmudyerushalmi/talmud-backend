@@ -10,6 +10,8 @@ import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './mishna.repository';
 import { EditMishnaController } from './edit.mishna.controller';
 import { EditMishnaExcerptController } from './edit.excerpt.controller';
+import { SettingsModule } from 'src/settings/settings.module';
+import { TractatesController } from './tractates/tractates.controller';
 
 @Module({
   imports: [
@@ -18,9 +20,12 @@ import { EditMishnaExcerptController } from './edit.excerpt.controller';
       { name: Mishna.name, schema: MishnaSchema }
 
     ]),
-    ConsoleModule
+    ConsoleModule,
+    SettingsModule
   ],
-  controllers: [MishnaController, EditMishnaController, EditMishnaExcerptController],
+  controllers: [
+    TractatesController,
+    MishnaController, EditMishnaController, EditMishnaExcerptController],
   providers: [
     PagesService,
     TractateRepository,
