@@ -10,11 +10,12 @@ export class SaveMishnaExcerptDto {
   type: string;
   @IsBoolean()
   seeReference: boolean;
-  @IsNotEmpty()
-  @IsString()
-  sourceName: string;
+  
+  @IsObject()
+  source: Record<string, unknown>;
   @IsString()
   sourceLocation: string;
+  
   @IsObject()
   editorStateFullQuote: Record<string, unknown>;
   @IsObject()

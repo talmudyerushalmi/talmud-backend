@@ -244,7 +244,7 @@ export class ImportService {
             editorStateFullQuote: excerpt.formatContent(excerpt.excerpt),
             editorStateComments:excerpt.formatContent(""),
             editorStateShortQuote:excerpt.formatContent(""),
-            synopsis:null,
+            synopsis:"",
             selection:{
               fromLine: fromLineIndex,
               fromWord: excerpt.fromWordComputed(fromLineText),
@@ -254,8 +254,11 @@ export class ImportService {
               toOffset:toOffset
             },
             type: 'MUVAA',
-            seeReference: false,
-            sourceName: excerpt.composition,
+            seeReference: false,  
+            source: {
+              name: excerpt.composition,
+              year: excerpt.year
+            },
             sourceLocation: excerpt.compositionLocation,
           })
         }

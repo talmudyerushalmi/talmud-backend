@@ -15,7 +15,7 @@ export class MishnaExcerpt {
   seeReference: boolean;
   @IsNotEmpty()
   @IsString()
-  sourceName: string;
+  source: Record<string, unknown>;;
   @IsString()
   sourceLocation: string;
   editorStateFullQuote: Record<string, unknown>;

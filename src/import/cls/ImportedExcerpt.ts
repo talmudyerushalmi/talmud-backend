@@ -12,6 +12,7 @@ export default class ImportedExcerpt {
     fromWord: string;
     fromWordIndex: string;
     excerpt: string;
+    year: string;
     constructor(
         private mishnaRepo: MishnaRepository,
     ){

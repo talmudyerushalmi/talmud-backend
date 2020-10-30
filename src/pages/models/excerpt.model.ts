@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsBoolean, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsBoolean, IsNumber, IsObject } from 'class-validator';
 
 export class ExcerptMishna {
   _id: string;
@@ -17,9 +17,8 @@ export class ExcerptMishna {
   toWord: string;
   @IsBoolean()
   seeReference: boolean;
-  @IsNotEmpty()
-  @IsString()
-  sourceName: string;
+  @IsObject()
+  source:  Record<string, unknown>;
   @IsString()
   sourceLocation: string;
   editorStateFullQuote: Record<string, unknown>;
