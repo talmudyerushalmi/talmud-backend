@@ -9,6 +9,7 @@ import { LineMarkDto } from 'src/pages/dto/line-mark.dto';
 import { MishnaRepository } from 'src/pages/mishna.repository';
 import { CsvParser } from 'nest-csv-parser';
 import ImportedExcerpt from './cls/ImportedExcerpt';
+import { SettingsService } from 'src/settings/settings.service';
 @Console()
 @Injectable()
 export class ImportService {
@@ -32,6 +33,7 @@ export class ImportService {
     private pageService: PagesService,
     private tractateRepo: TractateRepository,
     private mishnaRepo: MishnaRepository,
+    private settingsService: SettingsService
   ) {}
 
   readFile(filename: string): void {
@@ -221,23 +223,26 @@ export class ImportService {
       // Create stream from file (or get it from S3)
       const stream = fs.createReadStream(filename)
       const excerpts = await this.csvParser.parse(stream, ImportedExcerpt, null, null,{ strict: true, separator: ',' })
+      const compositions = await this.settingsService.getSettings("compositions");
+      console.log('com ', compositions);
    
       for await (const excerpt of excerpts.list) {
-        console.log('excerpt', excerpt)
+      //  console.log('excerpt', excerpt)
         const chapter =  await this.mishnaRepo.findByLine(excerpt.tractate,excerpt.fromLineFormatted());
         if (chapter) {
           const fromLineText = chapter.lines.find(line => line.lineNumber === excerpt.fromLineFormatted()).mainLine;
           const fromLineIndex = chapter.lines.findIndex(line => line.lineNumber === excerpt.fromLineFormatted());
           const toLineText = chapter.lines.find(line => line.lineNumber === excerpt.toLineFormatted()).mainLine;
           const toLineIndex = chapter.lines.findIndex(line => line.lineNumber === excerpt.toLineFormatted());
-          console.log('chapter', chapter.tractate)
-          console.log('chapter', chapter.chapter)
-          console.log('chapter', chapter.mishna)
-          console.log('line', fromLineText)
-          console.log('toWordComputed', excerpt.toWordComputed(fromLineText));
+          // console.log('chapter', chapter.tractate)
+          // console.log('chapter', chapter.chapter)
+          // console.log('chapter', chapter.mishna)
+          // console.log('line', fromLineText)
+          // console.log('toWordComputed', excerpt.toWordComputed(fromLineText));
 
           const fromOffset = fromLineText.indexOf(excerpt.fromWordComputed(fromLineText))
           const toOffset =   toLineText.indexOf(excerpt.toWordComputed(fromLineText)) + excerpt.toWordComputed(fromLineText).length;
+          const source = compositions.settings.find(c => c.title === excerpt.composition);
 
           await this.mishnaRepo.saveExcerpt(chapter.tractate,chapter.chapter,chapter.mishna,{
             key:null,
@@ -256,8 +261,7 @@ export class ImportService {
             type: 'MUVAA',
             seeReference: false,  
             source: {
-              name: excerpt.composition,
-              year: excerpt.year
+             ...source
             },
             sourceLocation: excerpt.compositionLocation,
           })
