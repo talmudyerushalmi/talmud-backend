@@ -32,13 +32,47 @@ export class MishnaRepository {
     findByLine(tractate:string,line:string): DocumentQuery<Mishna,any> {
         return this.mishnaModel.findOne({tractate,'lines.lineNumber':line});
     }
+    getRangeLines(tractate:string,fromLine:string, toLine:string): DocumentQuery<Mishna[],any> {
+
+
+        const from = parseInt(fromLine);
+        const to = parseInt(toLine);
+        const values=[];
+        for (let i=from;i<=to;i++) {
+            const line = numeral(i).format('00000');
+            values.push(line)
+        }
+        return this.mishnaModel.find({tractate:tractate.trim(),'lines.lineNumber':{ $in: values}}).lean();
+    }
     
     // for import
     getAll(): DocumentQuery<Mishna[],any> {
         return this.mishnaModel.find({});
     }
+
+    getAllForTractate(tractate: string): DocumentQuery<Mishna[],any>{
+        return this.mishnaModel.find({
+            tractate
+        });
+    }
    
 
+    async deleteImportedExcerpts(tractate:string):Promise<void> {
+        const all = await this.getAllForTractate(tractate);
+        
+        for (const mishna of all) {
+            mishna.excerpts = mishna.excerpts.filter(e => !e.automaticImport);
+            mishna.markModified('excerpts');
+            await mishna.save();
+            
+          }
+
+
+            
+        
+
+    }
+    
     async saveExcerpt(
         tractate:string,
         chapter: string,

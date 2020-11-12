@@ -26,6 +26,8 @@ export class SaveMishnaExcerptDto {
   editorStateComments:Record<string, unknown>;
   @IsObject()
   selection: iSelection;
+  @IsOptional()
+  automaticImport?: boolean;
 
 };
 

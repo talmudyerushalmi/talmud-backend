@@ -10,6 +10,8 @@ import { MishnaRepository } from 'src/pages/mishna.repository';
 import { CsvParser } from 'nest-csv-parser';
 import ImportedExcerpt from './cls/ImportedExcerpt';
 import { SettingsService } from 'src/settings/settings.service';
+import { Mishna } from 'src/pages/schemas/mishna.schema';
+import MiscUtils from 'src/shared/MiscUtils';
 @Console()
 @Injectable()
 export class ImportService {
@@ -163,7 +165,7 @@ export class ImportService {
       await this.processLine(this.data[i], i);
     }
     // now when the data is complete update the next/previous links
-    this.setNextPreviousLinks();
+    await this.setNextPreviousLinks();
   }
 
   @Command({
@@ -214,67 +216,190 @@ export class ImportService {
     console.log(this.currentTractateDoc);
   }
 
+
+  async saveExcerpt(
+    index:number,
+    mishna: Mishna, 
+    fromLine :number ,
+    fromWord :string,
+    fromOffset: number,
+    toLine :number ,
+    toWord :string,
+    toOffset: number,
+    excerpt:ImportedExcerpt ): Promise<any> {
+
+    const compositions = await this.settingsService.getSettings("compositions");
+    const source = compositions.find(c => c.title === excerpt.composition);
+    if (!source) {
+      console.log(index,",",excerpt['#'],'Fix composition')
+
+    }
+
+    return this.mishnaRepo.saveExcerpt(
+      mishna.tractate, mishna.chapter,mishna.mishna,{
+      key:null,
+      automaticImport: true,
+      editorStateFullQuote: excerpt.formatContent(excerpt.excerpt),
+      editorStateComments:excerpt.formatContent(""),
+      editorStateShortQuote:excerpt.formatContent(""),
+      synopsis:"",
+      selection:{
+        fromLine,
+        fromWord,
+        fromOffset,
+        toLine,
+        toWord,
+        toOffset
+      },
+      type: 'MUVAA',
+      seeReference: false,  
+      source: {
+       ...source
+      },
+      sourceLocation: excerpt.compositionLocation,
+    })
+  }
+
   @Command({
     command: 'import:excerpts <filename>',
     description: 'Import excerpts',
   })
   async importExcerpts(filename: string): Promise<void> {
 
+      await this.mishnaRepo.deleteImportedExcerpts('yevamot');
+      let total=0;
+      let index=1;
+      let quotes=0;
+
       // Create stream from file (or get it from S3)
       const stream = fs.createReadStream(filename)
       const excerpts = await this.csvParser.parse(stream, ImportedExcerpt, null, null,{ strict: true, separator: ',' })
-      const compositions = await this.settingsService.getSettings("compositions");
-      console.log('com ', compositions);
    
       for await (const excerpt of excerpts.list) {
-      //  console.log('excerpt', excerpt)
-        const chapter =  await this.mishnaRepo.findByLine(excerpt.tractate,excerpt.fromLineFormatted());
-        if (chapter) {
-          const fromLineText = chapter.lines.find(line => line.lineNumber === excerpt.fromLineFormatted()).mainLine;
-          const fromLineIndex = chapter.lines.findIndex(line => line.lineNumber === excerpt.fromLineFormatted());
-          const toLineText = chapter.lines.find(line => line.lineNumber === excerpt.toLineFormatted()).mainLine;
-          const toLineIndex = chapter.lines.findIndex(line => line.lineNumber === excerpt.toLineFormatted());
-          // console.log('chapter', chapter.tractate)
-          // console.log('chapter', chapter.chapter)
-          // console.log('chapter', chapter.mishna)
-          // console.log('line', fromLineText)
-          // console.log('toWordComputed', excerpt.toWordComputed(fromLineText));
+        index++;
+        excerpt.tractate="yevamot";
+       // console.log('excerpt', index)
 
-          const fromOffset = fromLineText.indexOf(excerpt.fromWordComputed(fromLineText))
-          const toOffset =   toLineText.indexOf(excerpt.toWordComputed(fromLineText)) + excerpt.toWordComputed(fromLineText).length;
-          const source = compositions.settings.find(c => c.title === excerpt.composition);
+       if (
+         (excerpt.toWord.trim().split(' ').length>1) ||
+         (excerpt.fromWord.trim().split(' ').length>1)
+         ) {
+           quotes++;
+          console.log(index,",",excerpt['#'],'Fix quote')
+        // console.log("word!", index, excerpt, excerpt['#'])
+       }
+      let fromLineText,fromLineIndex,toLineText, toLineIndex,fromOffset,
+      toOffset;
 
-          await this.mishnaRepo.saveExcerpt(chapter.tractate,chapter.chapter,chapter.mishna,{
-            key:null,
-            editorStateFullQuote: excerpt.formatContent(excerpt.excerpt),
-            editorStateComments:excerpt.formatContent(""),
-            editorStateShortQuote:excerpt.formatContent(""),
-            synopsis:"",
-            selection:{
-              fromLine: fromLineIndex,
-              fromWord: excerpt.fromWordComputed(fromLineText),
-              toLine: toLineIndex,
-              toWord: excerpt.toWordComputed(fromLineText),
-              fromOffset: fromOffset,
-              toOffset:toOffset
-            },
-            type: 'MUVAA',
-            seeReference: false,  
-            source: {
-             ...source
-            },
-            sourceLocation: excerpt.compositionLocation,
-          })
+      const range = await this.mishnaRepo.getRangeLines(
+        excerpt.tractate,
+        excerpt.fromLineFormatted(),
+        excerpt.toLineFormatted()
+      )
+      if (range.length>2) {
+        console.log('range ',range.length);
+        console.log('excerpts',excerpt)
+      }
+      let fromMishna =  await this.mishnaRepo.findByLine(excerpt.tractate,excerpt.fromLineFormatted());
+      let toMishna =  await this.mishnaRepo.findByLine(excerpt.tractate,excerpt.toLineFormatted());
+      if (range.length===1) {
+          fromMishna =  range[0];
+          toMishna =  range[0];
+          fromLineText = fromMishna.lines.find(line => line.lineNumber.trim() === excerpt.fromLineFormatted()).mainLine;
+          fromLineIndex = fromMishna.lines.findIndex(line => line.lineNumber === excerpt.fromLineFormatted());
+          toLineText = fromMishna.lines.find(line => line.lineNumber === excerpt.toLineFormatted()).mainLine;
+          toLineIndex = fromMishna.lines.findIndex(line => line.lineNumber === excerpt.toLineFormatted());
+          fromOffset = fromLineText.indexOf(excerpt.fromWordComputed(fromLineText))
+          const t = excerpt.toWordComputed(fromLineText);
+          toOffset =   toLineText.indexOf(excerpt.toWordComputed(fromLineText)) + excerpt.toWordComputed(fromLineText).length;
+          await this.saveExcerpt(
+            index,
+            fromMishna,
+            fromLineIndex,
+            excerpt.fromWordComputed(fromLineText),
+            fromOffset,
+            toLineIndex,
+            excerpt.toWordComputed(fromLineText),
+            toOffset,
+            excerpt
+          );
+          total++;
+         // console.log('imported excerpt ',excerpt)
+
+        } else {
+          if (range.length>1) {
+            fromMishna = range[0];
+            toMishna = range[range.length-1]
+            // first part
+            fromLineIndex = fromMishna.lines.findIndex(line => line.lineNumber === excerpt.fromLineFormatted());
+            fromLineText = fromMishna.lines[fromLineIndex].mainLine;
+            toLineIndex = fromMishna.lines.length-1;
+            toLineText = fromMishna.lines[toLineIndex].mainLine;
+            fromOffset = fromLineText.indexOf(excerpt.fromWordComputed(fromLineText))
+            toOffset =   toLineText.length;
+            await this.saveExcerpt(
+              index,
+              fromMishna,
+              fromLineIndex,
+              excerpt.fromWordComputed(fromLineText),
+              fromOffset,
+              toLineIndex,
+              MiscUtils.lastWord(toLineText),
+              toOffset,
+              excerpt
+            );
+            // middle part
+            for(let i=1;i<range.length-1;i++){
+             const middleMisha = range[i]; 
+             fromLineIndex = 0;
+             fromLineText = middleMisha.lines[fromLineIndex].mainLine;
+             toLineIndex = middleMisha.lines.length-1;
+             toLineText = middleMisha.lines[toLineIndex].mainLine;
+             fromOffset = 0;
+             toOffset =   toLineText.length;
+             await this.saveExcerpt(
+               index,
+              middleMisha,
+               fromLineIndex,
+               MiscUtils.firstWord(fromLineText),
+               fromOffset,
+               toLineIndex,
+               MiscUtils.lastWord(toLineText),
+               toLineText.length,
+               excerpt
+             );
+            }
+
+             // second part
+             fromLineIndex = 0;
+             fromLineText = fromMishna.lines[fromLineIndex].mainLine;
+             toLineIndex = toMishna.lines.findIndex(line => line.lineNumber === excerpt.toLineFormatted());
+             toLineText = toMishna.lines[toLineIndex].mainLine;
+             fromOffset = 0;
+             toOffset =   toLineText.indexOf(excerpt.toWordComputed(fromLineText)) + excerpt.toWordComputed(fromLineText).length;
+             await this.saveExcerpt(
+               index,
+               toMishna,
+               fromLineIndex,
+               MiscUtils.firstWord(fromLineText),
+               fromOffset,
+               toLineIndex,
+               excerpt.toWordComputed(toLineText),
+               toOffset,
+               excerpt
+             );
+         
+
+            total++;
+          } else {
+            console.log(index,",",excerpt['#'])
+          }
         }
      
-       // await entity.findChapter();
       }
+      console.log('fix quotes ',quotes);
+      console.log('imported ',total);
       
-      // entities.list.forEach(async entity=>{
-
-      //   await entity.findChapter();
-      // });
-    // console.log('entities ', entities.list);
    
   }
 }

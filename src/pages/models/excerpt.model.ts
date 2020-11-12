@@ -26,6 +26,8 @@ export class ExcerptMishna {
   @IsString()
   synopsis: string;
   editorStateComments:Record<string, unknown>;
+  @IsBoolean()
+  automaticImport: boolean
 
 };
 

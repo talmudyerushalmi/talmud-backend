@@ -24,6 +24,7 @@ export class MishnaExcerpt {
   synopsis: string;
   editorStateComments:Record<string, unknown>;
   selection: iSelection;
+  automaticImport?: boolean;
 
 };
 
