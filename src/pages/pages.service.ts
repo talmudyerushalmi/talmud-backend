@@ -14,6 +14,7 @@ import { tractateSettings } from './inc/tractates.settings';
 import { synopsisList } from './inc/tractates.synopsis';
 import * as numeral from 'numeral';
 import { MishnaLink } from './models/mishna.link.model';
+import { sortBy } from 'lodash';
 
 export interface iTractate {
   title_eng: string;
@@ -182,37 +183,40 @@ export class PagesService {
     // need to find first existing mishna (sometimes a mishna is missing so we need to repeat the search)
     if (mishna !== '001') {
       let previousMishna = null;
-      let tryMishna = numeral(parseInt(mishna) - 1).format('000');;
-      while (tryMishna!=='000' && !previousMishna) {
-         previousMishna = await this.mishnaRepository.find(
+      let tryMishna = numeral(parseInt(mishna) - 1).format('000');
+      while (tryMishna !== '000' && !previousMishna) {
+        previousMishna = await this.mishnaRepository.find(
           tractate,
           chapter,
           tryMishna,
         );
         // not found, continue looking
         if (!previousMishna) {
-          tryMishna =  numeral(parseInt(tryMishna) - 1).format('000');
+          tryMishna = numeral(parseInt(tryMishna) - 1).format('000');
         }
-      }   
-      
+      }
+
       if (previousMishna) {
-        const lineFrom =
-        previousMishna.lines[0].lineNumber;
+        const lineFrom = previousMishna.lines[0].lineNumber;
         const lineTo =
-        previousMishna.lines[previousMishna.lines.length - 1].lineNumber;
+          previousMishna.lines[previousMishna.lines.length - 1].lineNumber;
         return {
           tractate,
           chapter,
           mishna: tryMishna,
           lineFrom,
-          lineTo
+          lineTo,
         };
       }
     }
     // if need to go back one chapter
     const tractateDoc = await this.tractateRepository.get(tractate, true);
-    const previousChapter = tractateDoc.chapters.find(
-      c => parseInt(c.id) < parseInt(chapter)
+    const sortedLastDown = tractateDoc.chapters.sort(
+      (a, b) => parseInt(b.id) - parseInt(a.id),
+    );
+
+    const previousChapter = sortedLastDown.find(
+      c => parseInt(c.id) < parseInt(chapter),
     );
     if (!previousChapter) {
       return null;
@@ -225,8 +229,7 @@ export class PagesService {
       lastMishnaInPreviousChapter.mishna,
     );
     if (previousMishna) {
-      const lineFrom =
-      previousMishna.lines[0].lineNumber;
+      const lineFrom = previousMishna.lines[0].lineNumber;
       const lineTo =
         previousMishna.lines[previousMishna.lines.length - 1].lineNumber;
       return {
@@ -245,13 +248,25 @@ export class PagesService {
     mishna: string,
   ): Promise<MishnaLink> {
     let nextChapter = chapter;
-    // increment mishna
-    let nextMishna = numeral(parseInt(mishna) + 1).format('000');
-    let nextMishnaDoc = await this.mishnaRepository.find(
-      tractate,
-      chapter,
-      nextMishna,
-    );
+    let nextMishnaDoc = null;
+    let nextMishna = mishna;
+    const currentMishnaiot = (
+      await this.tractateRepository.get(tractate, true)
+    ).chapters.find(c => c.id === chapter).mishnaiot;
+
+    // while can traverse the mishnaiot
+    while (
+      currentMishnaiot.some(m => parseInt(m.mishna) > parseInt(nextMishna)) &&
+      !nextMishnaDoc
+    ) {
+      // increment mishna
+      nextMishna = numeral(parseInt(nextMishna) + 1).format('000');
+      nextMishnaDoc = await this.mishnaRepository.find(
+        tractate,
+        chapter,
+        nextMishna,
+      );
+    }
     if (!nextMishnaDoc) {
       // increment a chapter
       nextChapter = numeral(parseInt(chapter) + 1).format('000');
@@ -263,18 +278,16 @@ export class PagesService {
       );
     }
 
-    
     if (nextMishnaDoc) {
-      const lineFrom =
-    nextMishnaDoc.lines[0].lineNumber; 
-    const lineTo =
-    nextMishnaDoc.lines[nextMishnaDoc.lines.length - 1].lineNumber;
+      const lineFrom = nextMishnaDoc.lines[0].lineNumber;
+      const lineTo =
+        nextMishnaDoc.lines[nextMishnaDoc.lines.length - 1].lineNumber;
       return {
         tractate,
         chapter: nextChapter,
         mishna: nextMishna,
         lineFrom,
-        lineTo
+        lineTo,
       };
     }
     return null;
