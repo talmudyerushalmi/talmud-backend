@@ -5,6 +5,12 @@ export const synopsisList = {
         name: "כתב יד ליידן",
         button_code: "leiden",
     },
+    leiden_2: {
+        type: "direct_sources",
+        code: "leiden", 
+        name: "כתב יד ליידן ב׳",
+        button_code: "leiden_2",
+    },
     rome: {
         type: "direct_sources",
         code: "rome", 

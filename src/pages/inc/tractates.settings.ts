@@ -69,7 +69,7 @@ export const tractateSettings = {
         synopsisAllowed: ["leiden", "likutim_l_1"]
     },
     mashqin: {
-        synopsisAllowed: ["leiden", "gniza_1", "gniza_2", "gniza_3", "gniza_4",
+        synopsisAllowed: ["leiden", "leiden_2", "gniza_1", "gniza_2", "gniza_3", "gniza_4",
         "kricha_5"]
     },
     yevamot: {
