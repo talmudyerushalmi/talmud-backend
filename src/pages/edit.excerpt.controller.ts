@@ -41,6 +41,9 @@ export class EditMishnaExcerptController {
     @Param('excerpt') excerptKey: string,
 
   ) {
-    return this.mishnaRepository.deleteExcerpt(tractate, chapter, mishna, parseInt(excerptKey));
+    // todo - solve properly
+    const r = await this.mishnaRepository.deleteExcerpt(tractate, chapter, mishna, parseInt(excerptKey));
+    return {...r._doc}
+
   }
 }
