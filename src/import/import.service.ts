@@ -28,6 +28,7 @@ export class ImportService {
   currentLineIndex = 0;
   lineMark: LineMarkDto;
   linesBuffer: any[] = [];
+  sublineIndex = 1;
 
   private data: string[];
   constructor(
@@ -100,13 +101,20 @@ export class ImportService {
       this.linesBuffer = [];
       // new line
       sublineText = metadata[1];
-      console.log('NEW LINE ');
       // this.lineMark = await this.tractateRepo.getNextLine(this.lineMark);
       this.lineMark = await this.mishnaRepo.getNextLine(this.lineMark);
-      console.log('line mark', this.lineMark);
+      if (parseInt(this.lineMark.mishna)!==this.currentMishnaIndex) {
+        this.currentMishnaIndex = parseInt(this.lineMark.mishna);
+        this.sublineIndex = 1;
+      }
+      console.log('line mark', this.lineMark, this.sublineIndex);
     }
 
-    this.linesBuffer.push({ text: sublineText });
+    const sublineData = {
+      text: sublineText,
+      index: this.sublineIndex++
+    };
+    this.linesBuffer.push(sublineData);
   }
 
   async processLine(line: string, index: number): Promise<void> {
@@ -210,6 +218,7 @@ export class ImportService {
       line: '00000',
     };
     this.currentTractateDoc = await this.tractateRepo.get('yevamot', true);
+    this.currentMishnaIndex = 1;
 
     for (let i = 0; i < this.data.length; i++) {
       await this.processSubLine(this.data[i]);
