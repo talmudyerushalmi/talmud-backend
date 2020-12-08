@@ -7,6 +7,7 @@ export class SynopsisLine {
 
 export class SubLine {
   text: string;
+  index: number;
 }
 
 export class Line {

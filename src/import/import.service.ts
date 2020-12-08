@@ -444,4 +444,24 @@ export class ImportService {
     console.log('fix quotes ', quotes);
     console.log('imported ', total);
   }
+
+
+  @Command({
+    command: 'set:excerptSelectionSublines <tractate>',
+    description: 'Set excerpt for sublines <tractate>',
+  })
+  async setExcerptSelectionForSublines(tractate: string): Promise<void> {
+    console.log('setting excerpt for sublines...',tractate);
+    // now when the data is complete update the next/previous links
+    const all = await this.mishnaRepo.getAllForTractate(tractate);
+    for await (const mishna of all) {
+      await this.mishnaRepo.updateExcerptsWithSublineSelect(
+        mishna.tractate,
+        mishna.chapter,
+        mishna.mishna,
+      )
+      
+    }
+
+  }
 }
