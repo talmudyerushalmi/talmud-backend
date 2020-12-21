@@ -1,10 +1,23 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import { Controller, Get, Param } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
+import { UpdateLineDto } from './dto/update-line.dto';
 import { PagesService } from './pages.service';
+import { SublineService } from './subline.service';
 
 @Controller('edit/mishna')
 export class EditMishnaController {
-  constructor(private pagesService: PagesService) {}
+  constructor(
+    private pagesService: PagesService,
+    private sublineService: SublineService,
+  ) {}
 
   @Get('/:tractate/:chapter/:mishna')
   async getMishna(
@@ -23,5 +36,23 @@ export class EditMishnaController {
       mishnaDoc,
       tractateSettings,
     };
+  }
+
+  @Post('/:tractate/:chapter/:mishna/:line')
+  @UsePipes(ValidationPipe)
+  async updateLine(
+    @Param('tractate') tractate: string,
+    @Param('chapter') chapter: string,
+    @Param('mishna') mishna: string,
+    @Param('line') line: string,
+    @Body() updateLineDto: UpdateLineDto,
+  ) {
+    return this.sublineService.updateSubline(
+      tractate,
+      chapter,
+      mishna,
+      line,
+      updateLineDto,
+    );
   }
 }

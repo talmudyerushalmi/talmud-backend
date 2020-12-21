@@ -1,13 +1,19 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class SynopsisLine {
+export class Synopsis {
   text: string;
+  type: string;
+  name: string;
+  id: string;
+  code: string;
+  button_code: string;
   manuscript: string;
 }
 
 export class SubLine {
   text: string;
   index: number;
+  synopsis: Synopsis[]
 }
 
 export class Line {
@@ -18,7 +24,6 @@ export class Line {
   @IsNotEmpty()
   @IsString()
   mainLine: string;
-  synopsis?: SynopsisLine[]
 
   sublines?: SubLine[]
 

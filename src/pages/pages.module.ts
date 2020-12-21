@@ -12,6 +12,7 @@ import { EditMishnaController } from './edit.mishna.controller';
 import { EditMishnaExcerptController } from './edit.excerpt.controller';
 import { SettingsModule } from 'src/settings/settings.module';
 import { TractatesController } from './tractates/tractates.controller';
+import { SublineService } from './subline.service';
 
 @Module({
   imports: [
@@ -28,9 +29,10 @@ import { TractatesController } from './tractates/tractates.controller';
     MishnaController, EditMishnaController, EditMishnaExcerptController],
   providers: [
     PagesService,
+    SublineService,
     TractateRepository,
     MishnaRepository,
   ],
-  exports: [PagesService, TractateRepository,MishnaRepository]
+  exports: [PagesService, SublineService, TractateRepository,MishnaRepository]
 })
 export class PagesModule {}
