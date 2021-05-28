@@ -1,13 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Mixed } from 'mongoose';
 
 @Schema()
 export class Settings extends Document {
   @Prop()
   id: string;
 
-  @Prop()
-  settings: any;
+  @Prop({ type: Schema })
+  settings: Mixed;
 }
 
 export const SettingsSchema = SchemaFactory.createForClass(Settings);

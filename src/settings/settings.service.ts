@@ -38,7 +38,7 @@ export class SettingsService {
           const stream = fs.createReadStream(filename)
           const excerpts = await this.csvParser.parse(stream, Entity, null, null,{ strict: true, separator: ',' })
 
-          const settings = [];
+          const settings: any = [];
           const settingsDoc = await this.settingsModel.findOne({id:settingsID});
           for (const excerpt of excerpts.list) {
               settings.push(excerpt);
