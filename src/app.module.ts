@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ImportModule } from './import/import.module';
 import { SettingsModule } from './settings/settings.module';
 import * as config from 'config';
+import { ConfigModule } from '@nestjs/config';
 
 const dbConfig = config.get('db');
 @Module({
@@ -17,7 +18,10 @@ const dbConfig = config.get('db');
         useNewUrlParser: true}),
     PagesModule,
     ImportModule,
-    SettingsModule
+    SettingsModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    })
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { MishnaController } from './mishna.controller';
 import { PagesService } from './pages.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -13,7 +13,7 @@ import { EditMishnaExcerptController } from './edit.excerpt.controller';
 import { SettingsModule } from 'src/settings/settings.module';
 import { TractatesController } from './tractates/tractates.controller';
 import { SublineService } from './subline.service';
-
+import { AuthMiddleware } from 'src/middleware/auth';
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -35,4 +35,10 @@ import { SublineService } from './subline.service';
   ],
   exports: [PagesService, SublineService, TractateRepository,MishnaRepository]
 })
-export class PagesModule {}
+export class PagesModule {
+  configure(consumer: MiddlewareConsumer):void {
+    consumer
+      .apply(AuthMiddleware)
+      .forRoutes({ path: 'edit/*', method: RequestMethod.ALL })
+  }
+}
