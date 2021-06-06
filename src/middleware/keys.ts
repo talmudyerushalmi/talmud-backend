@@ -5,35 +5,34 @@
 //const jwksUri = `${issuer}/.well-known/jwks.json`;
 //https://cognito-idp.eu-west-1.amazonaws.com/eu-west-1_dwviLBYxz/.well-known/jwks.json
 
-const keys = {
-  keys: [
+const keys =  [
     {
       alg: 'RS256',
       e: 'AQAB',
-      kid: '5/H5ebjcz0wjAM9rH2VZVc44DOqPidREnezNmTS3zw0=',
+      kid: 'gGCtSpy+VM9p+rr00YeNbx3CtS0csGHAa5B97jd0f8M=',
       kty: 'RSA',
       n:
-        'xDqVva_dZILCOrUb-TChBcrVZDpJBWx8WGjAfZZlvgdIWuoguj4KQ72a6A-YktF2fzCFwzfLNr38lCI2ihkMlw-j049t-F0SwLKxmn7-aqErVf1IPTwLaYprb5hBVVza6JFqgM9cymfN1dT_PBk32gAS2KKmerHdaBYXjb85e5OaaiJhMipVbUcYs_SJpokQVSJOfBk8BxfiQel0IC0WeXiaNDg-QVslVjq2nhz-QGMF9oK4nDZL3NPLrv0LEMcb5z1LPlP1okNFn9ITNVU9J8R0iA65qdaG_WwoTEjvxZLCOIuArcwBvw-qQhfUo8HKumJecL86OBv0h7H_lK0pHQ',
+        '8ni-E-gPCtS_xchgJDnbBGwXBMcYyoKUdJt2q2YnJJO8lvKZB3u_lgbObQe4JYop-VxyKQObUvMWG_m6Z_gXMO4w4eVBvdj9GFXNT-B2exJWYzg3cctsdEeYTzb3rwIqiJ7OQKqT-IgMD0C3bheXVJNuqRO5Vvl2hIKNf9GSATrrWtt-2w-Iz1XfWyu1XYqkh1Exs0FBQws0XuTdIw2Zq8XGB42I7ZPHxiFyxL1NrhV8RzVBixOOhUpaPQGvPhdRTEqvTFHKUy0S0AqhWtK2g5eByXAtbT4ZBsroQa4LI5N_Da0YULm1qId8BlceQfghW3YwjyEAACKpx7nqOkss4Q',
       use: 'sig',
     },
     {
       alg: 'RS256',
       e: 'AQAB',
-      kid: 'kXTIK/jGsCq9YXIQmea7lVy+oepZLtaFvLzS0MKUeKw=',
+      kid: 'xIXOuzIw/34sfKOlkRFiAC09zAZbjuo0scNx54Y7GXw=',
       kty: 'RSA',
       n:
-        'zJBPEDB5MkGUbgWcW3b9OOnltsBxVpf9o-PNC53L-Fborb1iTJbjtmXRZxj8Jm0rlJQZ8NA3yjAEpS-CXvBHRnkOGdMtNyi8HUI0lPhE8mHtu234VKUbkC4OI3g4zQOc9a6qUwsCS2GZVidmDHD8NQ74An5hFI8mPMAhsKuKNIFp9c1LDXGqXoiTKxv9fWkm3fcc3seZm59iboKfFoijdkSkTVT3DaEDMaHVdKypkzkTeI_BQJ4NyEOPJFo7EuDr2_OzvWvHOtNgwQUkBx_QcuyYBGINsmyQdYAmSCmDj9rXZRx3uSrpO4Yx0_pUW4nfPkEX5yEwy_pASgVxPBv6uQ',
+        '8_EnLgS23HzP7-KbOrLwRKqfH07kAxKMqACTW0Fytyn0-M2FR_4Ulza6QMlBfmI7Dcd8808_oKnv8Uc2vdIjRzz2VAdlDT_nDCh-BLvcDN0JQS9u2LFh1vSL1yCr66YOE9n9meVk5T1MoZvk14fDLgDQp9bDjOawQSRV-pMkVjpDQG0rK2o4CamOu6SSGXOMd2rnMpRJNb6CfYt4EXB0Qq2MwGN4RjGMNQh6WxZ2bcoCu9Qul3XSXttrKeBwVf4aEexAuGvsceeGzVpWFNPW5rb0XhtC6nrnCMT2kp9RY3gdHwlwTBU5TY1DdK7bPhGGybYshVnjCltxhSMdHPMetw',
       use: 'sig',
     },
-  ],
-};
+  ];
 
-export const key = {
-   alg: 'RS256',
-   e: 'AQAB',
-   kid: '5/H5ebjcz0wjAM9rH2VZVc44DOqPidREnezNmTS3zw0=',
-   kty: 'RSA',
-   n:
-     'xDqVva_dZILCOrUb-TChBcrVZDpJBWx8WGjAfZZlvgdIWuoguj4KQ72a6A-YktF2fzCFwzfLNr38lCI2ihkMlw-j049t-F0SwLKxmn7-aqErVf1IPTwLaYprb5hBVVza6JFqgM9cymfN1dT_PBk32gAS2KKmerHdaBYXjb85e5OaaiJhMipVbUcYs_SJpokQVSJOfBk8BxfiQel0IC0WeXiaNDg-QVslVjq2nhz-QGMF9oK4nDZL3NPLrv0LEMcb5z1LPlP1okNFn9ITNVU9J8R0iA65qdaG_WwoTEjvxZLCOIuArcwBvw-qQhfUo8HKumJecL86OBv0h7H_lK0pHQ',
-   use: 'sig',
+
+export const key =  {
+  alg: 'RS256',
+  e: 'AQAB',
+  kid: 'gGCtSpy+VM9p+rr00YeNbx3CtS0csGHAa5B97jd0f8M=',
+  kty: 'RSA',
+  n:
+    '8ni-E-gPCtS_xchgJDnbBGwXBMcYyoKUdJt2q2YnJJO8lvKZB3u_lgbObQe4JYop-VxyKQObUvMWG_m6Z_gXMO4w4eVBvdj9GFXNT-B2exJWYzg3cctsdEeYTzb3rwIqiJ7OQKqT-IgMD0C3bheXVJNuqRO5Vvl2hIKNf9GSATrrWtt-2w-Iz1XfWyu1XYqkh1Exs0FBQws0XuTdIw2Zq8XGB42I7ZPHxiFyxL1NrhV8RzVBixOOhUpaPQGvPhdRTEqvTFHKUy0S0AqhWtK2g5eByXAtbT4ZBsroQa4LI5N_Da0YULm1qId8BlceQfghW3YwjyEAACKpx7nqOkss4Q',
+  use: 'sig',
 };
