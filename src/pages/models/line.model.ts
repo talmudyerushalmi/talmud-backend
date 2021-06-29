@@ -1,14 +1,16 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
 export class Synopsis {
-  text: string;
+  text: EditedText;
   type: string;
   name: string;
   id: string;
   code: string;
   button_code: string;
-  manuscript: string;
+  manuscript?: string;
 }
+
+export type EditedText = string | Record<string, unknown>;
 
 export class SubLine {
   text: string;

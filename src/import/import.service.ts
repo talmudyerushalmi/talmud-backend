@@ -12,6 +12,8 @@ import ImportedExcerpt from './cls/ImportedExcerpt';
 import { SettingsService } from 'src/settings/settings.service';
 import { Mishna } from 'src/pages/schemas/mishna.schema';
 import MiscUtils from 'src/shared/MiscUtils';
+import { SublineService } from 'src/pages/subline.service';
+import { Synopsis } from 'src/pages/models/line.model';
 @Console()
 @Injectable()
 export class ImportService {
@@ -37,6 +39,7 @@ export class ImportService {
     private tractateRepo: TractateRepository,
     private mishnaRepo: MishnaRepository,
     private settingsService: SettingsService,
+    private sublineService: SublineService,
   ) {}
 
   readFile(filename: string): void {
@@ -103,7 +106,7 @@ export class ImportService {
       sublineText = metadata[1];
       // this.lineMark = await this.tractateRepo.getNextLine(this.lineMark);
       this.lineMark = await this.mishnaRepo.getNextLine(this.lineMark);
-      if (parseInt(this.lineMark.mishna)!==this.currentMishnaIndex) {
+      if (parseInt(this.lineMark.mishna) !== this.currentMishnaIndex) {
         this.currentMishnaIndex = parseInt(this.lineMark.mishna);
         this.sublineIndex = 1;
       }
@@ -112,7 +115,7 @@ export class ImportService {
 
     const sublineData = {
       text: sublineText,
-      index: this.sublineIndex++
+      index: this.sublineIndex++,
     };
     this.linesBuffer.push(sublineData);
   }
@@ -201,7 +204,6 @@ export class ImportService {
       mishna.next = next;
       await mishna.save();
     }
-
   }
 
   @Command({
@@ -445,13 +447,12 @@ export class ImportService {
     console.log('imported ', total);
   }
 
-
   @Command({
     command: 'set:excerptSelectionSublines <tractate>',
     description: 'Set excerpt for sublines <tractate>',
   })
   async setExcerptSelectionForSublines(tractate: string): Promise<void> {
-    console.log('setting excerpt for sublines...',tractate);
+    console.log('setting excerpt for sublines...', tractate);
     // now when the data is complete update the next/previous links
     const all = await this.mishnaRepo.getAllForTractate(tractate);
     for await (const mishna of all) {
@@ -459,8 +460,193 @@ export class ImportService {
         mishna.tractate,
         mishna.chapter,
         mishna.mishna,
-      )
-      
+      );
+    }
+  }
+
+  getTextForSynopsis(str: string): string {
+    const step1 = /(\(שם\)|''|\(.*?,.*?\)|\<.*?\>|\|.*?\||[\.\+:\?\!"{},])/g;
+    const step2 = /[-]/g;
+    const step3 = /\s+/g;
+    return str
+      ? str
+          .replace(step1, '')
+          .replace(step2, ' ')
+          .replace(step3, ' ')
+          .trim()
+      : '';
+  }
+
+  @Command({
+    command: 'import:synopsis <tractate>',
+    description: 'Create synopsis <tractate>',
+  })
+  async importSynopsis(tractate: string): Promise<void> {
+    const range = (num: number, x: number, y: number) => {
+      return num >= x && num <= y;
+    };
+
+    console.log('setting excerpt for sublines...', tractate);
+    // now when the data is complete update the next/previous links
+    const all = await this.mishnaRepo.getAllForTractate(tractate);
+    for await (const mishna of all) {
+      console.log(mishna.id);
+      for (const line of mishna.lines) {
+        console.log(line.lineNumber);
+        // for (const subline of line.sublines) {
+        //   console.log(subline.text)
+        //   console.log(subline.synopsis)
+        // }
+        const newSublines = line.sublines;
+        newSublines.forEach(subline => {
+          // export class Synopsis {
+          //   text: string;
+          //   type: string;
+          //   name: string;
+          //   id: string;
+          //   code: string;
+          //   button_code: string;
+          //   manuscript: string;
+          // }
+          const content = {
+            blocks: [
+              {
+                data: {},
+                entityRanges: [],
+                inlineStyleRanges: [],
+                key: 'aaaaa',
+                text: this.getTextForSynopsis(subline.text),
+                type: 'unstyled',
+              },
+            ],
+            entityMap: [],
+          };
+          const synopsisLeiden: Synopsis = {
+            id: 'leiden',
+            type: 'direct_sources',
+            text: { content },
+            code: 'leiden',
+            name: 'כתב יד ליידן',
+            button_code: 'leiden',
+          };
+
+          const synopsisDfus: Synopsis = {
+            id: 'dfus_rishon',
+            type: 'direct_sources',
+            text: { content },
+            code: 'dfus_rishon',
+            name: 'דפוס ראשון',
+            button_code: 'dfus_rishon',
+          };
+          if (!subline.synopsis) {
+            subline.synopsis = [];
+          }
+          const lineNumber = parseInt(line.lineNumber);
+          if (range(lineNumber, 0, 441) || range(lineNumber, 454, 1087)) {
+            subline.synopsis.push(synopsisLeiden);
+          }
+          if (range(lineNumber, 1088, 1149)) {
+            subline.synopsis.push(synopsisDfus);
+          }
+        });
+        const lineNumber = parseInt(line.lineNumber);
+        if (range(lineNumber, 0, 441) || range(lineNumber, 454, 1087)) {
+          await this.sublineService.updateSubline(
+            tractate,
+            mishna.chapter,
+            mishna.mishna,
+            line.lineNumber,
+            {
+              mainLine: line.mainLine,
+              sublines: line.sublines,
+            },
+          );
+        }
+        if (range(lineNumber, 1088, 1149)) {
+          await this.sublineService.updateSubline(
+            tractate,
+            mishna.chapter,
+            mishna.mishna,
+            line.lineNumber,
+            {
+              mainLine: line.mainLine,
+              sublines: line.sublines,
+            },
+          );
+        }
+      }
+    }
+  }
+
+  @Command({
+    command: 'fix:synopsis <tractate>',
+    description: 'fix synopsis <tractate>',
+  })
+  async fixSynopsis(tractate: string): Promise<void> {
+    console.log('fixing excerpt for sublines...',tractate);
+    // now when the data is complete update the next/previous links
+    const all = await this.mishnaRepo.getAllForTractate(tractate);
+    for await (const mishna of all) {
+      console.log(mishna.id)
+      for (const line of mishna.lines) {
+        console.log(line.lineNumber)
+        // for (const subline of line.sublines) {
+        //   console.log(subline.text)
+        //   console.log(subline.synopsis)
+        // }
+        const newSublines = line.sublines;
+        newSublines.forEach(subline => {
+          // export class Synopsis {
+          //   text: string;
+          //   type: string;
+          //   name: string;
+          //   id: string;
+          //   code: string;
+          //   button_code: string;
+          //   manuscript: string;
+          // }
+
+       
+          // if (!subline.synopsis) {subline.synopsis = []}
+          // subline.synopsis.push(synopsisNew);
+          const newsynopsis = subline.synopsis?.map(old => {
+            if (typeof old.text === "string") {
+              console.log('need to convert' , old)
+              const content = {
+                blocks:[
+                  {
+                    data:{},
+                    entityRanges: [],
+                    inlineStyleRanges:[],
+                    key: "aaaaa",
+                    text: this.getTextForSynopsis(old.text),
+                    type: 'unstyled'
+                  }
+                ],
+                entityMap: []
+              }
+              old.text = { content }
+            }
+            return old;
+          })
+
+          subline.synopsis = newsynopsis;
+          console.log('new ', subline.synopsis)
+        })
+        await this.sublineService.updateSubline(tractate, mishna.chapter, mishna.mishna, line.lineNumber, {
+              mainLine: line.mainLine,
+              sublines: line.sublines
+            })
+        // if (parseInt(line.lineNumber) < 442 || parseInt(line.lineNumber) > 455) {
+        //   await this.sublineService.updateSubline(tractate, mishna.chapter, mishna.mishna, line.lineNumber, {
+        //     mainLine: line.mainLine + " testing ",
+        //     sublines: line.sublines
+        //   })
+        // }
+
+      }
+
+
     }
 
   }
