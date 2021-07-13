@@ -5,34 +5,33 @@
 //const jwksUri = `${issuer}/.well-known/jwks.json`;
 //https://cognito-idp.eu-west-1.amazonaws.com/eu-west-1_dwviLBYxz/.well-known/jwks.json
 
-const keys =  [
-    {
-      alg: 'RS256',
-      e: 'AQAB',
-      kid: 'gGCtSpy+VM9p+rr00YeNbx3CtS0csGHAa5B97jd0f8M=',
-      kty: 'RSA',
-      n:
-        '8ni-E-gPCtS_xchgJDnbBGwXBMcYyoKUdJt2q2YnJJO8lvKZB3u_lgbObQe4JYop-VxyKQObUvMWG_m6Z_gXMO4w4eVBvdj9GFXNT-B2exJWYzg3cctsdEeYTzb3rwIqiJ7OQKqT-IgMD0C3bheXVJNuqRO5Vvl2hIKNf9GSATrrWtt-2w-Iz1XfWyu1XYqkh1Exs0FBQws0XuTdIw2Zq8XGB42I7ZPHxiFyxL1NrhV8RzVBixOOhUpaPQGvPhdRTEqvTFHKUy0S0AqhWtK2g5eByXAtbT4ZBsroQa4LI5N_Da0YULm1qId8BlceQfghW3YwjyEAACKpx7nqOkss4Q',
-      use: 'sig',
-    },
-    {
-      alg: 'RS256',
-      e: 'AQAB',
-      kid: 'xIXOuzIw/34sfKOlkRFiAC09zAZbjuo0scNx54Y7GXw=',
-      kty: 'RSA',
-      n:
-        '8_EnLgS23HzP7-KbOrLwRKqfH07kAxKMqACTW0Fytyn0-M2FR_4Ulza6QMlBfmI7Dcd8808_oKnv8Uc2vdIjRzz2VAdlDT_nDCh-BLvcDN0JQS9u2LFh1vSL1yCr66YOE9n9meVk5T1MoZvk14fDLgDQp9bDjOawQSRV-pMkVjpDQG0rK2o4CamOu6SSGXOMd2rnMpRJNb6CfYt4EXB0Qq2MwGN4RjGMNQh6WxZ2bcoCu9Qul3XSXttrKeBwVf4aEexAuGvsceeGzVpWFNPW5rb0XhtC6nrnCMT2kp9RY3gdHwlwTBU5TY1DdK7bPhGGybYshVnjCltxhSMdHPMetw',
-      use: 'sig',
-    },
-  ];
+const keys = [
+  {
+    alg: 'RS256',
+    e: 'AQAB',
+    kid: 'guEmqLrseAlob5hENtcoeRiq3tdAM/nABauWYRhTG0M=',
+    kty: 'RSA',
+    n:
+      '0I1XuwxFPTl_Ex3OWozjDVrWvxMLgzstUXaSSkz697lirjfBSpe7V1ZyBuFnN8aq62peJeZt8ZOIzIZU96RCnotYUQ388Qrtcd0y79Va6iGAPlr-RBcBzaKhl4uakywwYOIaY6Ggp3R78R_sp8NR-XnHvkTdyz_UxEhUTdHTUd-me_hDuZebE3qNoO7yYlVL7z3e65EZh7BpbApDMthNkNDG0DbiiI9s44I2ZzjSpmgfaRmt3b67EodXDRgBJmw6NgoV4REh-1wlNO4dGx9tZZRd8O9q0jWRdgQQyiJAU4b0_vcpGwU5LihjxqpuKODR7E1cHkghMvEfgvvNU1tYQw',
+    use: 'sig',
+  },
+  {
+    alg: 'RS256',
+    e: 'AQAB',
+    kid: 'qEEJToHM7v/Ndu9MLXfb3w0tAekrJXzBeoXNFpvtYLo=',
+    kty: 'RSA',
+    n:
+      'tbXH4HvFVm-dfGcPCxzSAmF6Z6AAvn_2mVABcNXZdh-_N0vQoWkxFN1vYia6n9nCXVwv1VLj7eAWNbD1kb2zLTLGe0UphieTOTwGpg_NOYFB7bSyWDMJnG8ixypItweWlRTEIUcdHjt9hbDH8UQWx7wJ0jzuVxyO3ic2ApjMbjoZ7xNw3bj2E-XIS5BqcD4SSqgcDAEZn1q2OzYTOSMqy1BMAyTn66fnyU246wh5buwh0uX6C62Al9ndm86Px9SE4blRvfUNP4tb5YAYZzZRc8_CwvYJbZr1BD3jwqyiQhaWFVnFsYwNpiBa4XJk4F3Ax96ZSdcRB-8hTVSTXTh4pw',
+    use: 'sig',
+  },
+];
 
-
-export const key =  {
+export const key = {
   alg: 'RS256',
   e: 'AQAB',
-  kid: 'gGCtSpy+VM9p+rr00YeNbx3CtS0csGHAa5B97jd0f8M=',
+  kid: 'guEmqLrseAlob5hENtcoeRiq3tdAM/nABauWYRhTG0M=',
   kty: 'RSA',
   n:
-    '8ni-E-gPCtS_xchgJDnbBGwXBMcYyoKUdJt2q2YnJJO8lvKZB3u_lgbObQe4JYop-VxyKQObUvMWG_m6Z_gXMO4w4eVBvdj9GFXNT-B2exJWYzg3cctsdEeYTzb3rwIqiJ7OQKqT-IgMD0C3bheXVJNuqRO5Vvl2hIKNf9GSATrrWtt-2w-Iz1XfWyu1XYqkh1Exs0FBQws0XuTdIw2Zq8XGB42I7ZPHxiFyxL1NrhV8RzVBixOOhUpaPQGvPhdRTEqvTFHKUy0S0AqhWtK2g5eByXAtbT4ZBsroQa4LI5N_Da0YULm1qId8BlceQfghW3YwjyEAACKpx7nqOkss4Q',
+    '0I1XuwxFPTl_Ex3OWozjDVrWvxMLgzstUXaSSkz697lirjfBSpe7V1ZyBuFnN8aq62peJeZt8ZOIzIZU96RCnotYUQ388Qrtcd0y79Va6iGAPlr-RBcBzaKhl4uakywwYOIaY6Ggp3R78R_sp8NR-XnHvkTdyz_UxEhUTdHTUd-me_hDuZebE3qNoO7yYlVL7z3e65EZh7BpbApDMthNkNDG0DbiiI9s44I2ZzjSpmgfaRmt3b67EodXDRgBJmw6NgoV4REh-1wlNO4dGx9tZZRd8O9q0jWRdgQQyiJAU4b0_vcpGwU5LihjxqpuKODR7E1cHkghMvEfgvvNU1tYQw',
   use: 'sig',
-};
+}
