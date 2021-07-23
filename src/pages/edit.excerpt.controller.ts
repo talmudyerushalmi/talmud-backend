@@ -26,12 +26,14 @@ export class EditMishnaExcerptController {
     @Param('mishna') mishna: string,
     @Body() saveMishnaExcerpt: SaveMishnaExcerptDto,
   ) {
-    return this.mishnaRepository.saveExcerpt(
+    const r = await this.mishnaRepository.saveExcerpt(
       tractate,
       chapter,
       mishna,
       saveMishnaExcerpt,
     );
+     // todo - solve properly
+     return {...r._doc}
   }
   @Delete('/:tractate/:chapter/:mishna/:excerpt')
   async deleteExcerpt(

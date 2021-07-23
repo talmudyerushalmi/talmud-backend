@@ -99,6 +99,28 @@ export class MishnaRepository {
     return 'ok';
 
   }
+  updateExcerptsWithSublineSelect2(
+    mishnaDoc: Mishna,
+  ): void {
+    const excerpts = mishnaDoc.excerpts;
+    for (let i = 0; i < excerpts.length; i++) {
+        const excerpt = excerpts[i];
+        const fromLine = excerpt.selection.fromLine;
+        const toLine = excerpt.selection.toLine;
+        const fromWord = excerpt.selection.fromWord;
+        const toWord = excerpt.selection.toWord;
+        let fromSubline = mishnaDoc.lines[fromLine].sublines.find(l => l.text.indexOf(fromWord)!==-1)
+        if (!fromSubline) {
+            fromSubline = mishnaDoc.lines[fromLine].sublines[0]
+        }
+        let toSubline = mishnaDoc.lines[toLine].sublines.find(l => l.text.indexOf(toWord)!==-1)
+        if (!toSubline) {
+            toSubline = mishnaDoc.lines[toLine].sublines[0]
+        }
+        excerpt.selection.fromSubline = fromSubline?.index;
+        excerpt.selection.toSubline = toSubline?.index;
+      }
+  }
 
   async saveExcerpt(
     tractate: string,
@@ -121,8 +143,8 @@ export class MishnaRepository {
       mishnaDoc.excerpts.push(excerptToSave);
     }
 
-    await mishnaDoc.save();
-    return excerptToSave;
+    this.updateExcerptsWithSublineSelect2(mishnaDoc)
+    return mishnaDoc.save();
   }
 
   async deleteExcerpt(
