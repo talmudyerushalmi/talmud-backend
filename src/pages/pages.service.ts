@@ -125,12 +125,14 @@ export class PagesService {
       mishnaDocument.lines[found] = {
         lineNumber: setLineDto.line,
         mainLine: setLineDto.text,
+        sugiaName: undefined
       };
     } else {
       mishnaDocument.lines.push({
         lineNumber: setLineDto.line,
         originalLineNumber: setLineDto.originalLineNumber,
         mainLine: setLineDto.text,
+        sugiaName: undefined
       });
       mishnaDocument.lines = _.orderBy(
         mishnaDocument.lines,

@@ -29,6 +29,9 @@ export class Line {
 
   sublines?: SubLine[]
 
+  @IsString()
+  sugiaName: string;
+
 };
 
 
