@@ -48,6 +48,13 @@ export class MishnaRepository {
     return this.mishnaModel.find({});
   }
 
+  async forEachMishna(cb: (mishna:Mishna)=>(void)): Promise<void> {
+    const mishnaiot = await this.getAll();
+    for await (const mishna of mishnaiot) {
+      cb(mishna)
+    }
+  }
+
   getAllForTractate(tractate: string): DocumentQuery<Mishna[], any> {
     return this.mishnaModel.find({
       tractate,

@@ -6,12 +6,13 @@ import { SettingsService } from 'src/settings/settings.service';
 import { SettingsModule } from 'src/settings/settings.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Settings, SettingsSchema } from 'src/settings/schemas/settings.schema';
+import { ListService } from './list.service';
 
 @Module({
   imports: [PagesModule, CsvModule, SettingsModule,
     MongooseModule.forFeature([
       { name: Settings.name, schema: SettingsSchema },
     ]),],
-  providers: [ImportService, SettingsService],
+  providers: [ImportService, SettingsService, ListService],
 })
 export class ImportModule {}

@@ -217,7 +217,7 @@ export class ImportService {
       tractate: 'yevamot',
       chapter: '001',
       mishna: '001',
-      line: '00000',
+      line: '00001',
     };
     this.currentTractateDoc = await this.tractateRepo.get('yevamot', true);
     this.currentMishnaIndex = 1;
