@@ -14,6 +14,7 @@ import { Mishna } from 'src/pages/schemas/mishna.schema';
 import MiscUtils from 'src/shared/MiscUtils';
 import { SublineService } from 'src/pages/subline.service';
 import { Synopsis } from 'src/pages/models/line.model';
+import { getTextForSynopsis } from 'src/pages/inc/synopsisUtils';
 @Console()
 @Injectable()
 export class ImportService {
@@ -464,19 +465,6 @@ export class ImportService {
     }
   }
 
-  getTextForSynopsis(str: string): string {
-    const step1 = /(\(שם\)|''|\(.*?,.*?\)|\<.*?\>|\|.*?\||[\.\+:\?\!"{},])/g;
-    const step2 = /[-]/g;
-    const step3 = /\s+/g;
-    return str
-      ? str
-          .replace(step1, '')
-          .replace(step2, ' ')
-          .replace(step3, ' ')
-          .trim()
-      : '';
-  }
-
   @Command({
     command: 'import:synopsis <tractate>',
     description: 'Create synopsis <tractate>',
@@ -515,7 +503,7 @@ export class ImportService {
                 entityRanges: [],
                 inlineStyleRanges: [],
                 key: 'aaaaa',
-                text: this.getTextForSynopsis(subline.text),
+                text: getTextForSynopsis(subline.text),
                 type: 'unstyled',
               },
             ],
@@ -619,7 +607,7 @@ export class ImportService {
                     entityRanges: [],
                     inlineStyleRanges:[],
                     key: "aaaaa",
-                    text: this.getTextForSynopsis(old.text),
+                    text: getTextForSynopsis(old.text),
                     type: 'unstyled'
                   }
                 ],
