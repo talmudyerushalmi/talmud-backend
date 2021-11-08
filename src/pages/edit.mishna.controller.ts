@@ -9,6 +9,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { UpdateLineDto } from './dto/update-line.dto';
+import { UpdateNosachDto } from './dto/update-nosach.dto';
 import { PagesService } from './pages.service';
 import { SublineService } from './subline.service';
 
@@ -48,6 +49,24 @@ export class EditMishnaController {
     @Body() updateLineDto: UpdateLineDto,
   ) {
     return this.sublineService.updateSubline(
+      tractate,
+      chapter,
+      mishna,
+      line,
+      updateLineDto,
+    );
+  }
+
+  @Post('/:tractate/:chapter/:mishna/:line/nosach')
+  @UsePipes(ValidationPipe)
+  async updateNosach(
+    @Param('tractate') tractate: string,
+    @Param('chapter') chapter: string,
+    @Param('mishna') mishna: string,
+    @Param('line') line: string,
+    @Body() updateLineDto: UpdateNosachDto,
+  ) {
+    return this.sublineService.updateSublines(
       tractate,
       chapter,
       mishna,
