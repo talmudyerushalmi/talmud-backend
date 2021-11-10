@@ -37,11 +37,20 @@ export class SublineService {
   ): Promise<Mishna>{
       const mishnaDoc = await this.mishnaRepository.find(tractate, chapter, mishna);
       const lineIndex = mishnaDoc.lines.findIndex(l => l.lineNumber === line);
-      const newSublines = updateNosachDto.lines.map(l => { return {text:l, index:3, synopsis:[]}})
-      mishnaDoc.lines[lineIndex].sublines = newSublines;
+      const lineToUpdate = mishnaDoc.lines[lineIndex];
+      const synopsisToSave = lineToUpdate.sublines[0].synopsis.filter(s => s.type === "indirect_sources")
+      .map( s => {return {...s, text: {content: null, simpleText: ""}}})
+
+     const newSublines = updateNosachDto.lines.map(sublineText => { return {text:sublineText, index:null, synopsis:synopsisToSave}})
+
+      lineToUpdate.sublines = newSublines;
       mishnaDoc.updateSublines();
       mishnaDoc.updateExcerpts();
-      return mishnaDoc.save();
+
+      const res = await mishnaDoc.save();
+      // @ts-ignore
+      return await {...res._doc};
+    // return mishnaDoc;
   }
 
 

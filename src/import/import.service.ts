@@ -512,7 +512,7 @@ export class ImportService {
           const synopsisLeiden: Synopsis = {
             id: 'leiden',
             type: 'direct_sources',
-            text: { content },
+            text: { content, simpleText: subline.text },
             code: 'leiden',
             name: 'כתב יד ליידן',
             button_code: 'leiden',
@@ -521,7 +521,7 @@ export class ImportService {
           const synopsisDfus: Synopsis = {
             id: 'dfus_rishon',
             type: 'direct_sources',
-            text: { content },
+            text: { content, simpleText: subline.text },
             code: 'dfus_rishon',
             name: 'דפוס ראשון',
             button_code: 'dfus_rishon',
@@ -613,7 +613,7 @@ export class ImportService {
                 ],
                 entityMap: []
               }
-              old.text = { content }
+              old.text = { content, simpleText: old.text }
             }
             return old;
           })
