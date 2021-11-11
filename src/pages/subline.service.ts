@@ -7,6 +7,7 @@ import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './mishna.repository';
 import { UpdateLineDto } from './dto/update-line.dto';
 import { UpdateNosachDto } from './dto/update-nosach.dto';
+import { SubLine } from './models/line.model';
 
 
 @Injectable()
@@ -38,12 +39,15 @@ export class SublineService {
       const mishnaDoc = await this.mishnaRepository.find(tractate, chapter, mishna);
       const lineIndex = mishnaDoc.lines.findIndex(l => l.lineNumber === line);
       const lineToUpdate = mishnaDoc.lines[lineIndex];
-      const synopsisToSave = lineToUpdate.sublines[0].synopsis.filter(s => s.type === "indirect_sources")
-      .map( s => {return {...s, text: {content: null, simpleText: ""}}})
+      const sublineToUpdate = lineToUpdate.sublines.find(line => line.index === updateNosachDto.sublineIndex)
+      const synopsisToSave = sublineToUpdate.synopsis
+      const emptySynopsis = synopsisToSave.map( s => {return {...s, text: {content: null, simpleText: ""}}})
+   
+     const newSublines: SubLine[] = updateNosachDto.lines
+     .map(sublineText => { return {text:sublineText, index:null, synopsis:emptySynopsis}})
+     newSublines[0].synopsis = synopsisToSave;
 
-     const newSublines = updateNosachDto.lines.map(sublineText => { return {text:sublineText, index:null, synopsis:synopsisToSave}})
-
-      lineToUpdate.sublines = newSublines;
+      lineToUpdate.sublines.splice(updateNosachDto.sublineIndex-1,1, ...newSublines);
       mishnaDoc.updateSublines();
       mishnaDoc.updateExcerpts();
 
