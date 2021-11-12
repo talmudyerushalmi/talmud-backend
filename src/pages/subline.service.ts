@@ -46,8 +46,10 @@ export class SublineService {
      const newSublines: SubLine[] = updateNosachDto.lines
      .map(sublineText => { return {text:sublineText, index:null, synopsis:emptySynopsis}})
      newSublines[0].synopsis = synopsisToSave;
+     const sublineArrayIndex = lineToUpdate.sublines
+     .findIndex(subline => subline.index === updateNosachDto.sublineIndex)
 
-      lineToUpdate.sublines.splice(updateNosachDto.sublineIndex-1,1, ...newSublines);
+      lineToUpdate.sublines.splice(sublineArrayIndex,1, ...newSublines);
       mishnaDoc.updateSublines();
       mishnaDoc.updateExcerpts();
 
