@@ -39,6 +39,8 @@ export class Mishna extends Document {
   updateSublines: ()=>void
   updateExcerpts: ()=>void
   getSublines: ()=> SubLine[]
+  getSubline: (index: number)=> [SubLine, number]
+  getLineOfSubline: (subline: SubLine) => Line
 }
 
 export const MishnaSchema = SchemaFactory.createForClass(Mishna);
@@ -49,6 +51,22 @@ MishnaSchema.methods.getSublines = function (): SubLine[] {
   return _.flatten(sublines);
 }
 
+MishnaSchema.methods.getLineOfSubline = function (subline: SubLine): Line {
+  const line = this.lines.find(l => {
+     const foundSubline = l.sublines.findIndex(s => s.index === subline.index);
+     return foundSubline !== -1
+  });
+  return line;
+}
+
+MishnaSchema.methods.getSubline = function (index): [SubLine,number] {
+  const sublines = this.getSublines();
+  const subline = sublines.find(s => s.index === index);
+  const lineOfSubline = this.getLineOfSubline(subline)
+  const indexInArray = lineOfSubline.sublines.findIndex(s => s.index===subline.index);
+  
+  return [subline, indexInArray];
+}
 
 
 MishnaSchema.methods.updateSublines = function (): void {

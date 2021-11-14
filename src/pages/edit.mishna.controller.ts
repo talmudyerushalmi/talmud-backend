@@ -2,8 +2,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   UsePipes,
   ValidationPipe,
@@ -72,6 +74,24 @@ export class EditMishnaController {
       mishna,
       line,
       updateLineDto,
+    );
+  }
+
+  @Delete('/:tractate/:chapter/:mishna/:line/:subline')
+  @UsePipes(ValidationPipe)
+  async deleteSubline(
+    @Param('tractate') tractate: string,
+    @Param('chapter') chapter: string,
+    @Param('mishna') mishna: string,
+    @Param('line') line: string,
+    @Param('subline', ParseIntPipe) subline: number,
+  ) {
+    return this.sublineService.deleteSubline(
+      tractate,
+      chapter,
+      mishna,
+      line,
+      subline,
     );
   }
 }
