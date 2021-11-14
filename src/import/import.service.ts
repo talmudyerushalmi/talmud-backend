@@ -15,6 +15,7 @@ import MiscUtils from 'src/shared/MiscUtils';
 import { SublineService } from 'src/pages/subline.service';
 import { Synopsis } from 'src/pages/models/line.model';
 import { getTextForSynopsis } from 'src/pages/inc/synopsisUtils';
+import { createEditorContentFromText, getTextFromEditorContent } from 'src/pages/inc/editorUtils';
 @Console()
 @Injectable()
 export class ImportService {
@@ -481,34 +482,9 @@ export class ImportService {
       console.log(mishna.id);
       for (const line of mishna.lines) {
         console.log(line.lineNumber);
-        // for (const subline of line.sublines) {
-        //   console.log(subline.text)
-        //   console.log(subline.synopsis)
-        // }
         const newSublines = line.sublines;
         newSublines.forEach(subline => {
-          // export class Synopsis {
-          //   text: string;
-          //   type: string;
-          //   name: string;
-          //   id: string;
-          //   code: string;
-          //   button_code: string;
-          //   manuscript: string;
-          // }
-          const content = {
-            blocks: [
-              {
-                data: {},
-                entityRanges: [],
-                inlineStyleRanges: [],
-                key: 'aaaaa',
-                text: getTextForSynopsis(subline.text),
-                type: 'unstyled',
-              },
-            ],
-            entityMap: [],
-          };
+          const content = createEditorContentFromText(getTextForSynopsis(subline.text));
           const synopsisLeiden: Synopsis = {
             id: 'leiden',
             type: 'direct_sources',
@@ -567,6 +543,46 @@ export class ImportService {
   }
 
   @Command({
+    command: 'normalize:synopsis <tractate>',
+    description: 'normalize synopsis <tractate>',
+  })
+  async normalizeSynopsis(tractate: string): Promise<void> {
+    const all = await this.mishnaRepo.getAllForTractate(tractate);
+    for await (const mishna of all) {
+      console.log(mishna.id)
+      for (const line of mishna.lines) {
+        console.log(line.lineNumber)
+
+        const newSublines = line.sublines;
+        newSublines.forEach(subline => {
+
+          subline.synopsis?.forEach(synopsisToupdate => {
+             if (!synopsisToupdate.text.simpleText) {
+              synopsisToupdate.text.simpleText = getTextFromEditorContent(synopsisToupdate.text.content);
+             }
+            return synopsisToupdate;
+          })
+
+        })
+        await this.sublineService.updateSubline(tractate, mishna.chapter, mishna.mishna, line.lineNumber, {
+              mainLine: line.mainLine,
+              sublines: line.sublines
+            })
+        // if (parseInt(line.lineNumber) < 442 || parseInt(line.lineNumber) > 455) {
+        //   await this.sublineService.updateSubline(tractate, mishna.chapter, mishna.mishna, line.lineNumber, {
+        //     mainLine: line.mainLine + " testing ",
+        //     sublines: line.sublines
+        //   })
+        // }
+
+      }
+
+
+    }
+
+  }
+
+  @Command({
     command: 'fix:synopsis <tractate>',
     description: 'fix synopsis <tractate>',
   })
@@ -578,41 +594,14 @@ export class ImportService {
       console.log(mishna.id)
       for (const line of mishna.lines) {
         console.log(line.lineNumber)
-        // for (const subline of line.sublines) {
-        //   console.log(subline.text)
-        //   console.log(subline.synopsis)
-        // }
+
         const newSublines = line.sublines;
         newSublines.forEach(subline => {
-          // export class Synopsis {
-          //   text: string;
-          //   type: string;
-          //   name: string;
-          //   id: string;
-          //   code: string;
-          //   button_code: string;
-          //   manuscript: string;
-          // }
 
-       
-          // if (!subline.synopsis) {subline.synopsis = []}
-          // subline.synopsis.push(synopsisNew);
           const newsynopsis = subline.synopsis?.map(old => {
             if (typeof old.text === "string") {
               console.log('need to convert' , old)
-              const content = {
-                blocks:[
-                  {
-                    data:{},
-                    entityRanges: [],
-                    inlineStyleRanges:[],
-                    key: "aaaaa",
-                    text: getTextForSynopsis(old.text),
-                    type: 'unstyled'
-                  }
-                ],
-                entityMap: []
-              }
+              const content = createEditorContentFromText(getTextForSynopsis(old.text));
               old.text = { content, simpleText: old.text }
             }
             return old;
