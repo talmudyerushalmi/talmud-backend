@@ -566,7 +566,8 @@ export class ImportService {
         })
         await this.sublineService.updateSubline(tractate, mishna.chapter, mishna.mishna, line.lineNumber, {
               mainLine: line.mainLine,
-              sublines: line.sublines
+              sublines: line.sublines,
+              sugiaName: line.sugiaName
             })
         // if (parseInt(line.lineNumber) < 442 || parseInt(line.lineNumber) > 455) {
         //   await this.sublineService.updateSubline(tractate, mishna.chapter, mishna.mishna, line.lineNumber, {
