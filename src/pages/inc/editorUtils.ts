@@ -3,6 +3,7 @@ import { RawDraftContentState } from "draft-js";
 
 
 export function getTextFromEditorContent(content: RawDraftContentState): string{
+    if (content===null) {return ""}
     const t = content.blocks.reduce((carrier,b)=> carrier + " " + b.text,"").trim();
 
     return t
