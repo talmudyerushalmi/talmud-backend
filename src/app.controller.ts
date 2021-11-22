@@ -1,17 +1,12 @@
 import { Controller, Get } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService,
-    private configService: ConfigService
-    ) {}
+  constructor(private readonly appService: AppService) {}
 
   @Get()
   getHello(): string {
-    const dbUser = this.configService.get<string>('DATABASE_USER');
-
-    return this.appService.getHello()+ `${dbUser}`;
+    return this.appService.getHello();
   }
 }
