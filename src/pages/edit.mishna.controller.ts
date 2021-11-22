@@ -11,6 +11,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { UpdateLineDto } from './dto/update-line.dto';
+import { UpdateMishnaDto } from './dto/update-mishna.dto';
 import { UpdateNosachDto } from './dto/update-nosach.dto';
 import { PagesService } from './pages.service';
 import { SublineService } from './subline.service';
@@ -39,6 +40,21 @@ export class EditMishnaController {
       mishnaDoc,
       tractateSettings,
     };
+  }
+
+  @Post('/:tractate/:chapter/:mishna')
+  @UsePipes(ValidationPipe)
+  async updateMishna(
+    @Param('tractate') tractate: string,
+    @Param('chapter') chapter: string,
+    @Param('mishna') mishna: string,
+    @Body() updateMishnaDto: UpdateMishnaDto,
+  ) {
+    const id = `${tractate}_${chapter}_${mishna}`
+    return this.pagesService.saveMishna(
+      id,
+      updateMishnaDto,
+    );
   }
 
   @Post('/:tractate/:chapter/:mishna/:line')

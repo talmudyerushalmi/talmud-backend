@@ -4,6 +4,7 @@ import { IsNotEmpty } from 'class-validator';
 export class UpdateMishnaDto {
   @IsNotEmpty()
   id: string;
-  @IsNotEmpty()
-  lines: Line[];
+  
+  lines?: Line[];
+  mishnaText?: string;
 }

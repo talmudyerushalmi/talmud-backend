@@ -43,6 +43,16 @@ export class PagesService {
     };
   }
 
+  async saveMishna(
+    id: string,
+    updateMishnaDto: UpdateMishnaDto
+  ): Promise<Mishna> {
+    const filter = {
+      id
+    }
+    return this.mishnaModel.findOneAndUpdate(filter,updateMishnaDto,{ new: true }).lean();
+  }
+
   async getTractate(tractate: string): Promise<Tractate> {
     return this.tractateRepository.get(tractate);
   }

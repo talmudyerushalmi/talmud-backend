@@ -68,6 +68,7 @@ export class TractateRepository {
       chapters[indexChapter].mishnaiot.push({
         id: mishnaDocument.id,
         mishna: mishnaDocument.mishna,
+        //@ts-ignore //todo fix
         mishnaRef: mishnaDocument._id,
       });
       chapters[indexChapter].mishnaiot = _.orderBy(
