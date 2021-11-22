@@ -2,11 +2,6 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
 </p>
 
-[travis-image]: https://api.travis-ci.org/nestjs/nest.svg?branch=master
-[travis-url]: https://travis-ci.org/nestjs/nest
-[linux-image]: https://img.shields.io/travis/nestjs/nest/master.svg?label=linux
-[linux-url]: https://travis-ci.org/nestjs/nest
-  
 ## Description
 
 ## Modules used
@@ -40,7 +35,9 @@ $ npm run start:prod
 ```
 
 ## import
+
 For dev:
+
 ```
 ts-node -r tsconfig-paths/register src/console.ts
 ```
@@ -48,11 +45,15 @@ ts-node -r tsconfig-paths/register src/console.ts
 ```
 node dist/console.js
 ```
+
 import all
+
 ```
 node dist/console.js import:tractates ./entire.txt
 ```
+
 import sublines
+
 ```
 node dist/console.js import:sublines ./sub_lines.txt
 ```
@@ -70,7 +71,13 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-## Support
+For debugging
+
+`nest start --debug --watch`
+
+##
+
+Support
 
 Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
 
@@ -82,4 +89,9 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 ## License
 
-  Nest is [MIT licensed](LICENSE).
+Nest is [MIT licensed](LICENSE).
+
+[travis-image]: https://api.travis-ci.org/nestjs/nest.svg?branch=master
+[travis-url]: https://travis-ci.org/nestjs/nest
+[linux-image]: https://img.shields.io/travis/nestjs/nest/master.svg?label=linux
+[linux-url]: https://travis-ci.org/nestjs/nest
