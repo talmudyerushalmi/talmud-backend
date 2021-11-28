@@ -1,5 +1,5 @@
 import { IsString, IsBoolean, IsNumber, IsObject, IsOptional } from 'class-validator';
-import { iSelection } from '../models/mishna.excerpt.model';
+import { ExcerptSelection } from '../models/excerptSelection.model';
 
 
 export class SaveMishnaExcerptDto {
@@ -30,7 +30,7 @@ export class SaveMishnaExcerptDto {
   @IsObject()
   editorStateComments:Record<string, unknown>;
   @IsObject()
-  selection: iSelection;
+  selection: ExcerptSelection;
   @IsOptional()
   automaticImport?: boolean;
 

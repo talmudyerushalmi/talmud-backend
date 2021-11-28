@@ -1,16 +1,21 @@
 import { IsNotEmpty, IsString, IsBoolean } from 'class-validator';
+import { SaveMishnaExcerptDto } from '../dto/save-mishna-excerpt.dto';
+import { ExcerptSelection } from './excerptSelection.model';
 
-export interface iSelection {
-  fromLine: number;
-  fromSubline?: number;
-  fromWord: string;
-  fromOffset: number;
-  toLine: number;
-  toSubline?: number;
-  toWord: string;
-  toOffset: number;
-}
 export class MishnaExcerpt {
+  constructor(m: SaveMishnaExcerptDto){
+    this.key = m.key;
+    this.type = m.type;
+    this.seeReference = m.seeReference;
+    this.source = m.source;
+    this.sourceLocation = m.sourceLocation;
+    this.editorStateFullQuote = m.editorStateFullQuote;
+    this.editorStateShortQuote = m.editorStateShortQuote;
+    this.synopsis = m.synopsis;
+    this.editorStateComments = m.editorStateComments;
+    this.selection = new ExcerptSelection(m.selection);
+    this.automaticImport = m.automaticImport;
+  }
   key: number;
   type: string;
   @IsBoolean()
@@ -25,7 +30,7 @@ export class MishnaExcerpt {
   @IsString()
   synopsis: string;
   editorStateComments:Record<string, unknown>;
-  selection: iSelection;
+  selection: ExcerptSelection;
   automaticImport?: boolean;
 
 };

@@ -4,6 +4,7 @@ import { Line, SubLine } from '../models/line.model';
 import { ObjectID } from 'mongodb';
 import { MishnaLink } from '../models/mishna.link.model';
 import { MishnaExcerpt } from '../models/mishna.excerpt.model';
+import { ExcerptSelection } from '../models/excerptSelection.model';
 import * as _ from 'lodash';
 import { RawDraftContentState } from 'draft-js';
  
@@ -86,20 +87,11 @@ MishnaSchema.methods.updateSublines = function (): void {
 MishnaSchema.methods.updateExcerpts = function (): void {
     for (let i = 0; i < this.excerpts.length; i++) {
         const excerpt = this.excerpts[i];
-        const fromLine = excerpt.selection.fromLine;
-        const toLine = excerpt.selection.toLine;
-        const fromWord = excerpt.selection.fromWord;
-        const toWord = excerpt.selection.toWord;
-        let fromSubline = this.lines[fromLine].sublines.find(l => l.text.indexOf(fromWord)!==-1)
-        if (!fromSubline) {
-            fromSubline = this.lines[fromLine].sublines[0]
-        }
-        let toSubline = this.lines[toLine].sublines.find(l => l.text.indexOf(toWord)!==-1)
-        if (!toSubline) {
-            toSubline = this.lines[toLine].sublines[0]
-        }
-        excerpt.selection.fromSubline = fromSubline?.index;
-        excerpt.selection.toSubline = toSubline?.index;
+        const fromLine = this.lines[excerpt.selection.fromLine];
+        const toLine = this.lines[excerpt.selection.toLine];
+        const s =  new ExcerptSelection(excerpt.selection);
+        s.updateSublines(fromLine,toLine);
+        excerpt.selection = s;
       }
       this.markModified('excerpts');
     }
