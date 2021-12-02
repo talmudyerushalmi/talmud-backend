@@ -28,12 +28,13 @@ export class ListService {
   async listEmptyLinks(): Promise<void> {
     console.log('list empty links')
     const reverse = (str)=> str;
-    const checkLinks = (m: Mishna) => {
+    const checkLinks = (m: Mishna): Promise<void> => {
       const emptyLinks = m?.excerpts.filter(e=> e.type!=='NOSACH' &&  (e.source === undefined ||
          e.source.title === undefined));
       emptyLinks.forEach(emptyLink => {
         console.log('missing: ', reverse(emptyLink.sourceLocation))
       })
+      return Promise.resolve()
     }
     await this.mishnaRepo.forEachMishna(checkLinks)
   }
