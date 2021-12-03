@@ -40,7 +40,7 @@ export class Mishna extends Document {
   @Prop({default: []})
   excerpts?: MishnaExcerpt[]
 
-  updateSublines: ()=>void
+  updateSublinesIndex: ()=>void
   updateExcerpts: ()=>void
   getSublines: ()=> SubLine[]
   getSubline: (index: number)=> [SubLine, number]
@@ -74,7 +74,7 @@ MishnaSchema.methods.getSubline = function (index): [SubLine,number] {
 }
 
 
-MishnaSchema.methods.updateSublines = function (): void {
+MishnaSchema.methods.updateSublinesIndex = function (): void {
   let index = 1;
   this.lines.forEach(line => {
     line.sublines.forEach(subline => {

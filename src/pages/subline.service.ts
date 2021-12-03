@@ -10,7 +10,6 @@ import { UpdateNosachDto } from './dto/update-nosach.dto';
 import { SubLine } from './models/line.model';
 import {
   addBlockToContentState,
-  createContentFromBlock,
   createEditorContentFromText,
 } from './inc/editorUtils';
 
@@ -63,11 +62,11 @@ export class SublineService {
       return { ...s, text: { content: null, simpleText: '' } };
     });
 
-    const newSublines: SubLine[] = updateNosachDto.nosach.blocks.map(block => {
+    const newSublines: SubLine[] = updateNosachDto.nosach.map( (sublineNosach, index) => {
       return {
-        text: block.text,
+        text: updateNosachDto.nosachText[index],
         index: null,
-        nosach: createContentFromBlock(block, updateNosachDto.nosach.entityMap),
+        nosach: sublineNosach,
         synopsis: emptySynopsis,
       };
     });
@@ -75,9 +74,8 @@ export class SublineService {
     const sublineArrayIndex = lineToUpdate.sublines.findIndex(
       subline => subline.index === updateNosachDto.sublineIndex,
     );
-
     lineToUpdate.sublines.splice(sublineArrayIndex, 1, ...newSublines);
-    mishnaDoc.updateSublines();
+    mishnaDoc.updateSublinesIndex();
     mishnaDoc.updateExcerpts();
 
     const res = await mishnaDoc.save();
@@ -121,7 +119,7 @@ export class SublineService {
     // delete
     mishnaDoc.lines[lineIndex].sublines.splice(indexInLine, 1);
 
-    mishnaDoc.updateSublines();
+    mishnaDoc.updateSublinesIndex();
     mishnaDoc.updateExcerpts();
 
     const res = await mishnaDoc.save();

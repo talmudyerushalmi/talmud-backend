@@ -2,5 +2,6 @@ import { RawDraftContentState } from "draft-js";
 
 export class UpdateNosachDto {
   sublineIndex: number;
-  nosach: RawDraftContentState;
+  nosach: RawDraftContentState[];
+  nosachText: string[];
 }
