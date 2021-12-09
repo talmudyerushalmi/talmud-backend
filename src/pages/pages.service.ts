@@ -44,11 +44,11 @@ export class PagesService {
   }
 
   async saveMishna(
-    id: string,
+    guid: string,
     updateMishnaDto: UpdateMishnaDto
   ): Promise<Mishna> {
     const filter = {
-      id
+      guid
     }
     return this.mishnaModel.findOneAndUpdate(filter,updateMishnaDto,{ new: true }).lean();
   }
@@ -77,12 +77,12 @@ export class PagesService {
     mishna: string,
     createMishnaDto: CreateMishnaDto,
   ): Promise<Mishna> {
-    const id = this.mishnaRepository.getID(tractate, chapter, mishna);
+    const guid = this.mishnaRepository.getGUID(tractate, chapter, mishna);
 
     const mishnaDocument = await this.mishnaModel.findOneAndUpdate(
-      { id },
+      { guid },
       {
-        id,
+        guid,
         tractate,
         chapter,
         mishna,

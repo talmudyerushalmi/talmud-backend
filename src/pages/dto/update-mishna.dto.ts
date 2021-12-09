@@ -3,8 +3,7 @@ import { IsNotEmpty } from 'class-validator';
 
 export class UpdateMishnaDto {
   @IsNotEmpty()
-  id: string;
-  
+  guid: string;
   lines?: Line[];
   mishnaText?: string;
 }

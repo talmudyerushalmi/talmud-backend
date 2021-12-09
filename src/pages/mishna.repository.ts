@@ -10,7 +10,7 @@ import { SaveMishnaExcerptDto } from './dto/save-mishna-excerpt.dto';
 export class MishnaRepository {
   constructor(@InjectModel(Mishna.name) private mishnaModel: Model<Mishna>) {}
 
-  getID(tractate: string, chapter: string, mishna: string): string {
+  getGUID(tractate: string, chapter: string, mishna: string): string {
     return `${tractate}_${chapter}_${mishna}`;
   }
 
@@ -19,8 +19,8 @@ export class MishnaRepository {
     chapter: string,
     mishna: string,
   ): QueryWithHelpers<Mishna, any> {
-    const id = this.getID(tractate, chapter, mishna);
-    return this.mishnaModel.findOne({ id });
+    const guid = this.getGUID(tractate, chapter, mishna);
+    return this.mishnaModel.findOne({ guid });
   }
 
   findByLine(tractate: string, line: string): QueryWithHelpers<Mishna, any> {

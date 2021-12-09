@@ -11,10 +11,7 @@ import { RawDraftContentState } from 'draft-js';
 export class Mishna extends Document {
 
   @Prop()
-  _id: ObjectID;
-
-  @Prop()
-  id: string;
+  guid: string;
 
   @Prop()
   tractate: string;
