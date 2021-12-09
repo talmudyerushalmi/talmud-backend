@@ -31,6 +31,7 @@
     "class-validator": "^0.13.2",
     "commander": "^5.1.0",
     "config": "^3.3.6",
+    "draft-js": "^0.11.7",
     "express-jwt": "^6.0.0",
     "jwks-rsa": "^2.0.3",
     "lodash": "^4.17.15",
