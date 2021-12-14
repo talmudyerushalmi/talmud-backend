@@ -3,10 +3,12 @@ import { IsNotEmpty, IsString, IsBoolean } from 'class-validator';
 export interface iSelection {
   fromLine: number;
   fromSubline?: number;
+  fromSublineOffset?: number;
   fromWord: string;
   fromOffset: number;
   toLine: number;
   toSubline?: number;
+  toSublineOffset?: number;
   toWord: string;
   toOffset: number;
 }

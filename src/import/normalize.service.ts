@@ -33,15 +33,14 @@ export class NormalizeService {
         return l;
       }
       l.sublines = l.sublines.map(subline=>{
-        if (subline.nosach) {
-          return subline
-        } else {
+       
           const cleanText = subline.text.replace(/[\n\r]+/g, '')
           return {
             ...subline,
+            text: cleanText,
             nosach: createEditorContentFromText(cleanText)
           }
-        }
+        
       })
       return l;
     };

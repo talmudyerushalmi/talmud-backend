@@ -5,6 +5,7 @@ import { Model, QueryWithHelpers } from 'mongoose';
 import { LineMarkDto } from './dto/line-mark.dto';
 import * as numeral from 'numeral';
 import { SaveMishnaExcerptDto } from './dto/save-mishna-excerpt.dto';
+import { ExcerptUtils } from './inc/excerptUtils';
 
 @Injectable()
 export class MishnaRepository {
@@ -109,21 +110,22 @@ export class MishnaRepository {
   ): void {
     const excerpts = mishnaDoc.excerpts;
     for (let i = 0; i < excerpts.length; i++) {
-        const excerpt = excerpts[i];
-        const fromLine = excerpt.selection.fromLine;
-        const toLine = excerpt.selection.toLine;
-        const fromWord = excerpt.selection.fromWord;
-        const toWord = excerpt.selection.toWord;
-        let fromSubline = mishnaDoc.lines[fromLine].sublines.find(l => l.text.indexOf(fromWord)!==-1)
-        if (!fromSubline) {
-            fromSubline = mishnaDoc.lines[fromLine].sublines[0]
-        }
-        let toSubline = mishnaDoc.lines[toLine].sublines.find(l => l.text.indexOf(toWord)!==-1)
-        if (!toSubline) {
-            toSubline = mishnaDoc.lines[toLine].sublines[0]
-        }
-        excerpt.selection.fromSubline = fromSubline?.index;
-        excerpt.selection.toSubline = toSubline?.index;
+
+        // const excerpt = excerpts[i];
+        // const fromLine = excerpt.selection.fromLine;
+        // const toLine = excerpt.selection.toLine;
+        // const fromWord = excerpt.selection.fromWord;
+        // const toWord = excerpt.selection.toWord;
+        // let fromSubline = mishnaDoc.lines[fromLine].sublines.find(l => l.text.indexOf(fromWord)!==-1)
+        // if (!fromSubline) {
+        //     fromSubline = mishnaDoc.lines[fromLine].sublines[0]
+        // }
+        // let toSubline = mishnaDoc.lines[toLine].sublines.find(l => l.text.indexOf(toWord)!==-1)
+        // if (!toSubline) {
+        //     toSubline = mishnaDoc.lines[toLine].sublines[0]
+        // }
+        // excerpt.selection.fromSubline = fromSubline?.index;
+        // excerpt.selection.toSubline = toSubline?.index;
       }
   }
 
@@ -134,21 +136,23 @@ export class MishnaRepository {
     excerptToSave: SaveMishnaExcerptDto,
   ): Promise<any> {
     const mishnaDoc = await this.find(tractate, chapter, mishna);
-
+    const lineFrom = mishnaDoc.lines[excerptToSave.selection.fromLine]
+    const lineTo = mishnaDoc.lines[excerptToSave.selection.toLine]
+    new ExcerptUtils(excerptToSave).calculateSublineSelection(lineFrom, lineTo);
     if (excerptToSave.key) {
       const indexExcerpt = mishnaDoc.excerpts.findIndex(
         excerpt => excerpt.key === excerptToSave.key,
       );
       if (indexExcerpt !== -1) {
         mishnaDoc.excerpts[indexExcerpt] = excerptToSave;
-        mishnaDoc.markModified('excerpts');
       }
     } else {
       excerptToSave.key = Date.now();
       mishnaDoc.excerpts.push(excerptToSave);
     }
 
-    this.updateExcerptsWithSublineSelect2(mishnaDoc)
+    mishnaDoc.markModified('excerpts');
+    // this.updateExcerptsWithSublineSelect2(mishnaDoc)
     return mishnaDoc.save();
   }
 
