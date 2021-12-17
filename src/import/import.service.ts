@@ -261,9 +261,13 @@ export class ImportService {
         selection: {
           fromLine,
           fromWord,
+          fromWordOccurence:1,
+          fromWordTotal:1,
           fromOffset,
           toLine,
           toWord,
+          toWordOccurence:1,
+          toWordTotal:1,
           toOffset,
         },
         type: 'MUVAA',

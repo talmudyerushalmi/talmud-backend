@@ -39,10 +39,12 @@ export class Mishna extends Document {
 
   updateSublinesIndex: ()=>void
   updateExcerpts: ()=>void
+  getLineText: (index: number)=>string
   getSublines: ()=> SubLine[]
   getSubline: (index: number)=> [SubLine, number]
   getLineOfSubline: (subline: SubLine) => Line
   normalizeLines: (eachLine:(line:Line)=>void)=>Promise<void>
+  normalizeExcerpts: (eachExcerpt:(excerpt: MishnaExcerpt, mishna: Mishna)=>void)=>Promise<void>
 }
 
 export const MishnaSchema = SchemaFactory.createForClass(Mishna);
@@ -81,6 +83,13 @@ MishnaSchema.methods.updateSublinesIndex = function (): void {
   this.markModified('lines');
 };
 
+MishnaSchema.methods.getLineText = function (index: number): string {
+  const line = this.lines[index];
+  return line.sublines.reduce((carry,subline)=>{
+    return carry + " " + subline.text;
+  },"")
+}
+
 // find excerpt that select the line that was updated
 
 MishnaSchema.methods.updateExcerpts = function (): void {
@@ -110,5 +119,14 @@ MishnaSchema.methods.normalizeLines = async function (normalizeLine:(line:Line)=
          this.lines[i] = normalizeLine(this.lines[i])
       }
       this.markModified('lines');
+      await this.save();
+    }
+
+MishnaSchema.methods.normalizeExcerpts = async function (normalizeExcerpt:(excerpt:MishnaExcerpt, mishna: Mishna)=>MishnaExcerpt): Promise<void> {
+      for (let i = 0; i < this.excerpts.length; i++) {
+         console.log('Normalizing excerpt ',i)
+         this.excerpts[i] = normalizeExcerpt(this.excerpts[i], this)
+      }
+      this.markModified('excerpts');
       await this.save();
     }

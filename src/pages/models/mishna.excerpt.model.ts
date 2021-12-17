@@ -5,11 +5,15 @@ export interface iSelection {
   fromSubline?: number;
   fromSublineOffset?: number;
   fromWord: string;
+  fromWordOccurence: number;
+  fromWordTotal: number;
   fromOffset: number;
   toLine: number;
   toSubline?: number;
   toSublineOffset?: number;
   toWord: string;
+  toWordOccurence: number;
+  toWordTotal: number;
   toOffset: number;
 }
 export class MishnaExcerpt {
@@ -29,6 +33,7 @@ export class MishnaExcerpt {
   editorStateComments:Record<string, unknown>;
   selection: iSelection;
   automaticImport?: boolean;
+  flagNeedUpdate?: boolean;
 
 };
 
