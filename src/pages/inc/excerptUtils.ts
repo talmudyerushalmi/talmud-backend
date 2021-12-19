@@ -76,7 +76,9 @@ export class ExcerptUtils {
   constructor(private excerpt: MishnaExcerpt) {}
 
   static getWordsInText(text: string, wordToSearch: string){
-    const words = _.words(text);
+    let pattern = /[א-ת\"'><]+/g;
+    const words = _.words(text,pattern);
+
     return words.filter(word => word === wordToSearch).length;
   }
 
