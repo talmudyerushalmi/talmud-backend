@@ -1,5 +1,7 @@
-import { Line } from '../models/line.model';
+import { Line, SubLine } from '../models/line.model';
 import { MishnaExcerpt } from '../models/mishna.excerpt.model';
+import { Mishna } from '../schemas/mishna.schema';
+import * as _ from 'lodash';
 
 function getSublineAddition(offset: number, newNosach: string[]): number {
   let line;
@@ -54,9 +56,36 @@ function getOffsetAddition(oldNosach: string[], newNosach: string[]): number {
   return sublines - 1;
 }
 
+function getSublineIndex(wordSelection: string, occurence:number, line: Line) : [number, number] {
+  let subline: SubLine;
+  let index = 0;
+  let found = 0;
+  let words = [];
+  let sublineWordCount = occurence;
+  let wordsInSubline;
+  do {
+    subline = line.sublines[index];
+    wordsInSubline = ExcerptUtils.getWordsInText(subline.text, wordSelection);
+    found+= wordsInSubline;
+    sublineWordCount-= wordsInSubline
+    index++;
+  } while (index < line.sublines.length && found<occurence);
+  return [subline.index, sublineWordCount+wordsInSubline];
+}
 export class ExcerptUtils {
   constructor(private excerpt: MishnaExcerpt) {}
-  updateExcerptSubline(sublineIndex: number, newNosach: string[]): void {
+
+  static getWordsInText(text: string, wordToSearch: string){
+    const words = _.words(text);
+    return words.filter(word => word === wordToSearch).length;
+  }
+
+  updateExcerptSubline(fromLine: Line, toLine: Line): void {
+    [this.excerpt.selection.fromSubline, this.excerpt.selection.fromWordOccurenceSubline]= getSublineIndex(this.excerpt.selection.fromWord, this.excerpt.selection.fromWordOccurence, fromLine);
+    [this.excerpt.selection.toSubline, this.excerpt.selection.toWordOccurenceSubline] = getSublineIndex(this.excerpt.selection.toWord, this.excerpt.selection.toWordOccurence, toLine);
+  }
+
+  updateExcerptSublineold(sublineIndex: number, newNosach: string[]): void {
     const added = newNosach.length - 1;
     if (this.excerpt.selection.fromSubline > sublineIndex) {
       this.excerpt.selection.fromSubline += added;

@@ -6,14 +6,16 @@ export interface iSelection {
   fromSublineOffset?: number;
   fromWord: string;
   fromWordOccurence: number;
-  fromWordTotal: number;
+  fromWordOccurenceSubline?: number;
+  fromWordTotal?: number;
   fromOffset: number;
   toLine: number;
   toSubline?: number;
   toSublineOffset?: number;
   toWord: string;
   toWordOccurence: number;
-  toWordTotal: number;
+  toWordOccurenceSubline?: number;
+  toWordTotal?: number;
   toOffset: number;
 }
 export class MishnaExcerpt {

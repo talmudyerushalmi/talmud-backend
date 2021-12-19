@@ -11,6 +11,7 @@ import { Mishna } from 'src/pages/schemas/mishna.schema';
 import { Line } from 'src/pages/models/line.model';
 import { createEditorContentFromText } from 'src/pages/inc/editorUtils';
 import { MishnaExcerpt } from 'src/pages/models/mishna.excerpt.model';
+import { ExcerptUtils } from 'src/pages/inc/excerptUtils';
 @Console()
 @Injectable()
 export class NormalizeService {
@@ -62,14 +63,17 @@ export class NormalizeService {
   async NormalizeExcerpt(): Promise<void> {
     const normalizeExcerpt = (l:MishnaExcerpt, mishna: Mishna)=>{
       try {
-        const fromLine = mishna.getLineText(l.selection.fromLine);
-        const regex = new RegExp(l.selection.fromWord,"g");
-        const fromWordTotal = (fromLine.match(regex) || []).length;
+        const fromLine = mishna.lines[l.selection.fromLine]
+        const fromLineText = mishna.getLineText(l.selection.fromLine);
+        const fromWordTotal = ExcerptUtils.getWordsInText(fromLineText, l.selection.fromWord);
         l.selection.fromWordTotal = fromWordTotal;
-        const toLine = mishna.getLineText(l.selection.toLine);
-        const regexTo = new RegExp(l.selection.toWord,"g");
-        const toWordTotal = (toLine.match(regexTo) || []).length;
+        const toLine = mishna.lines[l.selection.toLine];
+        const toLineText = mishna.getLineText(l.selection.toLine);
+        const toWordTotal = ExcerptUtils.getWordsInText(toLineText, l.selection.toWord);
         l.selection.toWordTotal = toWordTotal;
+        l.selection.fromWordOccurence = 1;
+        l.selection.toWordOccurence = 1;
+        new ExcerptUtils(l).updateExcerptSubline(fromLine, toLine)
       }
       catch(e){
         console.log(`excerpt failure ${mishna.guid}`, l);
@@ -77,8 +81,7 @@ export class NormalizeService {
       }
 
 
-      l.selection.fromWordOccurence = 1;
-      l.selection.toWordOccurence = 1;
+     
       return l;
     };
     const normalizeExcerpts = async (m: Mishna) => {

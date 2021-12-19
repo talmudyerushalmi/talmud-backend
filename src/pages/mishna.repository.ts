@@ -138,7 +138,7 @@ export class MishnaRepository {
     const mishnaDoc = await this.find(tractate, chapter, mishna);
     const lineFrom = mishnaDoc.lines[excerptToSave.selection.fromLine]
     const lineTo = mishnaDoc.lines[excerptToSave.selection.toLine]
-    new ExcerptUtils(excerptToSave).calculateSublineSelection(lineFrom, lineTo);
+    new ExcerptUtils(excerptToSave).updateExcerptSubline(lineFrom, lineTo);
     if (excerptToSave.key) {
       const indexExcerpt = mishnaDoc.excerpts.findIndex(
         excerpt => excerpt.key === excerptToSave.key,
@@ -152,7 +152,6 @@ export class MishnaRepository {
     }
 
     mishnaDoc.markModified('excerpts');
-    // this.updateExcerptsWithSublineSelect2(mishnaDoc)
     return mishnaDoc.save();
   }
 

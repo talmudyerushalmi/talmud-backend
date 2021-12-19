@@ -6,7 +6,8 @@ import { MishnaLink } from '../models/mishna.link.model';
 import { MishnaExcerpt } from '../models/mishna.excerpt.model';
 import * as _ from 'lodash';
 import { RawDraftContentState } from 'draft-js';
- 
+import { ExcerptUtils } from '../inc/excerptUtils'
+
 @Schema()
 export class Mishna extends Document {
 
@@ -93,25 +94,24 @@ MishnaSchema.methods.getLineText = function (index: number): string {
 // find excerpt that select the line that was updated
 
 MishnaSchema.methods.updateExcerpts = function (): void {
-    // for (let i = 0; i < this.excerpts.length; i++) {
-    //     const excerpt = this.excerpts[i];
-    //     const fromLine = excerpt.selection.fromLine;
-    //     const toLine = excerpt.selection.toLine;
-    //     const fromWord = excerpt.selection.fromWord;
-    //     const toWord = excerpt.selection.toWord;
-    //     let fromSubline = this.lines[fromLine].sublines.find(l => l.text.indexOf(fromWord)!==-1)
-    //     if (!fromSubline) {
-    //         fromSubline = this.lines[fromLine].sublines[0]
-    //     }
-    //     let toSubline = this.lines[toLine].sublines.find(l => l.text.indexOf(toWord)!==-1)
-    //     if (!toSubline) {
-    //         toSubline = this.lines[toLine].sublines[0]
-    //     }
-    //     excerpt.selection.fromSubline = fromSubline?.index;
-    //     excerpt.selection.toSubline = toSubline?.index;
-    //   }
-    //   this.markModified('excerpts');
+     for (let i = 0; i < this.excerpts.length; i++) {
+         const excerpt = this.excerpts[i];
+         const fromLine = this.lines[excerpt.selection.fromLine];
+         const toLine = this.lines[excerpt.selection.toLine];
+         const fromWord = excerpt.selection.fromWord;
+         const toWord = excerpt.selection.toWord;
+         try {
+          new ExcerptUtils(excerpt).updateExcerptSubline(fromLine, toLine);
+          console.log('updated ',excerpt)
+
+         }
+         catch(e){
+           console.log(e, excerpt)
+         }
+
+       this.markModified('excerpts');
     }
+  }
 
 MishnaSchema.methods.normalizeLines = async function (normalizeLine:(line:Line)=>Line): Promise<void> {
       for (let i = 0; i < this.lines.length; i++) {
