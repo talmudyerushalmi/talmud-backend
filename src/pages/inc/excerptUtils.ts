@@ -76,7 +76,7 @@ export class ExcerptUtils {
   constructor(private excerpt: MishnaExcerpt) {}
 
   static stripCharacters(text: string): string {
-    const pattern = /[^א-ת\s]/g;
+    const pattern = /[^א-ת\s']/g;
     return text.replace(pattern,'');
   }
   static getWordsInText(text: string, wordToSearch: string){
