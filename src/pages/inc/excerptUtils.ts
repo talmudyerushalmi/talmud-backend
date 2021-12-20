@@ -75,9 +75,14 @@ function getSublineIndex(wordSelection: string, occurence:number, line: Line) : 
 export class ExcerptUtils {
   constructor(private excerpt: MishnaExcerpt) {}
 
+  static stripCharacters(text: string): string {
+    const pattern = /[^א-ת\s]/g;
+    return text.replace(pattern,'');
+  }
   static getWordsInText(text: string, wordToSearch: string){
-    let pattern = /[א-ת\"'><]+/g;
-    const words = _.words(text,pattern);
+    const stripped = ExcerptUtils.stripCharacters(text);
+    let pattern = /[א-ת\"'><[\]]+/g;
+    const words = _.words(stripped,pattern);
 
     return words.filter(word => word === wordToSearch).length;
   }
