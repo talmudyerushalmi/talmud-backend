@@ -76,7 +76,10 @@ export class NormalizeService {
         l.selection.fromWordOccurence = 1;
         l.selection.toWordOccurence = 1;
         if ((fromLineText.indexOf(l.selection.fromWord)===-1)||(toLineText.indexOf(l.selection.toWord)===-1)) {
-          l.flagNeedUpdate = true;
+          l.selection.fromWord = ExcerptUtils.getWords(fromLineText)[0];
+          const toWords =  ExcerptUtils.getWords(fromLineText);
+          l.selection.toWord = toWords[toWords.length-1];
+          delete l.flagNeedUpdate;
         }
         new ExcerptUtils(l).updateExcerptSubline(fromLine, toLine)
       }
