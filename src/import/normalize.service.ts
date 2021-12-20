@@ -75,6 +75,9 @@ export class NormalizeService {
         l.selection.toWordTotal = toWordTotal;
         l.selection.fromWordOccurence = 1;
         l.selection.toWordOccurence = 1;
+        if ((fromLineText.indexOf(l.selection.fromWord)===-1)||(toLineText.indexOf(l.selection.toWord)===-1)) {
+          l.flagNeedUpdate = true;
+        }
         new ExcerptUtils(l).updateExcerptSubline(fromLine, toLine)
       }
       catch(e){
