@@ -63,6 +63,8 @@ export class NormalizeService {
   async NormalizeExcerpt(): Promise<void> {
     const normalizeExcerpt = (l:MishnaExcerpt, mishna: Mishna)=>{
       try {
+        l.selection.fromWord = ExcerptUtils.stripCharacters(l.selection.fromWord);
+        l.selection.toWord = ExcerptUtils.stripCharacters(l.selection.toWord);
         const fromLine = mishna.lines[l.selection.fromLine]
         const fromLineText = mishna.getLineText(l.selection.fromLine);
         const fromWordTotal = ExcerptUtils.getWordsInText(fromLineText, l.selection.fromWord);
