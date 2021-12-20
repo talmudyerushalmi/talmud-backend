@@ -79,10 +79,16 @@ export class ExcerptUtils {
     const pattern = /[^א-ת\s']/g;
     return text.replace(pattern,'');
   }
-  static getWordsInText(text: string, wordToSearch: string){
+
+  static getWords(text: string): string[] {
     const stripped = ExcerptUtils.stripCharacters(text);
     let pattern = /[א-ת\"'><[\]]+/g;
     const words = _.words(stripped,pattern);
+    return words;
+  }
+  static getWordsInText(text: string, wordToSearch: string){
+  
+    const words = ExcerptUtils.getWords(text);
 
     return words.filter(word => word === wordToSearch).length;
   }
