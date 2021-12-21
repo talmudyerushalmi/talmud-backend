@@ -76,7 +76,9 @@ export class ExcerptUtils {
   constructor(private excerpt: MishnaExcerpt) {}
 
   static stripCharacters(text: string): string {
-    const pattern = /[^א-ת\s']/g;
+    const quotesOutside = /^"*([א-ת\s']+)"*$/g; // remove quotes marks and return the word they surround (leave quotes inside)
+    text = text.replace(quotesOutside,"$1");
+    const pattern = /[^א-ת\s'"]/g;
     return text.replace(pattern,'');
   }
 

@@ -56,6 +56,8 @@ export class NormalizeService {
     }
     await this.mishnaRepo.forEachMishna(normalizeNosach)
   }
+
+
   @Command({
     command: 'normalize:excerpts',
     description: 'Normalize excerpts',
@@ -75,11 +77,30 @@ export class NormalizeService {
         l.selection.toWordTotal = toWordTotal;
         l.selection.fromWordOccurence = 1;
         l.selection.toWordOccurence = 1;
-        if ((fromLineText.indexOf(l.selection.fromWord)===-1)||(toLineText.indexOf(l.selection.toWord)===-1)) {
-          l.selection.fromWord = ExcerptUtils.getWords(fromLineText)[0];
-          const toWords =  ExcerptUtils.getWords(fromLineText);
-          l.selection.toWord = toWords[toWords.length-1];
+
+        const pattern = /[\(\)]/g;
+        let allGood = true;
+        if (fromLineText.indexOf(l.selection.fromWord)===-1) {
+          const fromWord = ExcerptUtils.getWords(fromLineText)[0];
+          if (fromWord.match(pattern)) {
+            allGood = false;
+          } else {
+            l.selection.fromWord = fromWord
+          }
+        }
+        if (toLineText.indexOf(l.selection.toWord)===-1) {
+          const toWords =  ExcerptUtils.getWords(toLineText);
+          const toWord = toWords[toWords.length-1];
+          if (toWord.match(pattern)) {
+            allGood = false;
+          } else {
+            l.selection.toWord = toWord
+          }
+        }
+        if (allGood) {
           delete l.flagNeedUpdate;
+        } else {
+          l.flagNeedUpdate = true;
         }
         new ExcerptUtils(l).updateExcerptSubline(fromLine, toLine)
       }
