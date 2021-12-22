@@ -78,31 +78,17 @@ export class NormalizeService {
         l.selection.fromWordOccurence = 1;
         l.selection.toWordOccurence = 1;
 
-        const pattern = /[\(\)]/g;
-        let allGood = true;
         if (fromLineText.indexOf(l.selection.fromWord)===-1) {
-          const fromWord = ExcerptUtils.getWords(fromLineText)[0];
-          if (fromWord.match(pattern)) {
-            allGood = false;
-          } else {
-            l.selection.fromWord = fromWord
-          }
+          l.selection.fromWord = "";
+          l.selection.fromSubline = fromLine.sublines[0].index;
         }
         if (toLineText.indexOf(l.selection.toWord)===-1) {
-          const toWords =  ExcerptUtils.getWords(toLineText);
-          const toWord = toWords[toWords.length-1];
-          if (toWord.match(pattern)) {
-            allGood = false;
-          } else {
-            l.selection.toWord = toWord
-          }
+          l.selection.toWord = "";
+          l.selection.toSubline = toLine.sublines[toLine.sublines.length-1].index;
         }
-        if (allGood) {
-          delete l.flagNeedUpdate;
-        } else {
-          l.flagNeedUpdate = true;
+        if  (l.selection.fromWord && l.selection.toWord) {
+          new ExcerptUtils(l).updateExcerptSubline(fromLine, toLine)
         }
-        new ExcerptUtils(l).updateExcerptSubline(fromLine, toLine)
       }
       catch(e){
         console.log(`excerpt failure ${mishna.guid}`, l);
