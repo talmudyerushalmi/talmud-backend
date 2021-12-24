@@ -29,6 +29,12 @@ export class Mishna extends Document {
   @Prop({type: SchemaTypes.Mixed})
   richTextMishna: RawDraftContentState;
 
+  @Prop({type: SchemaTypes.Mixed})
+  richTextTosefta: RawDraftContentState;
+
+  @Prop({type: SchemaTypes.Mixed})
+  richTextBavli: RawDraftContentState;
+
   @Prop()
   previous?: MishnaLink
 
