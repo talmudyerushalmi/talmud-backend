@@ -77,6 +77,7 @@ export class ListService {
     let nosach = 0;
     let biblio = 0;
     let explanatory = 0;
+    let sublines = 0;
     const checkExcerpts = async (m: Mishna): Promise<void> => {
       const muvaot = m?.excerpts.filter(e=> e.type==='MUVAA').length;
       const makbilot = m?.excerpts.filter(e=> e.type==='MAKBILA').length;
@@ -85,6 +86,10 @@ export class ListService {
       nosach+= m?.excerpts.filter(e=> e.type==='NOSACH').length;
       explanatory+=m?.excerpts.filter(e=> e.type==='EXPLANATORY').length;
       biblio+=m?.excerpts.filter(e=> e.type==='BIBLIO').length;
+      try {
+        sublines = m.lines.reduce((v,l)=>l?.sublines?.length+v,sublines)
+      }
+      catch(e){}
       return Promise.resolve()
     }
    
@@ -94,6 +99,7 @@ export class ListService {
     console.log('total nosach ', nosach)
     console.log('total biblio ', biblio)
     console.log('total explanatory ', explanatory)
+    console.log('total sublines ', sublines)
   }
 
 
