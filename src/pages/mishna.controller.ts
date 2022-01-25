@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   Param,
   Post,
   Put,
@@ -25,6 +26,17 @@ export class MishnaController {
   ) {
     return this.pagesService.getMishna(tractate, chapter, mishna);
   }
+
+  @Get('/:tractate/:chapter/:mishna/tei')
+  @Header("Content-type","text/xml")
+  getMishnaTEI(
+    @Param('tractate') tractate: string,
+    @Param('chapter') chapter: string,
+    @Param('mishna') mishna: string,
+  ) {
+    return this.pagesService.getMishnaTEI(tractate, chapter, mishna);
+  }
+
   @Get('/:tractate/:chapter')
   getChapter(
     @Param('tractate') tractate: string,

@@ -41,10 +41,13 @@
     "mongoose": "^6.1.0",
     "nest-csv-parser": "^2.0.4",
     "nestjs-console": "^7.0.1",
+    "npm": "^8.3.2",
     "numeral": "^2.0.6",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.4.0"
+    "rxjs": "^7.4.0",
+    "xmlbuilder": "^15.1.1",
+    "xmlbuilder2": "^3.0.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^8.1.5",

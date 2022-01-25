@@ -14,7 +14,7 @@ import { tractateSettings } from './inc/tractates.settings';
 import { synopsisList } from './inc/tractates.synopsis';
 import * as numeral from 'numeral';
 import { MishnaLink } from './models/mishna.link.model';
-import { sortBy } from 'lodash';
+import { create } from 'xmlbuilder2';
 
 export interface iTractate {
   title_eng: string;
@@ -36,6 +36,61 @@ export class PagesService {
   ): Promise<Mishna> {
     return this.mishnaRepository.find(tractate, chapter, mishna).lean();
   }
+
+  async getMishnaTEI(
+    tractate: string,
+    chapter: string,
+    mishna: string,
+  ): Promise<any> {
+    const m = await this.mishnaRepository.find(tractate, chapter, mishna);
+    const root = create().ele('tei').att('xmls','http://www.tei-c.org/ns/1.0');
+    root.ele('teiHeader')
+      .ele('titleStmt')
+        .ele('title').txt('Talmud Yerushalmi - Digital Critical Edition').up()
+        .ele('respStmt')
+          .ele('name').txt('Prof. Menachem Katz').up()
+          .ele('resp').txt('Editor').up().up()
+        .ele('respStmt')
+          .ele('name').txt('Dr. Hillel Gershuni').up()
+          .ele('resp').txt('Co-Editor').up().up()
+        .ele('respStmt')
+          .ele('name').txt('Yaron Bar').up()
+          .ele('resp').txt('Developer').up().up()
+      .up()
+
+
+    const text = root.ele('text');
+
+      m.lines.forEach( l => {
+            const lineTEI = text.ele('l');
+            if (l.sugiaName) {
+              text.ele('title').att('type','sub').txt(l.sugiaName)
+            }
+            l.sublines.forEach((subline) => {
+              const sublineTEI = lineTEI.ele('s');
+
+              const appTEI = sublineTEI.ele('app');
+
+              appTEI.ele('lem').txt(subline.text)
+              subline.synopsis.forEach(synopsis =>{
+                if (synopsis.text.simpleText) {
+                  appTEI.ele('rdg')
+                  .att('wit',`#${synopsis.id}`)
+                  .txt(synopsis.text.simpleText)
+                }
+              })
+            });
+
+
+          })
+
+// convert the XML tree to string
+const xml = root.end({ prettyPrint: true });
+
+
+    return xml;
+  }
+
   async getChapter(tractate: string, chapter: string): Promise<any> {
     return {
       tractate,
@@ -45,12 +100,14 @@ export class PagesService {
 
   async saveMishna(
     guid: string,
-    updateMishnaDto: UpdateMishnaDto
+    updateMishnaDto: UpdateMishnaDto,
   ): Promise<Mishna> {
     const filter = {
-      guid
-    }
-    return this.mishnaModel.findOneAndUpdate(filter,updateMishnaDto,{ new: true }).lean();
+      guid,
+    };
+    return this.mishnaModel
+      .findOneAndUpdate(filter, updateMishnaDto, { new: true })
+      .lean();
   }
 
   async getTractate(tractate: string): Promise<Tractate> {
@@ -135,14 +192,14 @@ export class PagesService {
       mishnaDocument.lines[found] = {
         lineNumber: setLineDto.line,
         mainLine: setLineDto.text,
-        sugiaName: undefined
+        sugiaName: undefined,
       };
     } else {
       mishnaDocument.lines.push({
         lineNumber: setLineDto.line,
         originalLineNumber: setLineDto.originalLineNumber,
         mainLine: setLineDto.text,
-        sugiaName: undefined
+        sugiaName: undefined,
       });
       mishnaDocument.lines = _.orderBy(
         mishnaDocument.lines,
