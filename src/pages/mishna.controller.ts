@@ -7,12 +7,14 @@ import {
   Param,
   Post,
   Put,
+  Res,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { PagesService } from './pages.service';
 import { CreateMishnaDto } from './dto/create-mishna.dto';
 import { UpdateMishnaLineDto } from './dto/save-mishna-line.dto';
+import { Response } from 'express';
 
 @Controller('mishna')
 export class MishnaController {
@@ -29,12 +31,13 @@ export class MishnaController {
 
   @Get('/:tractate/:chapter/:mishna/tei')
   @Header("Content-type","text/xml")
-  @Header("Content-Disposition",`attachment; filename="tei.xml"`)
   getMishnaTEI(
     @Param('tractate') tractate: string,
     @Param('chapter') chapter: string,
     @Param('mishna') mishna: string,
+    @Res({ passthrough: true }) res: Response
   ) {
+    res.setHeader("Content-Disposition",`attachment; filename="tei_${tractate}_${chapter}_${mishna}.xml"`)
     return this.pagesService.getMishnaTEI(tractate, chapter, mishna);
   }
 
