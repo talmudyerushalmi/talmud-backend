@@ -29,6 +29,7 @@ export class MishnaController {
 
   @Get('/:tractate/:chapter/:mishna/tei')
   @Header("Content-type","text/xml")
+  @Header("Content-Disposition",`attachment; filename="tei.xml"`)
   getMishnaTEI(
     @Param('tractate') tractate: string,
     @Param('chapter') chapter: string,
