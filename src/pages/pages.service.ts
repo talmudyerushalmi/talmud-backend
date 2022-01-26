@@ -52,7 +52,7 @@ export class PagesService {
           .ele('resp').txt('Editor').up().up()
         .ele('respStmt')
           .ele('name').txt('Dr. Hillel Gershuni').up()
-          .ele('resp').txt('Co-Editor').up().up()
+          .ele('resp').txt('Editor').up().up()
         .ele('respStmt')
           .ele('name').txt('Yaron Bar').up()
           .ele('resp').txt('Developer').up().up()
