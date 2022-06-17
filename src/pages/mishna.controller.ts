@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Res,
   UsePipes,
   ValidationPipe,
@@ -15,6 +16,8 @@ import { PagesService } from './pages.service';
 import { CreateMishnaDto } from './dto/create-mishna.dto';
 import { UpdateMishnaLineDto } from './dto/save-mishna-line.dto';
 import { Response } from 'express';
+import { GetChapterDTO } from './dto/get-chapter.dto';
+
 
 @Controller('mishna')
 export class MishnaController {
@@ -45,8 +48,9 @@ export class MishnaController {
   getChapter(
     @Param('tractate') tractate: string,
     @Param('chapter') chapter: string,
+    @Query() query: GetChapterDTO
   ) {
-    return this.pagesService.getChapter(tractate, chapter);
+    return this.pagesService.getChapter(tractate, chapter, query.mishna);
   }
   @Get('/:tractate')
   getTractate(@Param('tractate') tractate: string) {
@@ -61,7 +65,6 @@ export class MishnaController {
     @Param('mishna') mishna: string,
     @Body() createMishnaDto: CreateMishnaDto,
   ) {
-    console.log(createMishnaDto);
     return this.pagesService.upsertMishna(
       tractate,
       chapter,

@@ -14,6 +14,8 @@ import { SettingsModule } from 'src/settings/settings.module';
 import { TractatesController } from './tractates/tractates.controller';
 import { SublineService } from './subline.service';
 import { AuthMiddleware } from 'src/middleware/auth';
+import { NavigationtController } from './navigation.controller';
+import { NavigationService } from './navigation.service';
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -26,9 +28,11 @@ import { AuthMiddleware } from 'src/middleware/auth';
   ],
   controllers: [
     TractatesController,
+    NavigationtController,
     MishnaController, EditMishnaController, EditMishnaExcerptController],
   providers: [
     PagesService,
+    NavigationService,
     SublineService,
     TractateRepository,
     MishnaRepository,

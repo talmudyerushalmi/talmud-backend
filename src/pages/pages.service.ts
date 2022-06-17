@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Tractate } from './schemas/tractate.schema';
@@ -91,10 +91,26 @@ const xml = root.end({ prettyPrint: true });
     return xml;
   }
 
-  async getChapter(tractate: string, chapter: string): Promise<any> {
+  async getChapter(tractate: string, chapter: string, mishna = 1): Promise<any> {
+    const mishnaiot = await this.mishnaRepository.getAllChapter(tractate, chapter);
+    const mishnaDocument = mishnaiot[mishna-1]
+    if (!mishnaDocument) {
+      throw new BadRequestException('Mishna not found');
+    }
+    const richTextsMishnas = mishnaiot.map((m: Mishna) => {
+      return {
+      mishna: m.mishna,  
+      richTextMishna: m.richTextMishna
+    }})
+
     return {
       tractate,
       chapter,
+      totalMishnaiot: mishnaiot.length,
+      richTextsMishnas,
+      //@ts-ignore
+      mishnaDocument: {...mishnaDocument._doc},
+      mishna
     };
   }
 

@@ -24,6 +24,17 @@ export class MishnaRepository {
     return this.mishnaModel.findOne({ guid });
   }
 
+  getAllChapter(
+    tractate: string,
+    chapter: string
+  ): QueryWithHelpers<Mishna[], any> {
+    return this.mishnaModel.find({
+      tractate,
+      chapter
+     
+    })
+  }
+
   findByLine(tractate: string, line: string): QueryWithHelpers<Mishna, any> {
     return this.mishnaModel.findOne({ tractate, 'lines.lineNumber': line });
   }
