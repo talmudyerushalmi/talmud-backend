@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Mishna } from './schemas/mishna.schema';
@@ -54,6 +54,9 @@ export class SublineService {
     );
     const lineIndex = mishnaDoc.lines.findIndex(l => l.lineNumber === line);
     const lineToUpdate = mishnaDoc.lines[lineIndex];
+    if (!lineToUpdate.sublines) {
+      throw new HttpException("Sublines empty!", HttpStatus.UNPROCESSABLE_ENTITY)
+    }
     const sublineToUpdate = lineToUpdate.sublines.find(
       line => line.index === updateNosachDto.sublineIndex,
     );
