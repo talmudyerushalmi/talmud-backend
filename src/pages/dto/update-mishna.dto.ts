@@ -1,9 +1,11 @@
 import { Line } from '../models/line.model';
-import { IsNotEmpty } from 'class-validator';
+import { IsArray, IsNotEmpty, IsString } from 'class-validator';
 
 export class UpdateMishnaDto {
   @IsNotEmpty()
   guid: string;
+  @IsArray()
   lines?: Line[];
+  @IsString()
   mishnaText?: string;
 }
