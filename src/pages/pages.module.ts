@@ -16,11 +16,17 @@ import { SublineService } from './subline.service';
 import { AuthMiddleware } from 'src/middleware/auth';
 import { NavigationtController } from './navigation.controller';
 import { NavigationService } from './navigation.service';
+import { RelatedController } from './related.controller';
+import { RelatedService } from './related.service';
+import { Related } from './models/related.model';
+import { RelatedSchema } from './schemas/related.schema';
+import { RelatedRepository } from './related.repository';
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Tractate.name, schema: TractateSchema },
-      { name: Mishna.name, schema: MishnaSchema }
+      { name: Mishna.name, schema: MishnaSchema },
+      { name: Related.name, schema: RelatedSchema}
 
     ]),
     ConsoleModule,
@@ -29,13 +35,16 @@ import { NavigationService } from './navigation.service';
   controllers: [
     TractatesController,
     NavigationtController,
+    RelatedController,
     MishnaController, EditMishnaController, EditMishnaExcerptController],
   providers: [
     PagesService,
+    RelatedService,
     NavigationService,
     SublineService,
     TractateRepository,
     MishnaRepository,
+    RelatedRepository
   ],
   exports: [PagesService, SublineService, TractateRepository,MishnaRepository]
 })
