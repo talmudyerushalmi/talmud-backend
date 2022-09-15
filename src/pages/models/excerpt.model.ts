@@ -28,7 +28,8 @@ export class ExcerptMishna {
   editorStateComments:Record<string, unknown>;
   @IsBoolean()
   automaticImport: boolean
-
+  @IsString()
+  link: string;
 };
 
 

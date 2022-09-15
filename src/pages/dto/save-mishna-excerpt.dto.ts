@@ -1,4 +1,4 @@
-import { IsString, IsBoolean, IsNumber, IsObject, IsOptional } from 'class-validator';
+import { IsString, IsBoolean, IsNumber, IsObject, IsOptional, IsUrl } from 'class-validator';
 import { iSelection } from '../models/mishna.excerpt.model';
 
 
@@ -33,7 +33,9 @@ export class SaveMishnaExcerptDto {
   selection: iSelection;
   @IsOptional()
   automaticImport?: boolean;
-
+  @IsString()
+  @IsOptional()
+  link?: string;
 };
 
 
