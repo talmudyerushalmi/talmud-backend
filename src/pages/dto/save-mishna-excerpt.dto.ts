@@ -21,9 +21,6 @@ export class SaveMishnaExcerptDto {
   @IsObject()
   editorStateFullQuote: Record<string, unknown>;
   @IsOptional()
-  @IsObject()
-  editorStateShortQuote : Record<string, unknown>;
-  @IsOptional()
   @IsString()
   synopsis: string;
   @IsOptional()
@@ -36,6 +33,9 @@ export class SaveMishnaExcerptDto {
   @IsString()
   @IsOptional()
   link?: string;
+  @IsString()
+  @IsOptional()
+  short?: string;
 };
 
 

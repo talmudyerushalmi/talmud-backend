@@ -22,7 +22,6 @@ export class ExcerptMishna {
   @IsString()
   sourceLocation: string;
   editorStateFullQuote: Record<string, unknown>;
-  editorStateShortQuote : Record<string, unknown>;
   @IsString()
   synopsis: string;
   editorStateComments:Record<string, unknown>;
@@ -30,6 +29,8 @@ export class ExcerptMishna {
   automaticImport: boolean
   @IsString()
   link: string;
+  @IsString()
+  short: string;
 };
 
 

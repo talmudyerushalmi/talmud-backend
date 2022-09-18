@@ -68,7 +68,7 @@ export class MishnaRepository {
   getAllForTractate(tractate: string): QueryWithHelpers<Mishna[], any> {
     return this.mishnaModel.find({
       tractate,
-    });
+    },null, {sort: {chapter:1}});
   }
 
   async deleteImportedExcerpts(tractate: string): Promise<void> {
