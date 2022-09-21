@@ -256,7 +256,6 @@ export class ImportService {
         automaticImport: true,
         editorStateFullQuote: excerpt.formatContent(excerpt.excerpt),
         editorStateComments: excerpt.formatContent(''),
-        editorStateShortQuote: excerpt.formatContent(''),
         synopsis: '',
         selection: {
           fromLine,

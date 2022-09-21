@@ -29,7 +29,6 @@ export class MishnaExcerpt {
   @IsString()
   sourceLocation: string;
   editorStateFullQuote: Record<string, unknown>;
-  editorStateShortQuote : Record<string, unknown>;
   @IsString()
   synopsis: string;
   editorStateComments:Record<string, unknown>;
