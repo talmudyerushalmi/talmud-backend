@@ -631,4 +631,18 @@ export class ImportService {
     }
 
   }
+
+
+  @Command({
+    command: 'create:sublines <tractate>',
+    description: 'Create sublines from lines',
+  })
+  async createSublines(tractate: string): Promise<void> {
+    const r = this.mishnaRepo.getAllForTractate(tractate);
+    await this.mishnaRepo.forEachMishna(async (mishna: Mishna)=>{
+      await mishna.createSublineFromLine()
+    }, tractate)
+
+  }
+
 }
