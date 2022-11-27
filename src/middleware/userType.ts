@@ -3,10 +3,13 @@ import { Request, Response } from 'express';
 import * as jsonwebtoken from 'jsonwebtoken';
 import * as jwkToPem from 'jwk-to-pem';
 import { key } from './keys';
-import { UserType } from './userType';
 
+export enum UserType {
+  Editor,
+  Visitor,
+}
 @Injectable()
-export class AuthMiddleware implements NestMiddleware {
+export class UserMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: Function): any {
     const autoken = req.headers.authorization;
     const token = autoken && autoken.split(' ')[1];
@@ -15,14 +18,9 @@ export class AuthMiddleware implements NestMiddleware {
       err,
       decodedToken,
     ) {
-      const userType = res.locals.userType;
-      if (userType == UserType.Editor) {
-        next();
-      } else {
-        res.status(401).json({
-          error: new Error('Invalid request!'),
-        });
-      }
+      res.locals.userType = decodedToken ? UserType.Editor : UserType.Visitor
+      res.locals.user = decodedToken
+      next();
     });
   }
 }

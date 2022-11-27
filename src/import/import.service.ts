@@ -15,7 +15,10 @@ import MiscUtils from 'src/shared/MiscUtils';
 import { SublineService } from 'src/pages/subline.service';
 import { Synopsis } from 'src/pages/models/line.model';
 import { getTextForSynopsis } from 'src/pages/inc/synopsisUtils';
-import { createEditorContentFromText, getTextFromEditorContent } from 'src/pages/inc/editorUtils';
+import {
+  createEditorContentFromText,
+  getTextFromEditorContent,
+} from 'src/pages/inc/editorUtils';
 @Console()
 @Injectable()
 export class ImportService {
@@ -260,13 +263,13 @@ export class ImportService {
         selection: {
           fromLine,
           fromWord,
-          fromWordOccurence:1,
-          fromWordTotal:1,
+          fromWordOccurence: 1,
+          fromWordTotal: 1,
           fromOffset,
           toLine,
           toWord,
-          toWordOccurence:1,
-          toWordTotal:1,
+          toWordOccurence: 1,
+          toWordTotal: 1,
           toOffset,
         },
         type: 'MUVAA',
@@ -487,7 +490,9 @@ export class ImportService {
         console.log(line.lineNumber);
         const newSublines = line.sublines;
         newSublines.forEach(subline => {
-          const content = createEditorContentFromText(getTextForSynopsis(subline.text));
+          const content = createEditorContentFromText(
+            getTextForSynopsis(subline.text),
+          );
           const synopsisLeiden: Synopsis = {
             id: 'leiden',
             type: 'direct_sources',
@@ -552,38 +557,40 @@ export class ImportService {
   async normalizeSynopsis(tractate: string): Promise<void> {
     const all = await this.mishnaRepo.getAllForTractate(tractate);
     for await (const mishna of all) {
-      console.log(mishna.id)
+      console.log(mishna.id);
       for (const line of mishna.lines) {
-        console.log(line.lineNumber)
+        console.log(line.lineNumber);
 
         const newSublines = line.sublines;
         newSublines.forEach(subline => {
-
           subline.synopsis?.forEach(synopsisToupdate => {
-             if (!synopsisToupdate.text.simpleText) {
-              synopsisToupdate.text.simpleText = getTextFromEditorContent(synopsisToupdate.text.content);
-             }
+            if (!synopsisToupdate.text.simpleText) {
+              synopsisToupdate.text.simpleText = getTextFromEditorContent(
+                synopsisToupdate.text.content,
+              );
+            }
             return synopsisToupdate;
-          })
-
-        })
-        await this.sublineService.updateSubline(tractate, mishna.chapter, mishna.mishna, line.lineNumber, {
-              mainLine: line.mainLine,
-              sublines: line.sublines,
-              sugiaName: line.sugiaName
-            })
+          });
+        });
+        await this.sublineService.updateSubline(
+          tractate,
+          mishna.chapter,
+          mishna.mishna,
+          line.lineNumber,
+          {
+            mainLine: line.mainLine,
+            sublines: line.sublines,
+            sugiaName: line.sugiaName,
+          },
+        );
         // if (parseInt(line.lineNumber) < 442 || parseInt(line.lineNumber) > 455) {
         //   await this.sublineService.updateSubline(tractate, mishna.chapter, mishna.mishna, line.lineNumber, {
         //     mainLine: line.mainLine + " testing ",
         //     sublines: line.sublines
         //   })
         // }
-
       }
-
-
     }
-
   }
 
   @Command({
@@ -591,47 +598,49 @@ export class ImportService {
     description: 'fix synopsis <tractate>',
   })
   async fixSynopsis(tractate: string): Promise<void> {
-    console.log('fixing excerpt for sublines...',tractate);
+    console.log('fixing excerpt for sublines...', tractate);
     // now when the data is complete update the next/previous links
     const all = await this.mishnaRepo.getAllForTractate(tractate);
     for await (const mishna of all) {
-      console.log(mishna.id)
+      console.log(mishna.id);
       for (const line of mishna.lines) {
-        console.log(line.lineNumber)
+        console.log(line.lineNumber);
 
         const newSublines = line.sublines;
         newSublines.forEach(subline => {
-
           const newsynopsis = subline.synopsis?.map(old => {
-            if (typeof old.text === "string") {
-              console.log('need to convert' , old)
-              const content = createEditorContentFromText(getTextForSynopsis(old.text));
-              old.text = { content, simpleText: old.text }
+            if (typeof old.text === 'string') {
+              console.log('need to convert', old);
+              const content = createEditorContentFromText(
+                getTextForSynopsis(old.text),
+              );
+              old.text = { content, simpleText: old.text };
             }
             return old;
-          })
+          });
 
           subline.synopsis = newsynopsis;
-          console.log('new ', subline.synopsis)
-        })
-        await this.sublineService.updateSubline(tractate, mishna.chapter, mishna.mishna, line.lineNumber, {
-              mainLine: line.mainLine,
-              sublines: line.sublines
-            })
+          console.log('new ', subline.synopsis);
+        });
+        await this.sublineService.updateSubline(
+          tractate,
+          mishna.chapter,
+          mishna.mishna,
+          line.lineNumber,
+          {
+            mainLine: line.mainLine,
+            sublines: line.sublines,
+          },
+        );
         // if (parseInt(line.lineNumber) < 442 || parseInt(line.lineNumber) > 455) {
         //   await this.sublineService.updateSubline(tractate, mishna.chapter, mishna.mishna, line.lineNumber, {
         //     mainLine: line.mainLine + " testing ",
         //     sublines: line.sublines
         //   })
         // }
-
       }
-
-
     }
-
   }
-
 
   @Command({
     command: 'create:sublines <tractate>',
@@ -639,10 +648,8 @@ export class ImportService {
   })
   async createSublines(tractate: string): Promise<void> {
     const r = this.mishnaRepo.getAllForTractate(tractate);
-    await this.mishnaRepo.forEachMishna(async (mishna: Mishna)=>{
-      await mishna.createSublineFromLine()
-    }, tractate)
-
+    await this.mishnaRepo.forEachMishna(async (mishna: Mishna) => {
+      await mishna.createSublineFromLine();
+    }, tractate);
   }
-
 }

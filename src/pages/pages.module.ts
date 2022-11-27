@@ -2,7 +2,7 @@ import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { MishnaController } from './mishna.controller';
 import { PagesService } from './pages.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import {  MishnaSchema } from './schemas/mishna.schema';
+import { MishnaSchema } from './schemas/mishna.schema';
 import { Tractate, TractateSchema } from './schemas/tractate.schema';
 import { ConsoleModule } from 'nestjs-console';
 import { Mishna } from './schemas/mishna.schema';
@@ -21,22 +21,25 @@ import { RelatedService } from './related.service';
 import { Related } from './models/related.model';
 import { RelatedSchema } from './schemas/related.schema';
 import { RelatedRepository } from './related.repository';
+import { UserMiddleware } from 'src/middleware/userType';
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Tractate.name, schema: TractateSchema },
       { name: Mishna.name, schema: MishnaSchema },
-      { name: Related.name, schema: RelatedSchema}
-
+      { name: Related.name, schema: RelatedSchema },
     ]),
     ConsoleModule,
-    SettingsModule
+    SettingsModule,
   ],
   controllers: [
     TractatesController,
     NavigationtController,
     RelatedController,
-    MishnaController, EditMishnaController, EditMishnaExcerptController],
+    MishnaController,
+    EditMishnaController,
+    EditMishnaExcerptController,
+  ],
   providers: [
     PagesService,
     RelatedService,
@@ -44,14 +47,17 @@ import { RelatedRepository } from './related.repository';
     SublineService,
     TractateRepository,
     MishnaRepository,
-    RelatedRepository
+    RelatedRepository,
   ],
-  exports: [PagesService, SublineService, TractateRepository,MishnaRepository]
+  exports: [PagesService, SublineService, TractateRepository, MishnaRepository],
 })
 export class PagesModule {
-  configure(consumer: MiddlewareConsumer):void {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer
+      .apply(UserMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
     consumer
       .apply(AuthMiddleware)
-      .forRoutes({ path: 'edit/*', method: RequestMethod.ALL })
+      .forRoutes({ path: 'edit/*', method: RequestMethod.ALL });
   }
 }

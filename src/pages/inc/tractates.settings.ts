@@ -73,6 +73,7 @@ export const tractateSettings = {
         "kricha_5"]
     },
     yevamot: {
+        public: true,
         synopsisAllowed: ["leiden", "dfus_rishon", "kricha_2"]
     },
     sota: {
