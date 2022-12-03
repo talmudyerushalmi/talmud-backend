@@ -20,15 +20,15 @@ import { CreateMishnaDto } from './dto/create-mishna.dto';
 import { UpdateMishnaLineDto } from './dto/save-mishna-line.dto';
 import { GetChapterDTO } from './dto/get-chapter.dto';
 import { tractateSettings } from './inc/tractates.settings';
-import { UserType } from 'src/middleware/userType';
+import { UserGroup, UserType } from 'src/middleware/userType';
 import { Response as ResponseFromExpress } from 'express';
 
 @Controller('mishna')
 export class MishnaController {
   constructor(private pagesService: PagesService) {}
 
-  private throwIfForbidden(tractate: string, userType: UserType) {
-    const canView = tractateSettings[tractate].public || userType === UserType.Editor;
+  private throwIfForbidden(tractate: string, userGroup: UserGroup) {
+    const canView = tractateSettings[tractate].public || userGroup === UserGroup.Editor;
     if (!canView) {
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
     }
@@ -41,7 +41,7 @@ export class MishnaController {
     @Param('mishna') mishna: string,
     @Response() res,
   ) {
-    this.throwIfForbidden(tractate, res.locals.userType);
+    this.throwIfForbidden(tractate, res.locals.userGroup);
     const mishnaDoc = await this.pagesService.getMishna(
       tractate,
       chapter,
