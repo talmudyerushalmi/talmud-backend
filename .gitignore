@@ -35,6 +35,8 @@ lerna-debug.log*
 
 config/local.yml
 config/production.yml
+config/dev.json
+config/production.json
 /dump
 restore.sh
 .env
