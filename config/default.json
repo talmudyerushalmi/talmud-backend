@@ -1,0 +1,16 @@
+{
+    "test":"default",
+    "db": {
+        "connection": "mongodb://localhost:27017/talmud?authSource=admin",
+        "user": "user",
+        "password": "root"
+    },
+    "cognito": {
+        "alg": "RS256",
+        "e": "AQAB",
+        "kid": "000",
+        "kty": "RSA",
+        "n": "--",
+        "use": "sig"
+    }
+}

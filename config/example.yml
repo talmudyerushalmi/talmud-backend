@@ -1,4 +1,0 @@
-db:
-  connection: mongodb://localhost:27017/talmud?authSource=admin
-  user: user
-  password: root
