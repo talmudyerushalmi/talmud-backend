@@ -81,7 +81,7 @@ export const tractateSettings = {
         "kricha_5"]
     },
     ketubbot: {
-        synopsisAllowed: ["leiden", "likutim_1"]
+        synopsisAllowed: ["leiden", "likutim_l_1"]
     },
     nedarim: {
         synopsisAllowed: ["leiden"]

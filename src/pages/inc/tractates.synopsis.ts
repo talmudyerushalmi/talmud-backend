@@ -107,6 +107,12 @@ export const synopsisList = {
         name: "גניזה יא׳",
         button_code: "gniza_11",
     },
+    kricha_1: {
+        type: "direct_sources",
+        code: "kricha", 
+        button_code: "kricha_1",
+        name: "קטע כריכה א׳",
+    },
     kricha_2: {
         type: "direct_sources",
         code: "kricha", 
@@ -130,6 +136,24 @@ export const synopsisList = {
         code: "kricha", 
         button_code: "kricha_5",
         name: "קטע כריכה ה׳",
+    },
+    kricha_6: {
+        type: "direct_sources",
+        code: "kricha", 
+        button_code: "kricha_5",
+        name: "קטע כריכה ו׳",
+    },
+    kricha_7: {
+        type: "direct_sources",
+        code: "kricha", 
+        button_code: "kricha_7",
+        name: "קטע כריכה ז׳",
+    },
+    kricha_8: {
+        type: "direct_sources",
+        code: "kricha", 
+        button_code: "kricha_8",
+        name: "קטע כריכה ח׳",
     },
     kricha_13: {
         type: "direct_sources",
