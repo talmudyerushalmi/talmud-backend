@@ -1,6 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Mixed } from 'mongoose';
 
+export class CompositionItem {
+  title: string;
+  secondary_title?:string;
+  date: string;
+  type: string;
+  author?: string;
+  edition?: string;
+}
+
 @Schema()
 export class Settings extends Document {
   @Prop()
