@@ -6,6 +6,4 @@ export class UpdateLineDto {
   mainLine: any;  
   @IsArray()
   sublines: SubLine[];
-  @IsString()
-  sugiaName?: string;
 }

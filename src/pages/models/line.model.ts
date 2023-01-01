@@ -21,6 +21,7 @@ export interface EditedText {
 export class SubLine {
   text: string;
   index: number;
+  sugiaName?: string;
   nosach: RawDraftContentState;
   synopsis: Synopsis[]
 }

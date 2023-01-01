@@ -35,7 +35,6 @@ export class SublineService {
     );
     const lineIndex = mishnaDoc.lines.findIndex(l => l.lineNumber === line);
     mishnaDoc.lines[lineIndex].sublines = updateLineDto.sublines;
-    mishnaDoc.lines[lineIndex].sugiaName = updateLineDto.sugiaName;
     mishnaDoc.markModified('lines');
     return mishnaDoc.save();
   }
