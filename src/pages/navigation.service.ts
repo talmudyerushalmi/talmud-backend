@@ -29,7 +29,7 @@ export class NavigationService {
   if (!mishnaDoc) {
     throw new HttpException("Could not find mishna", 404)
   }
-  const lines = mishnaDoc?.lines.map( l => {return l.lineNumber})
+  const lines = mishnaDoc?.lines.map( l => {return {lineNumber:l.lineNumber, mainLine: l.mainLine}})
   return {
     lines,
     previous: mishnaDoc.previous,

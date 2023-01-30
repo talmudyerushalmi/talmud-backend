@@ -6,6 +6,7 @@ import { LineMarkDto } from './dto/line-mark.dto';
 import * as numeral from 'numeral';
 import { SaveMishnaExcerptDto } from './dto/save-mishna-excerpt.dto';
 import { ExcerptUtils } from './inc/excerptUtils';
+import { InternalLink } from './models/line.model';
 
 @Injectable()
 export class MishnaRepository {
@@ -26,13 +27,12 @@ export class MishnaRepository {
 
   getAllChapter(
     tractate: string,
-    chapter: string
+    chapter: string,
   ): QueryWithHelpers<Mishna[], any> {
     return this.mishnaModel.find({
       tractate,
-      chapter
-     
-    })
+      chapter,
+    });
   }
 
   findByLine(tractate: string, line: string): QueryWithHelpers<Mishna, any> {
@@ -60,15 +60,24 @@ export class MishnaRepository {
     return this.mishnaModel.find({});
   }
 
-  async forEachMishna(cb: (mishna:Mishna)=>(Promise<void>), tractate?: string): Promise<void> {
-    const mishnaiot = tractate ? await this.getAllForTractate(tractate) : await this.getAll();
+  async forEachMishna(
+    cb: (mishna: Mishna) => Promise<void>,
+    tractate?: string,
+  ): Promise<void> {
+    const mishnaiot = tractate
+      ? await this.getAllForTractate(tractate)
+      : await this.getAll();
     await Promise.all(mishnaiot.map(mishna => cb(mishna)));
   }
 
   getAllForTractate(tractate: string): QueryWithHelpers<Mishna[], any> {
-    return this.mishnaModel.find({
-      tractate,
-    },null, {sort: {chapter:1}});
+    return this.mishnaModel.find(
+      {
+        tractate,
+      },
+      null,
+      { sort: { chapter: 1 } },
+    );
   }
 
   async deleteImportedExcerpts(tractate: string): Promise<void> {
@@ -88,56 +97,57 @@ export class MishnaRepository {
     const mishnaDoc = await this.find(tractate, chapter, mishna);
     const excerpts = mishnaDoc.excerpts;
     for (let i = 0; i < excerpts.length; i++) {
-        const excerpt = excerpts[i];
-        const fromLine = excerpt.selection.fromLine;
-        const toLine = excerpt.selection.toLine;
-        const fromWord = excerpt.selection.fromWord;
-        const toWord = excerpt.selection.toWord;
-        let fromSubline = mishnaDoc.lines[fromLine].sublines.find(l => l.text.indexOf(fromWord)!==-1)
-        if (!fromSubline) {
-            fromSubline = mishnaDoc.lines[fromLine].sublines[0]
-        }
-        let toSubline = mishnaDoc.lines[toLine].sublines.find(l => l.text.indexOf(toWord)!==-1)
-        if (!toSubline) {
-            toSubline = mishnaDoc.lines[toLine].sublines[0]
-        }
-        excerpt.selection.fromSubline = fromSubline?.index;
-        excerpt.selection.toSubline = toSubline?.index;
-        await this.saveExcerpt(
-            tractate,
-            chapter,
-            mishna,
-            excerpt
-        );
-
-        console.log('checking', mishnaDoc.id,excerpts[i].selection, ' line',`${fromSubline?.index} - ${toSubline?.index}`)
+      const excerpt = excerpts[i];
+      const fromLine = excerpt.selection.fromLine;
+      const toLine = excerpt.selection.toLine;
+      const fromWord = excerpt.selection.fromWord;
+      const toWord = excerpt.selection.toWord;
+      let fromSubline = mishnaDoc.lines[fromLine].sublines.find(
+        l => l.text.indexOf(fromWord) !== -1,
+      );
+      if (!fromSubline) {
+        fromSubline = mishnaDoc.lines[fromLine].sublines[0];
       }
+      let toSubline = mishnaDoc.lines[toLine].sublines.find(
+        l => l.text.indexOf(toWord) !== -1,
+      );
+      if (!toSubline) {
+        toSubline = mishnaDoc.lines[toLine].sublines[0];
+      }
+      excerpt.selection.fromSubline = fromSubline?.index;
+      excerpt.selection.toSubline = toSubline?.index;
+      await this.saveExcerpt(tractate, chapter, mishna, excerpt);
+
+      console.log(
+        'checking',
+        mishnaDoc.id,
+        excerpts[i].selection,
+        ' line',
+        `${fromSubline?.index} - ${toSubline?.index}`,
+      );
+    }
 
     return 'ok';
-
   }
-  updateExcerptsWithSublineSelect2(
-    mishnaDoc: Mishna,
-  ): void {
+  updateExcerptsWithSublineSelect2(mishnaDoc: Mishna): void {
     const excerpts = mishnaDoc.excerpts;
     for (let i = 0; i < excerpts.length; i++) {
-
-        // const excerpt = excerpts[i];
-        // const fromLine = excerpt.selection.fromLine;
-        // const toLine = excerpt.selection.toLine;
-        // const fromWord = excerpt.selection.fromWord;
-        // const toWord = excerpt.selection.toWord;
-        // let fromSubline = mishnaDoc.lines[fromLine].sublines.find(l => l.text.indexOf(fromWord)!==-1)
-        // if (!fromSubline) {
-        //     fromSubline = mishnaDoc.lines[fromLine].sublines[0]
-        // }
-        // let toSubline = mishnaDoc.lines[toLine].sublines.find(l => l.text.indexOf(toWord)!==-1)
-        // if (!toSubline) {
-        //     toSubline = mishnaDoc.lines[toLine].sublines[0]
-        // }
-        // excerpt.selection.fromSubline = fromSubline?.index;
-        // excerpt.selection.toSubline = toSubline?.index;
-      }
+      // const excerpt = excerpts[i];
+      // const fromLine = excerpt.selection.fromLine;
+      // const toLine = excerpt.selection.toLine;
+      // const fromWord = excerpt.selection.fromWord;
+      // const toWord = excerpt.selection.toWord;
+      // let fromSubline = mishnaDoc.lines[fromLine].sublines.find(l => l.text.indexOf(fromWord)!==-1)
+      // if (!fromSubline) {
+      //     fromSubline = mishnaDoc.lines[fromLine].sublines[0]
+      // }
+      // let toSubline = mishnaDoc.lines[toLine].sublines.find(l => l.text.indexOf(toWord)!==-1)
+      // if (!toSubline) {
+      //     toSubline = mishnaDoc.lines[toLine].sublines[0]
+      // }
+      // excerpt.selection.fromSubline = fromSubline?.index;
+      // excerpt.selection.toSubline = toSubline?.index;
+    }
   }
 
   async saveExcerpt(
@@ -147,8 +157,8 @@ export class MishnaRepository {
     excerptToSave: SaveMishnaExcerptDto,
   ): Promise<any> {
     const mishnaDoc = await this.find(tractate, chapter, mishna);
-    const lineFrom = mishnaDoc.lines[excerptToSave.selection.fromLine]
-    const lineTo = mishnaDoc.lines[excerptToSave.selection.toLine]
+    const lineFrom = mishnaDoc.lines[excerptToSave.selection.fromLine];
+    const lineTo = mishnaDoc.lines[excerptToSave.selection.toLine];
     new ExcerptUtils(excerptToSave).updateExcerptSubline(lineFrom, lineTo);
     if (excerptToSave.key) {
       const indexExcerpt = mishnaDoc.excerpts.findIndex(
@@ -199,5 +209,39 @@ export class MishnaRepository {
     } else {
       console.log('NO NEXT LINE');
     }
+  }
+
+  async addParallel(
+    tractate: string,
+    chapter: string,
+    mishna: string,
+    line: string,
+    parallel: InternalLink,
+  ): Promise<any> {
+    console.log('saving ',this.getGUID(tractate, chapter, mishna) )
+    return this.mishnaModel.updateOne(
+      {
+        guid: this.getGUID(tractate, chapter, mishna),
+        'lines.lineNumber': line,
+      },
+      { $push: { 'lines.$.parallels': parallel } },
+    );
+  }
+
+  async removeParallel(
+    tractate: string,
+    chapter: string,
+    mishna: string,
+    line: string,
+    parallel: InternalLink,
+  ): Promise<any> {
+    console.log('removing parallel from ', tractate,chapter,mishna,line, parallel)
+    return this.mishnaModel.updateOne(
+      {
+        guid: this.getGUID(tractate, chapter, mishna),
+        'lines.lineNumber': line,
+      },
+      { $pull: { 'lines.$.parallels': parallel } },
+    );
   }
 }

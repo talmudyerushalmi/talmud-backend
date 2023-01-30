@@ -26,10 +26,20 @@ export class SubLine {
   synopsis: Synopsis[]
 }
 
+export class InternalLink {
+  linkText?: string;
+  tractate: string;
+  chapter: string;
+  mishna: string;
+  lineNumber: string;
+}
+
 export class Line {
   originalLineNumber?: string;
   lineNumber?: string;
   sourceReference?: string;
+
+  parallels?: InternalLink[]
 
   @IsNotEmpty()
   @IsString()

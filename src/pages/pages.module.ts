@@ -22,6 +22,7 @@ import { Related } from './models/related.model';
 import { RelatedSchema } from './schemas/related.schema';
 import { RelatedRepository } from './related.repository';
 import { UserMiddleware } from 'src/middleware/userType';
+import { LineService } from './line.service';
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -44,6 +45,7 @@ import { UserMiddleware } from 'src/middleware/userType';
     PagesService,
     RelatedService,
     NavigationService,
+    LineService,
     SublineService,
     TractateRepository,
     MishnaRepository,
