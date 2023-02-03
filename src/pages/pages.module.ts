@@ -22,12 +22,18 @@ import { Related } from './models/related.model';
 import { RelatedSchema } from './schemas/related.schema';
 import { RelatedRepository } from './related.repository';
 import { UserMiddleware } from 'src/middleware/userType';
+import { ManuscriptsController } from './manuscripts.controller';
+import { Manuscripts, ManuscriptSchema } from './schemas/manuscripts.schema';
+import { ManuscriptsRepository } from './manuscripts.repository';
+import { ManuscriptsService } from './manuscripts.service';
+
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Tractate.name, schema: TractateSchema },
       { name: Mishna.name, schema: MishnaSchema },
       { name: Related.name, schema: RelatedSchema },
+      { name: Manuscripts.name, schema: ManuscriptSchema },
     ]),
     ConsoleModule,
     SettingsModule,
@@ -39,15 +45,18 @@ import { UserMiddleware } from 'src/middleware/userType';
     MishnaController,
     EditMishnaController,
     EditMishnaExcerptController,
+    ManuscriptsController,
   ],
   providers: [
     PagesService,
     RelatedService,
     NavigationService,
     SublineService,
+    ManuscriptsService,
     TractateRepository,
     MishnaRepository,
     RelatedRepository,
+    ManuscriptsRepository,
   ],
   exports: [PagesService, SublineService, TractateRepository, MishnaRepository],
 })
