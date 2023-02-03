@@ -21,14 +21,25 @@ export interface EditedText {
 export class SubLine {
   text: string;
   index: number;
+  sugiaName?: string;
   nosach: RawDraftContentState;
   synopsis: Synopsis[]
+}
+
+export class InternalLink {
+  linkText?: string;
+  tractate: string;
+  chapter: string;
+  mishna: string;
+  lineNumber: string;
 }
 
 export class Line {
   originalLineNumber?: string;
   lineNumber?: string;
   sourceReference?: string;
+
+  parallels?: InternalLink[]
 
   @IsNotEmpty()
   @IsString()

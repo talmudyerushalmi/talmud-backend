@@ -12,12 +12,14 @@ import {
   addBlockToContentState,
   createEditorContentFromText,
 } from './inc/editorUtils';
+import { LineService } from './line.service';
 
 @Injectable()
 export class SublineService {
   constructor(
     private tractateRepository: TractateRepository,
     private mishnaRepository: MishnaRepository,
+    private lineService: LineService,
     @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>,
   ) {}
 
@@ -28,6 +30,9 @@ export class SublineService {
     line: string,
     updateLineDto: UpdateLineDto,
   ): Promise<Mishna> {
+    if (updateLineDto.parallels) {
+      await this.lineService.setParallel(tractate, chapter, mishna, line, updateLineDto.parallels)
+    }
     const mishnaDoc = await this.mishnaRepository.find(
       tractate,
       chapter,
@@ -35,7 +40,6 @@ export class SublineService {
     );
     const lineIndex = mishnaDoc.lines.findIndex(l => l.lineNumber === line);
     mishnaDoc.lines[lineIndex].sublines = updateLineDto.sublines;
-    mishnaDoc.lines[lineIndex].sugiaName = updateLineDto.sugiaName;
     mishnaDoc.markModified('lines');
     return mishnaDoc.save();
   }

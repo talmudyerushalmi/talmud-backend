@@ -26,6 +26,7 @@ import { ManuscriptsController } from './manuscripts.controller';
 import { Manuscripts, ManuscriptSchema } from './schemas/manuscripts.schema';
 import { ManuscriptsRepository } from './manuscripts.repository';
 import { ManuscriptsService } from './manuscripts.service';
+import { LineService } from './line.service';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { ManuscriptsService } from './manuscripts.service';
     PagesService,
     RelatedService,
     NavigationService,
+    LineService,
     SublineService,
     ManuscriptsService,
     TractateRepository,

@@ -580,7 +580,6 @@ export class ImportService {
           {
             mainLine: line.mainLine,
             sublines: line.sublines,
-            sugiaName: line.sugiaName,
           },
         );
         // if (parseInt(line.lineNumber) < 442 || parseInt(line.lineNumber) > 455) {
@@ -650,6 +649,22 @@ export class ImportService {
     const r = this.mishnaRepo.getAllForTractate(tractate);
     await this.mishnaRepo.forEachMishna(async (mishna: Mishna) => {
       await mishna.createSublineFromLine();
+    }, tractate);
+  }
+
+  @Command({
+    command: 'copy:sugia <tractate>',
+    description: 'Copy sugia to subline',
+  })
+  async fixSublines(tractate: string): Promise<void> {
+    const r = this.mishnaRepo.getAllForTractate(tractate);
+    await this.mishnaRepo.forEachMishna(async (mishna: Mishna) => {
+      const lines = mishna.lines.filter(l=>l.sugiaName !== "").forEach(l => {
+        l.sublines[0].sugiaName = l.sugiaName
+      })
+      mishna.markModified('lines');
+      await mishna.save()
+
     }, tractate);
   }
 }
