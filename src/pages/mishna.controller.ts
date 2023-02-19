@@ -63,15 +63,17 @@ export class MishnaController {
   }
 
   @Get('/:tractate/:chapter')
-  getChapter(
+  async getChapter(
     @Param('tractate') tractate: string,
     @Param('chapter') chapter: string,
     @Query() query: GetChapterDTO,
     @Response() res,
   ) {
     this.throwIfForbidden(tractate, res.locals.userType);
-    return this.pagesService.getChapter(tractate, chapter, query.mishna);
+    const chapterDoc = await this.pagesService.getChapter(tractate, chapter, query.mishna);
+    return res.json(chapterDoc);
   }
+
   @Get('/:tractate')
   getTractate(@Param('tractate') tractate: string) {
     return this.pagesService.getTractate(tractate);
