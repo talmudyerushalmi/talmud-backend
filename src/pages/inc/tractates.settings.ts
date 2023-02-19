@@ -74,7 +74,7 @@ export const tractateSettings = {
     },
     yevamot: {
         public: true,
-        synopsisAllowed: ["leiden", "dfus_rishon", "kricha_2","translation","translation"]
+        synopsisAllowed: ["leiden", "dfus_rishon", "kricha_2","translation"]
     },
     sota: {
         synopsisAllowed: ["leiden", "rome","gniza_1", "gniza_2", "gniza_3", "kricha_4",
