@@ -87,6 +87,7 @@ export const tractateSettings = {
         synopsisAllowed: ["leiden","translation"]
     },
     gittin: {
+        public: true,
         synopsisAllowed: ["leiden","gniza_1","translation"]
     },
     nazir: {
