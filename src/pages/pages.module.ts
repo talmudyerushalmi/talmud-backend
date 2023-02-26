@@ -27,6 +27,10 @@ import { Manuscripts, ManuscriptSchema } from './schemas/manuscripts.schema';
 import { ManuscriptsRepository } from './manuscripts.repository';
 import { ManuscriptsService } from './manuscripts.service';
 import { LineService } from './line.service';
+import { Comments, CommentsSchema } from './schemas/comments.schema';
+import { CommentsController } from './comments/comments.controller';
+import { CommentsService } from './comments/comments.service';
+import { CommentsRepository } from './comments/comments.repository';
 
 @Module({
   imports: [
@@ -35,6 +39,7 @@ import { LineService } from './line.service';
       { name: Mishna.name, schema: MishnaSchema },
       { name: Related.name, schema: RelatedSchema },
       { name: Manuscripts.name, schema: ManuscriptSchema },
+      { name: Comments.name, schema: CommentsSchema },
     ]),
     ConsoleModule,
     SettingsModule,
@@ -47,6 +52,7 @@ import { LineService } from './line.service';
     EditMishnaController,
     EditMishnaExcerptController,
     ManuscriptsController,
+    CommentsController,
   ],
   providers: [
     PagesService,
@@ -55,10 +61,12 @@ import { LineService } from './line.service';
     LineService,
     SublineService,
     ManuscriptsService,
+    CommentsService,
     TractateRepository,
     MishnaRepository,
     RelatedRepository,
     ManuscriptsRepository,
+    CommentsRepository,
   ],
   exports: [PagesService, SublineService, TractateRepository, MishnaRepository],
 })
