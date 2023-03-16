@@ -27,6 +27,8 @@ import { Manuscripts, ManuscriptSchema } from './schemas/manuscripts.schema';
 import { ManuscriptsRepository } from './manuscripts.repository';
 import { ManuscriptsService } from './manuscripts.service';
 import { LineService } from './line.service';
+import { ActionsMishnaController } from './actions.mishna.controller';
+import { SynopsisService } from './synopsis.service';
 
 @Module({
   imports: [
@@ -45,6 +47,7 @@ import { LineService } from './line.service';
     RelatedController,
     MishnaController,
     EditMishnaController,
+    ActionsMishnaController,
     EditMishnaExcerptController,
     ManuscriptsController,
   ],
@@ -55,12 +58,19 @@ import { LineService } from './line.service';
     LineService,
     SublineService,
     ManuscriptsService,
+    SynopsisService,
     TractateRepository,
     MishnaRepository,
     RelatedRepository,
     ManuscriptsRepository,
   ],
-  exports: [PagesService, SublineService, TractateRepository, MishnaRepository],
+  exports: [
+    PagesService,
+    SublineService,
+    SynopsisService,
+    TractateRepository,
+    MishnaRepository,
+  ],
 })
 export class PagesModule {
   configure(consumer: MiddlewareConsumer): void {

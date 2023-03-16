@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 import { RawDraftContentState } from 'draft-js';
 
-export type sourceType = "direct_sources" | "indirect_sources";
+export type sourceType = "direct_sources" | "indirect_sources" | "parallel_source";
 
 export class Synopsis {
   text: EditedText;

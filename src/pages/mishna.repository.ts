@@ -6,7 +6,8 @@ import { LineMarkDto } from './dto/line-mark.dto';
 import * as numeral from 'numeral';
 import { SaveMishnaExcerptDto } from './dto/save-mishna-excerpt.dto';
 import { ExcerptUtils } from './inc/excerptUtils';
-import { InternalLink } from './models/line.model';
+import { InternalLink, Line } from './models/line.model';
+import { MishnaLink } from './models/mishna.link.model';
 
 @Injectable()
 export class MishnaRepository {
@@ -38,6 +39,13 @@ export class MishnaRepository {
   findByLine(tractate: string, line: string): QueryWithHelpers<Mishna, any> {
     return this.mishnaModel.findOne({ tractate, 'lines.lineNumber': line });
   }
+
+  
+  async findByLink(link: InternalLink): Promise<Line|undefined> {
+    const mishna = await this.find(link.tractate, link.chapter, link.mishna);
+    return mishna.getLine(link.lineNumber);
+  }
+
   getRangeLines(
     tractate: string,
     fromLine: string,
@@ -68,6 +76,18 @@ export class MishnaRepository {
       ? await this.getAllForTractate(tractate)
       : await this.getAll();
     await Promise.all(mishnaiot.map(mishna => cb(mishna)));
+  }
+
+  async forEachMishnaSerial(
+    cb: (mishna: Mishna) => Promise<void>,
+    tractate?: string,
+  ): Promise<void> {
+    const mishnaiot = tractate
+      ? await this.getAllForTractate(tractate)
+      : await this.getAll();
+    for (const mishna of mishnaiot) {
+      await cb(mishna)
+    }  
   }
 
   getAllForTractate(tractate: string): QueryWithHelpers<Mishna[], any> {
