@@ -8,12 +8,33 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Debug Nest Framework new",
+            "args": [
+                "${workspaceFolder}/src/main.ts"
+            ],
+            "runtimeArgs": [
+                "--nolazy",
+                "-r",
+                "ts-node/register",
+                "-r",
+                "tsconfig-paths/register"
+            ],
+            "env": {
+                "NODE_ENV": "production"
+              },
+            "sourceMaps": true,
+            "envFile": "${workspaceFolder}/.env",
+            "cwd": "${workspaceRoot}",
+            "console": "integratedTerminal",
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Debug Nest Framework",
             "args": ["${workspaceFolder}/src/main.ts"],
             "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
             "sourceMaps": true,
             "cwd": "${workspaceRoot}",
-            "protocol": "inspector"
         },
         {
             "type": "node",
@@ -21,8 +42,6 @@
             "name": "Attach NestJS WS",
             "port": 9229,
             "restart": true,
-            "stopOnEntry": false,
-            "protocol": "inspector"
           }
     ]
 }
