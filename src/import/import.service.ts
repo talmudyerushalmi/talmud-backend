@@ -13,7 +13,7 @@ import { SettingsService } from 'src/settings/settings.service';
 import { Mishna } from 'src/pages/schemas/mishna.schema';
 import MiscUtils from 'src/shared/MiscUtils';
 import { SublineService } from 'src/pages/subline.service';
-import { Synopsis } from 'src/pages/models/line.model';
+import { SourceType, Synopsis } from 'src/pages/models/line.model';
 import { getSynopsisText, getTextForSynopsis, tranformTextToLeiden } from 'src/pages/inc/synopsisUtils';
 import {
   createEditorContentFromText,
@@ -497,7 +497,7 @@ export class ImportService {
           );
           const synopsisLeiden: Synopsis = {
             id: 'leiden',
-            type: 'direct_sources',
+            type: SourceType.DIRECT_SOURCES,
             text: { content, simpleText: subline.text },
             code: 'leiden',
             name: 'כתב יד ליידן',
@@ -506,7 +506,7 @@ export class ImportService {
 
           const synopsisDfus: Synopsis = {
             id: 'dfus_rishon',
-            type: 'direct_sources',
+            type: SourceType.DIRECT_SOURCES,
             text: { content, simpleText: subline.text },
             code: 'dfus_rishon',
             name: 'דפוס ראשון',
@@ -724,7 +724,7 @@ export class ImportService {
               text: {
                 simpleText: tranformTextToLeiden(subline.text),
               },
-              type: "direct_sources",
+              type: SourceType.DIRECT_SOURCES,
               name: "כתב יד ליידן",
               id: "leiden",
               code: "leiden",

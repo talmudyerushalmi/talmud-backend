@@ -8,7 +8,7 @@ import { Mishna } from './schemas/mishna.schema';
 import * as _ from 'lodash';
 import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './mishna.repository';
-import { InternalLink, Line, SubLine } from './models/line.model';
+import { InternalLink, Line, SourceType, SubLine } from './models/line.model';
 import { NavigationService } from './navigation.service';
 
 
@@ -68,6 +68,7 @@ export class SynopsisService {
   ): matchedSynopsis | undefined {
     let highest = 0;
     let highestMatch = undefined;
+    const MINIMUM_MATCH = 0.3;
     for (let i = 0; i < line1.sublines.length - 1; i++) {
       const subline = line1.sublines[i];
       const text1 = this.getSynopsisText(subline, 'leiden');
@@ -78,9 +79,9 @@ export class SynopsisService {
           console.log('Error: No leiden text', line2.lineNumber);
         }
         const similarity = StringSimilarity.compareTwoStrings(text1, text2);
-        if (similarity > highest) {
+        if (similarity > MINIMUM_MATCH) {
           highest = similarity;
-          highestMatch = {
+          return {
             text1: {
               text: text1,
               lineIndex: i,
@@ -93,7 +94,7 @@ export class SynopsisService {
         }
       }
     }
-    return highestMatch;
+    return undefined;
   }
 
   copyParallelSynopsis(
@@ -106,7 +107,7 @@ export class SynopsisService {
   for (let i = match.text1.lineIndex; i < line.sublines.length; i++) {
     if (copyIndex <= parallelLine.sublines.length - 1) {
       let directSources = parallelLine.sublines[copyIndex++].synopsis.filter(
-        s => s.type == 'direct_sources',
+        s => s.type == SourceType.DIRECT_SOURCES,
       );
       directSources.forEach(synopsis => {
         const similarity = StringSimilarity.compareTwoStrings(this.getSynopsisText(line.sublines[i],"leiden"), synopsis.text.simpleText);
@@ -114,7 +115,7 @@ export class SynopsisService {
             const name = `${this.navigationService.getLinkText(link)} ${synopsisMap.get(synopsis.button_code).title}`;
             line.sublines[i].synopsis.push({
                 text: synopsis.text,
-                type: 'parallel_source',
+                type: SourceType.PARALLEL_SOURCE,
                 name: name,
                 id: link.linkText,
                 code: link.linkText,

@@ -1,7 +1,13 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 import { RawDraftContentState } from 'draft-js';
 
-export type sourceType = "direct_sources" | "indirect_sources" | "parallel_source";
+export enum SourceType {
+  DIRECT_SOURCES = 'direct_sources',
+  INDIRECT_SOURCES = 'indirect_sources',
+  PARALLEL_SOURCE = 'parallel_source'
+}
+
+export type sourceType = SourceType.DIRECT_SOURCES | SourceType.INDIRECT_SOURCES | SourceType.PARALLEL_SOURCE;
 
 export class Synopsis {
   text: EditedText;
