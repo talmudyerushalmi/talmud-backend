@@ -1,6 +1,9 @@
+import { ObjectId } from 'mongodb';
+
 export class Comment {
-  line: string;
-  comment: string;
+  commentID: ObjectId;
+  line: number;
+  text: string;
 }
 
 export class Comments {

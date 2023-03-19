@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Comment } from '../models/comment.model';
+import { CommentDTO } from '../dto/comment';
 import { Comments } from '../schemas/comments.schema';
 import { CommentsRepository } from './comments.repository';
 
@@ -13,9 +13,17 @@ export class CommentsService {
 
   async createComment(
     userID: string,
-    comment: Comment,
+    comment: CommentDTO,
     tractate: string,
   ): Promise<Comments> {
     return this.CommentsRepository.createComment(userID, comment, tractate);
+  }
+
+  async removeComment(
+    userID: string,
+    tractate: string,
+    commentID: string,
+  ): Promise<Comments> {
+    return this.CommentsRepository.removeComment(userID, tractate, commentID);
   }
 }
