@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Delete, Param, Body } from '@nestjs/common';
 import { CommentDTO } from '../dto/comment';
+import { Comment } from '../models/comment.model';
 import { Comments } from '../schemas/comments.schema';
 import { CommentsService } from './comments.service';
 
@@ -10,6 +11,13 @@ export class CommentsController {
   @Get(':userID')
   async getCommentsByUser(@Param('userID') userID: string): Promise<Comments> {
     return this.commentsService.getCommentsByUser(userID);
+  }
+
+  @Get('/public/:tractate')
+  async getPublicCommentsByTractate(
+    @Param('tractate') tractate: string,
+  ): Promise<Comment[]> {
+    return this.commentsService.getPublicCommentsByTractate(tractate);
   }
 
   @Post(':userID/:tractate')

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CommentDTO } from '../dto/comment';
+import { Comment } from '../models/comment.model';
 import { Comments } from '../schemas/comments.schema';
 import { CommentsRepository } from './comments.repository';
 
@@ -25,5 +26,9 @@ export class CommentsService {
     commentID: string,
   ): Promise<Comments> {
     return this.CommentsRepository.removeComment(userID, tractate, commentID);
+  }
+
+  async getPublicCommentsByTractate(tractate: string): Promise<Comment[]> {
+    return this.CommentsRepository.getPublicCommentsByTractate(tractate);
   }
 }

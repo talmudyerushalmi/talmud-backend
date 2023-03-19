@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
 import { Model } from 'mongoose';
 import { CommentDTO } from '../dto/comment';
-import { Comment } from '../models/comment.model';
+import { Comment, CommentType } from '../models/comment.model';
 import { Comments } from '../schemas/comments.schema';
 
 @Injectable()
@@ -15,6 +15,31 @@ export class CommentsRepository {
 
   async getCommentsByUser(userID: string): Promise<Comments> {
     return this.commentsModel.findOne({ userID });
+  }
+
+  async getPublicCommentsByTractate(tractate: string): Promise<Comment[]> {
+    return this.commentsModel.aggregate([
+      {
+        $project: {
+          _id: 0,
+          comments: {
+            [tractate]: {
+              $filter: {
+                input: `$comments.${tractate}`,
+                as: 'comment',
+                cond: {
+                  $eq: ['$$comment.type', CommentType.Public],
+                },
+              },
+            },
+          },
+        },
+      },
+      // unwind the comments object
+      { $unwind: `$comments.${tractate}` },
+      // replace the root with the comments object
+      { $replaceRoot: { newRoot: `$comments.${tractate}` } },
+    ]);
   }
 
   async createComment(

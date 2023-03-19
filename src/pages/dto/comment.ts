@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { CommentType } from '../models/comment.model';
 
 export class CommentDTO {
   @IsNotEmpty()
@@ -7,4 +8,7 @@ export class CommentDTO {
   @IsNotEmpty()
   @IsString()
   text: string;
+  @IsNotEmpty()
+  @IsString()
+  type: CommentType;
 }
