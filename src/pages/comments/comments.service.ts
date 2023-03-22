@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CommentDTO } from '../dto/comment';
+import { CommentDTO } from '../dto/comment.dto';
 import { PublicCommentsByTractate } from '../models/comment.model';
 import { Comments } from '../schemas/comments.schema';
 import { CommentsRepository } from './comments.repository';

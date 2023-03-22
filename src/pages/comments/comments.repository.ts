@@ -2,12 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
 import { Model } from 'mongoose';
-import { CommentDTO } from '../dto/comment';
-import {
-  Comment,
-  CommentType,
-  PublicCommentsByTractate,
-} from '../models/comment.model';
+import { CommentDTO } from '../dto/comment.dto';
+import { CommentType, PublicCommentsByTractate } from '../models/comment.model';
 import { Comments } from '../schemas/comments.schema';
 
 @Injectable()
@@ -80,7 +76,7 @@ export class CommentsRepository {
   }
 
   async createComment(userID: string, comment: CommentDTO): Promise<Comments> {
-    const newComment: Comment = {
+    const newComment = {
       commentID: new ObjectId(),
       ...comment,
     };
@@ -130,4 +126,24 @@ export class CommentsRepository {
       },
     ]);
   }
+
+  // async updateComment(
+  //   userID: string,
+  //   commentID: string,
+  //   comment: CommentDTO,
+  // ): Promise<Comments> {
+  //   return this.commentsModel.findOneAndUpdate(
+  //     { userID, 'comments.commentID': new ObjectId(commentID) },
+  //     {
+  //       $set: {
+  //         'comments.$.comment': comment.comment,
+  //         'comments.$.type':
+  //           comment.type === CommentType.PUBLIC
+  //             ? CommentType.MODERATION
+  //             : CommentType.PRIVATE,
+  //       },
+  //     },
+  //     { new: true },
+  //   );
+  // }
 }
