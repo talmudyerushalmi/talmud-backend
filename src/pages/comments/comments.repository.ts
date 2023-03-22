@@ -77,4 +77,8 @@ export class CommentsRepository {
       { new: true },
     );
   }
+
+  async getCommentsForModeration(): Promise<any> {
+    return this.commentsModel.find();
+  }
 }

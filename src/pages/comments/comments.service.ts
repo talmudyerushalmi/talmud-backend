@@ -31,4 +31,8 @@ export class CommentsService {
   async getPublicCommentsByTractate(tractate: string): Promise<Comment[]> {
     return this.CommentsRepository.getPublicCommentsByTractate(tractate);
   }
+
+  async getCommentsForModeration(): Promise<Comments> {
+    return this.CommentsRepository.getCommentsForModeration();
+  }
 }

@@ -8,6 +8,11 @@ import { CommentsService } from './comments.service';
 export class CommentsController {
   constructor(private commentsService: CommentsService) {}
 
+  @Get('/moderation')
+  async getCommentsForModeration(): Promise<Comments> {
+    return this.commentsService.getCommentsForModeration();
+  }
+
   @Get(':userID')
   async getCommentsByUser(@Param('userID') userID: string): Promise<Comments> {
     return this.commentsService.getCommentsByUser(userID);
