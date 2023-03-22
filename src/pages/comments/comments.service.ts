@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CommentDTO } from '../dto/comment.dto';
+import { CommentDto, UpdateCommentDto } from '../dto/comment.dto';
 import { PublicCommentsByTractate } from '../models/comment.model';
 import { Comments } from '../schemas/comments.schema';
 import { CommentsRepository } from './comments.repository';
@@ -15,7 +15,7 @@ export class CommentsService {
     return this.commentsRepository.getCommentsByUser(userID, tractate);
   }
 
-  async createComment(userID: string, comment: CommentDTO): Promise<Comments> {
+  async createComment(userID: string, comment: CommentDto): Promise<Comments> {
     return this.commentsRepository.createComment(userID, comment);
   }
 
@@ -35,9 +35,8 @@ export class CommentsService {
 
   async updateComment(
     userID: string,
-    commentID: string,
-    comment: CommentDTO,
+    comment: UpdateCommentDto,
   ): Promise<Comments> {
-    return this.commentsRepository.updateComment(userID, commentID, comment);
+    return this.commentsRepository.updateComment(userID, comment);
   }
 }

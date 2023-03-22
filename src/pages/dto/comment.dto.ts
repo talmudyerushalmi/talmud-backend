@@ -5,7 +5,7 @@ enum CommentTypeDTO {
   MODERATION = 'moderation',
 }
 
-export class CommentDTO {
+export class CommentDto {
   @IsNotEmpty()
   @IsNumber()
   line: number;
@@ -19,4 +19,10 @@ export class CommentDTO {
   @IsNotEmpty()
   @IsString()
   tractate: string;
+}
+
+export class UpdateCommentDto extends CommentDto {
+  @IsNotEmpty()
+  @IsString()
+  commentID: string;
 }

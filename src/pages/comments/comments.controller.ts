@@ -7,7 +7,7 @@ import {
   Param,
   Body,
 } from '@nestjs/common';
-import { CommentDTO } from '../dto/comment.dto';
+import { CommentDto, UpdateCommentDto } from '../dto/comment.dto';
 import { PublicCommentsByTractate } from '../models/comment.model';
 import { Comments } from '../schemas/comments.schema';
 import { CommentsService } from './comments.service';
@@ -39,18 +39,17 @@ export class CommentsController {
   @Post('/create/:userID')
   async createComment(
     @Param('userID') userID: string,
-    @Body() comment: CommentDTO,
+    @Body() comment: CommentDto,
   ): Promise<Comments> {
     return this.commentsService.createComment(userID, comment);
   }
 
-  @Patch('/:userID/:commentID')
+  @Patch('/:userID')
   async updateComment(
     @Param('userID') userID: string,
-    @Param('commentID') commentID: string,
-    @Body() comment: CommentDTO,
+    @Body() comment: UpdateCommentDto,
   ): Promise<Comments> {
-    return this.commentsService.updateComment(userID, commentID, comment);
+    return this.commentsService.updateComment(userID, comment);
   }
 
   @Delete('/:userID/:commentID')

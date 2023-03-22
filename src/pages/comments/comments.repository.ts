@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
 import { Model } from 'mongoose';
-import { CommentDTO } from '../dto/comment.dto';
+import { CommentDto, UpdateCommentDto } from '../dto/comment.dto';
 import { CommentType, PublicCommentsByTractate } from '../models/comment.model';
 import { Comments } from '../schemas/comments.schema';
 
@@ -75,7 +75,7 @@ export class CommentsRepository {
     ]);
   }
 
-  async createComment(userID: string, comment: CommentDTO): Promise<Comments> {
+  async createComment(userID: string, comment: CommentDto): Promise<Comments> {
     const newComment = {
       commentID: new ObjectId(),
       ...comment,
@@ -129,11 +129,10 @@ export class CommentsRepository {
 
   async updateComment(
     userID: string,
-    commentID: string,
-    comment: CommentDTO,
+    comment: UpdateCommentDto,
   ): Promise<Comments> {
     return this.commentsModel.findOneAndUpdate(
-      { userID, 'comments.commentID': new ObjectId(commentID) },
+      { userID, 'comments.commentID': new ObjectId(comment.commentID) },
       {
         $set: {
           'comments.$.text': comment.text,
