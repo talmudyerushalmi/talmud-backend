@@ -111,7 +111,6 @@ export class CommentsRepository {
     return this.commentsModel.aggregate([
       {
         $project: {
-          _id: 0,
           userID: 1,
           comments: {
             $filter: {
