@@ -6,27 +6,27 @@ import { CommentsRepository } from './comments.repository';
 
 @Injectable()
 export class CommentsService {
-  constructor(private CommentsRepository: CommentsRepository) {}
+  constructor(private commentsRepository: CommentsRepository) {}
 
   async getCommentsByUser(userID: string, tractate: string): Promise<Comments> {
-    return this.CommentsRepository.getCommentsByUser(userID, tractate);
+    return this.commentsRepository.getCommentsByUser(userID, tractate);
   }
 
   async createComment(userID: string, comment: CommentDTO): Promise<Comments> {
-    return this.CommentsRepository.createComment(userID, comment);
+    return this.commentsRepository.createComment(userID, comment);
   }
 
   async removeComment(userID: string, commentID: string): Promise<Comments> {
-    return this.CommentsRepository.removeComment(userID, commentID);
+    return this.commentsRepository.removeComment(userID, commentID);
   }
 
   async getPublicCommentsByTractate(
     tractate: string,
   ): Promise<PublicCommentsByTractate[]> {
-    return this.CommentsRepository.getPublicCommentsByTractate(tractate);
+    return this.commentsRepository.getPublicCommentsByTractate(tractate);
   }
 
   async getCommentsForModeration(): Promise<Comments[]> {
-    return this.CommentsRepository.getCommentsForModeration();
+    return this.commentsRepository.getCommentsForModeration();
   }
 }
