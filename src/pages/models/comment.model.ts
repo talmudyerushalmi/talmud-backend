@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb';
 
 export enum CommentType {
   PUBLIC = 'public',
-  PERSONAL = 'personal',
+  PRIVATE = 'private',
   MODERATION = 'moderation',
 }
 
