@@ -127,23 +127,21 @@ export class CommentsRepository {
     ]);
   }
 
-  // async updateComment(
-  //   userID: string,
-  //   commentID: string,
-  //   comment: CommentDTO,
-  // ): Promise<Comments> {
-  //   return this.commentsModel.findOneAndUpdate(
-  //     { userID, 'comments.commentID': new ObjectId(commentID) },
-  //     {
-  //       $set: {
-  //         'comments.$.comment': comment.comment,
-  //         'comments.$.type':
-  //           comment.type === CommentType.PUBLIC
-  //             ? CommentType.MODERATION
-  //             : CommentType.PRIVATE,
-  //       },
-  //     },
-  //     { new: true },
-  //   );
-  // }
+  async updateComment(
+    userID: string,
+    commentID: string,
+    comment: CommentDTO,
+  ): Promise<Comments> {
+    return this.commentsModel.findOneAndUpdate(
+      { userID, 'comments.commentID': new ObjectId(commentID) },
+      {
+        $set: {
+          'comments.$.text': comment.text,
+          'comments.$.line': comment.line,
+          'comments.$.tractate': comment.tractate,
+        },
+      },
+      { new: true },
+    );
+  }
 }

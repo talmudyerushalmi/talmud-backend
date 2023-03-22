@@ -32,4 +32,12 @@ export class CommentsService {
   async getCommentsForModeration(): Promise<Comments[]> {
     return this.commentsRepository.getCommentsForModeration();
   }
+
+  async updateComment(
+    userID: string,
+    commentID: string,
+    comment: CommentDTO,
+  ): Promise<Comments> {
+    return this.commentsRepository.updateComment(userID, commentID, comment);
+  }
 }
