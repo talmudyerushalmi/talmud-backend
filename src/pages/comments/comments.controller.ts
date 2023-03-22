@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Delete, Param, Body } from '@nestjs/common';
 import { CommentDTO } from '../dto/comment';
-import { Comment } from '../models/comment.model';
+import { PublicCommentsByTractate } from '../models/comment.model';
 import { Comments } from '../schemas/comments.schema';
 import { CommentsService } from './comments.service';
 
@@ -9,37 +9,38 @@ export class CommentsController {
   constructor(private commentsService: CommentsService) {}
 
   @Get('/moderation')
-  async getCommentsForModeration(): Promise<Comments> {
+  async getCommentsForModeration(): Promise<Comments[]> {
     return this.commentsService.getCommentsForModeration();
-  }
-
-  @Get(':userID')
-  async getCommentsByUser(@Param('userID') userID: string): Promise<Comments> {
-    return this.commentsService.getCommentsByUser(userID);
   }
 
   @Get('/public/:tractate')
   async getPublicCommentsByTractate(
     @Param('tractate') tractate: string,
-  ): Promise<Comment[]> {
+  ): Promise<PublicCommentsByTractate[]> {
     return this.commentsService.getPublicCommentsByTractate(tractate);
   }
 
-  @Post(':userID/:tractate')
-  async createComment(
+  @Get('/:userID/:tractate?')
+  async getCommentsByUser(
     @Param('userID') userID: string,
     @Param('tractate') tractate: string,
-    @Body() comment: CommentDTO,
   ): Promise<Comments> {
-    return this.commentsService.createComment(userID, comment, tractate);
+    return this.commentsService.getCommentsByUser(userID, tractate);
   }
 
-  @Delete(':userID/:tractate/:commentID')
+  @Post('/create/:userID')
+  async createComment(
+    @Param('userID') userID: string,
+    @Body() comment: CommentDTO,
+  ): Promise<Comments> {
+    return this.commentsService.createComment(userID, comment);
+  }
+
+  @Delete('/:userID/:commentID')
   async removeComment(
     @Param('userID') userID: string,
-    @Param('tractate') tractate: string,
     @Param('commentID') commentID: string,
   ): Promise<Comments> {
-    return this.commentsService.removeComment(userID, tractate, commentID);
+    return this.commentsService.removeComment(userID, commentID);
   }
 }

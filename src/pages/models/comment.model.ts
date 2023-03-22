@@ -1,9 +1,9 @@
 import { ObjectId } from 'mongodb';
 
 export enum CommentType {
-  Public = 'public',
-  Personal = 'personal',
-  Moderation = 'moderation',
+  PUBLIC = 'public',
+  PERSONAL = 'personal',
+  MODERATION = 'moderation',
 }
 
 export class Comment {
@@ -11,8 +11,10 @@ export class Comment {
   line: number;
   text: string;
   type: CommentType;
+  tractate: string;
 }
 
-export class Comments {
-  [key: string]: Comment[];
+export class PublicCommentsByTractate {
+  userID: string;
+  comments: Comment[];
 }

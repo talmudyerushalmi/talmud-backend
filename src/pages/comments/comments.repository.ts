@@ -3,7 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
 import { Model } from 'mongoose';
 import { CommentDTO } from '../dto/comment';
-import { Comment, CommentType } from '../models/comment.model';
+import {
+  Comment,
+  CommentType,
+  PublicCommentsByTractate,
+} from '../models/comment.model';
 import { Comments } from '../schemas/comments.schema';
 
 @Injectable()
@@ -13,40 +17,70 @@ export class CommentsRepository {
     private commentsModel: Model<Comments>,
   ) {}
 
-  async getCommentsByUser(userID: string): Promise<Comments> {
+  async getCommentsByUser(userID: string, tractate: string): Promise<Comments> {
+    if (tractate) {
+      await this.commentsModel.aggregate(
+        [
+          {
+            $match: {
+              userID,
+            },
+          },
+          { $limit: 1 },
+          {
+            $project: {
+              userID: 1,
+              comments: {
+                $filter: {
+                  input: `$comments`,
+                  as: 'comment',
+                  cond: {
+                    $eq: ['$$comment.tractate', tractate],
+                  },
+                },
+              },
+            },
+          },
+        ],
+        (_, res: Comments[]) => {
+          return res[0];
+        },
+      );
+    }
     return this.commentsModel.findOne({ userID });
   }
 
-  async getPublicCommentsByTractate(tractate: string): Promise<Comment[]> {
+  async getPublicCommentsByTractate(
+    tractate: string,
+  ): Promise<PublicCommentsByTractate[]> {
     return this.commentsModel.aggregate([
       {
         $project: {
           _id: 0,
+          userID: 1,
           comments: {
-            [tractate]: {
-              $filter: {
-                input: `$comments.${tractate}`,
-                as: 'comment',
-                cond: {
-                  $eq: ['$$comment.type', CommentType.Public],
-                },
+            $filter: {
+              input: `$comments`,
+              as: 'comment',
+              cond: {
+                $and: [
+                  { $eq: ['$$comment.type', CommentType.PUBLIC] },
+                  { $eq: ['$$comment.tractate', tractate] },
+                ],
               },
             },
           },
         },
       },
-      // unwind the comments object
-      { $unwind: `$comments.${tractate}` },
-      // replace the root with the comments object
-      { $replaceRoot: { newRoot: `$comments.${tractate}` } },
+      {
+        $match: {
+          $expr: { $gt: [{ $size: '$comments' }, 0] },
+        },
+      },
     ]);
   }
 
-  async createComment(
-    userID: string,
-    comment: CommentDTO,
-    tractate: string,
-  ): Promise<Comments> {
+  async createComment(userID: string, comment: CommentDTO): Promise<Comments> {
     const newComment: Comment = {
       commentID: new ObjectId(),
       ...comment,
@@ -55,30 +89,47 @@ export class CommentsRepository {
       { userID },
       {
         $push: {
-          [`comments.${tractate}`]: newComment,
+          comments: newComment,
         },
       },
       { upsert: true, new: true },
     );
   }
 
-  async removeComment(
-    userID: string,
-    tractate: string,
-    commentID: string,
-  ): Promise<Comments> {
+  async removeComment(userID: string, commentID: string): Promise<Comments> {
     return this.commentsModel.findOneAndUpdate(
       { userID },
       {
         $pull: {
-          [`comments.${tractate}`]: { commentID: new ObjectId(commentID) },
+          comments: { commentID: new ObjectId(commentID) },
         },
       },
       { new: true },
     );
   }
 
-  async getCommentsForModeration(): Promise<any> {
-    return this.commentsModel.find();
+  async getCommentsForModeration(): Promise<Comments[]> {
+    return this.commentsModel.aggregate([
+      {
+        $project: {
+          _id: 0,
+          userID: 1,
+          comments: {
+            $filter: {
+              input: `$comments`,
+              as: 'comment',
+              cond: {
+                $eq: ['$$comment.type', CommentType.MODERATION],
+              },
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          $expr: { $gt: [{ $size: '$comments' }, 0] },
+        },
+      },
+    ]);
   }
 }
