@@ -8,7 +8,10 @@ import { CommentsRepository } from './comments.repository';
 export class CommentsService {
   constructor(private commentsRepository: CommentsRepository) {}
 
-  async getCommentsByUser(userID: string, tractate: string): Promise<Comments> {
+  async getCommentsByUser(
+    userID: string,
+    tractate?: string,
+  ): Promise<Comments> {
     return this.commentsRepository.getCommentsByUser(userID, tractate);
   }
 

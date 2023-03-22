@@ -17,35 +17,34 @@ export class CommentsRepository {
     private commentsModel: Model<Comments>,
   ) {}
 
-  async getCommentsByUser(userID: string, tractate: string): Promise<Comments> {
+  async getCommentsByUser(
+    userID: string,
+    tractate?: string,
+  ): Promise<Comments> {
     if (tractate) {
-      await this.commentsModel.aggregate(
-        [
-          {
-            $match: {
-              userID,
-            },
+      const data = await this.commentsModel.aggregate<Comments>([
+        {
+          $match: {
+            userID,
           },
-          { $limit: 1 },
-          {
-            $project: {
-              userID: 1,
-              comments: {
-                $filter: {
-                  input: `$comments`,
-                  as: 'comment',
-                  cond: {
-                    $eq: ['$$comment.tractate', tractate],
-                  },
+        },
+        { $limit: 1 },
+        {
+          $project: {
+            userID: 1,
+            comments: {
+              $filter: {
+                input: `$comments`,
+                as: 'comment',
+                cond: {
+                  $eq: ['$$comment.tractate', tractate],
                 },
               },
             },
           },
-        ],
-        (_, res: Comments[]) => {
-          return res[0];
         },
-      );
+      ]);
+      return data[0];
     }
     return this.commentsModel.findOne({ userID });
   }

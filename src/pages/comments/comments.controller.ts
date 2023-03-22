@@ -23,7 +23,7 @@ export class CommentsController {
   @Get('/:userID/:tractate?')
   async getCommentsByUser(
     @Param('userID') userID: string,
-    @Param('tractate') tractate: string,
+    @Param('tractate') tractate?: string,
   ): Promise<Comments> {
     return this.commentsService.getCommentsByUser(userID, tractate);
   }
