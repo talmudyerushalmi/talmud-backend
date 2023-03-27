@@ -8,7 +8,6 @@ import {
   Body,
 } from '@nestjs/common';
 import { CommentDto, UpdateCommentDto } from '../dto/comment.dto';
-import { PublicCommentsByTractate } from '../models/comment.model';
 import { Comments } from '../schemas/comments.schema';
 import { CommentsService } from './comments.service';
 
@@ -24,7 +23,7 @@ export class CommentsController {
   @Get('/public/:tractate')
   async getPublicCommentsByTractate(
     @Param('tractate') tractate: string,
-  ): Promise<PublicCommentsByTractate[]> {
+  ): Promise<any[]> {
     return this.commentsService.getPublicCommentsByTractate(tractate);
   }
 
