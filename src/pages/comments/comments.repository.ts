@@ -139,6 +139,7 @@ export class CommentsRepository {
           'comments.$.line': comment.line,
           'comments.$.tractate': comment.tractate,
           'comments.$.type': comment.type,
+          'comments.$.title': comment.title,
         },
       },
       { new: true },
