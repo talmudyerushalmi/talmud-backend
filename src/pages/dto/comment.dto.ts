@@ -11,6 +11,8 @@ export class CommentDto {
   line: number;
   @IsNotEmpty()
   @IsString()
+  title: string;
+  @IsString()
   text: string;
   @IsNotEmpty()
   @IsString()

@@ -12,6 +12,7 @@ export class Comment {
   text: string;
   type: CommentType;
   tractate: string;
+  title:string;
 }
 
 export class PublicCommentsByTractate {
