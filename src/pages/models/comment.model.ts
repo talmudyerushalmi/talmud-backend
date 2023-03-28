@@ -13,6 +13,7 @@ export class Comment {
   type: CommentType;
   tractate: string;
   title:string;
+  subline: number;
 }
 
 export class PublicCommentsByTractate {

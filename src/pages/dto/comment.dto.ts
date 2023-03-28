@@ -21,6 +21,9 @@ export class CommentDto {
   @IsNotEmpty()
   @IsString()
   tractate: string;
+  @IsNotEmpty()
+  @IsNumber()
+  subline: number;
 }
 
 export class UpdateCommentDto extends CommentDto {
