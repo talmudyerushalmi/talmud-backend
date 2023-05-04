@@ -22,8 +22,11 @@ export class CommentDto {
   @IsString()
   tractate: string;
   @IsNotEmpty()
-  @IsNumber()
-  subline: number;
+  @IsString()
+  fromWord: string;
+  @IsNotEmpty()
+  @IsString()
+  toWord: string;
 }
 
 export class UpdateCommentDto extends CommentDto {
