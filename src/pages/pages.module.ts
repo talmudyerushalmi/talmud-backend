@@ -27,7 +27,7 @@ import { Manuscripts, ManuscriptSchema } from './schemas/manuscripts.schema';
 import { ManuscriptsRepository } from './manuscripts.repository';
 import { ManuscriptsService } from './manuscripts.service';
 import { LineService } from './line.service';
-import { Users, UsersSchema } from './schemas/users.schema';
+import { User, UserSchema } from './schemas/users.schema';
 import { UsersController } from './users/users.controller';
 import { UsersService } from './users/users.service';
 import { UsersRepository } from './users/users.repository';
@@ -39,7 +39,7 @@ import { UsersRepository } from './users/users.repository';
       { name: Mishna.name, schema: MishnaSchema },
       { name: Related.name, schema: RelatedSchema },
       { name: Manuscripts.name, schema: ManuscriptSchema },
-      { name: Users.name, schema: UsersSchema },
+      { name: User.name, schema: UserSchema },
     ]),
     ConsoleModule,
     SettingsModule,

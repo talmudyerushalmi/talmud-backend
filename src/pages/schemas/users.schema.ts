@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 import { Comment } from '../models/comment.model';
 
 @Schema()
-export class Users extends Document {
+export class User extends Document {
   @Prop()
   id: string;
 
@@ -14,4 +14,4 @@ export class Users extends Document {
   comments: Comment[];
 }
 
-export const UsersSchema = SchemaFactory.createForClass(Users);
+export const UserSchema = SchemaFactory.createForClass(User);

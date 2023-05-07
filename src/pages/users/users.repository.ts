@@ -4,50 +4,57 @@ import { ObjectId } from 'mongodb';
 import { Model } from 'mongoose';
 import { CommentDto, UpdateCommentDto } from '../dto/comment.dto';
 import { CommentType } from '../models/comment.model';
-import { Users } from '../schemas/users.schema';
+import { User } from '../schemas/users.schema';
 
 @Injectable()
 export class UsersRepository {
   constructor(
-    @InjectModel(Users.name)
-    private usersModel: Model<Users>,
+    @InjectModel(User.name)
+    private userModel: Model<User>,
   ) {}
 
-  async getCommentsByUser(userID: string, tractate?: string): Promise<Users> {
-    if (tractate) {
-      const data = await this.usersModel.aggregate<Users>([
-        {
-          $match: {
-            userID,
-          },
+  async getCommentsByUser(
+    userID: string,
+    tractate: string,
+    chapter: string,
+    mishna: string,
+  ): Promise<User> {
+    const data = await this.userModel.aggregate<User>([
+      {
+        $match: {
+          userID,
         },
-        { $limit: 1 },
-        {
-          $project: {
-            userID: 1,
-            comments: {
-              $filter: {
-                input: `$comments`,
-                as: 'comment',
-                cond: {
-                  $eq: ['$$comment.tractate', tractate],
-                },
+      },
+      { $limit: 1 },
+      {
+        $project: {
+          comments: {
+            $filter: {
+              input: `$comments`,
+              as: 'comment',
+              cond: {
+                $and: [
+                  { $eq: ['$$comment.tractate', tractate] },
+                  {
+                    $eq: ['$$comment.chapter', chapter],
+                  },
+                  { $eq: ['$$comment.mishna', mishna] },
+                ],
               },
             },
           },
         },
-      ]);
-      return data[0];
-    }
-    return this.usersModel.findOne({ userID });
+      },
+    ]);
+    return data[0];
   }
 
-  async createComment(userID: string, comment: CommentDto): Promise<Users> {
+  async createComment(userID: string, comment: CommentDto): Promise<User> {
     const newComment = {
       commentID: new ObjectId(),
       ...comment,
     };
-    return this.usersModel.findOneAndUpdate(
+    return this.userModel.findOneAndUpdate(
       { userID },
       {
         $push: {
@@ -58,8 +65,8 @@ export class UsersRepository {
     );
   }
 
-  async removeComment(userID: string, commentID: string): Promise<Users> {
-    return this.usersModel.findOneAndUpdate(
+  async removeComment(userID: string, commentID: string): Promise<User> {
+    return this.userModel.findOneAndUpdate(
       { userID },
       {
         $pull: {
@@ -70,8 +77,8 @@ export class UsersRepository {
     );
   }
 
-  async getCommentsForModeration(): Promise<Users[]> {
-    return this.usersModel.aggregate([
+  async getCommentsForModeration(): Promise<User[]> {
+    return this.userModel.aggregate([
       {
         $project: {
           userID: 1,
@@ -97,18 +104,13 @@ export class UsersRepository {
   async updateComment(
     userID: string,
     comment: UpdateCommentDto,
-  ): Promise<Users> {
-    return this.usersModel.findOneAndUpdate(
+  ): Promise<User> {
+    return this.userModel.findOneAndUpdate(
       { userID, 'comments.commentID': new ObjectId(comment.commentID) },
       {
         $set: {
           'comments.$.text': comment.text,
-          'comments.$.line': comment.line,
-          'comments.$.tractate': comment.tractate,
-          'comments.$.type': comment.type,
           'comments.$.title': comment.title,
-          'comments.$.fromWord': comment.fromWord,
-          'comments.$.toWord': comment.toWord,
         },
       },
       { new: true },

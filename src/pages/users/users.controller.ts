@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import {
   Controller,
   Get,
@@ -6,9 +7,10 @@ import {
   Patch,
   Param,
   Body,
+  Response,
 } from '@nestjs/common';
 import { CommentDto, UpdateCommentDto } from '../dto/comment.dto';
-import { Users } from '../schemas/users.schema';
+import { User } from '../schemas/users.schema';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -16,39 +18,59 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get('/comments/moderation')
-  async getCommentsForModeration(): Promise<Users[]> {
+  async getCommentsForModeration(): Promise<User[]> {
     return this.usersService.getCommentsForModeration();
   }
 
-  @Get('/comments/:userID/:tractate?')
+  @Get('/comments/:tractate/:chapter/:mishna')
   async getCommentsByUser(
-    @Param('userID') userID: string,
-    @Param('tractate') tractate?: string,
-  ): Promise<Users> {
-    return this.usersService.getCommentsByUser(userID, tractate);
+    @Response() res,
+    @Param('tractate') tractate: string,
+    @Param('chapter') chapter: string,
+    @Param('mishna') mishna: string,
+  ): Promise<User> {
+    const comments = await this.usersService.getCommentsByUser(
+      res.locals.user?.email,
+      tractate,
+      chapter,
+      mishna,
+    );
+    return res.json(comments);
   }
 
-  @Post('/comments/:userID')
+  @Post('/comments')
   async createComment(
-    @Param('userID') userID: string,
+    @Response() res,
     @Body() comment: CommentDto,
-  ): Promise<Users> {
-    return this.usersService.createComment(userID, comment);
+  ): Promise<User> {
+    const newComment = await this.usersService.createComment(
+      res.locals.user?.email,
+      comment,
+    );
+    return res.json(newComment);
   }
 
-  @Patch('/comments/:userID')
+  @Patch('/comments')
   async updateComment(
-    @Param('userID') userID: string,
+    @Response() res,
     @Body() comment: UpdateCommentDto,
-  ): Promise<Users> {
-    return this.usersService.updateComment(userID, comment);
+  ): Promise<User> {
+    const updatedComment = await this.usersService.updateComment(
+      res.locals.user?.email,
+      comment,
+    );
+    return res.json(updatedComment);
   }
 
-  @Delete('/comments/:userID/:commentID')
+  @Delete('/comments/:commentID')
   async removeComment(
-    @Param('userID') userID: string,
+    @Response() res,
     @Param('commentID') commentID: string,
-  ): Promise<Users> {
-    return this.usersService.removeComment(userID, commentID);
+  ): Promise<User> {
+    const comments = await this.usersService.removeComment(
+      res.locals.user?.email,
+      commentID,
+    );
+    return res.json(comments);
   }
 }

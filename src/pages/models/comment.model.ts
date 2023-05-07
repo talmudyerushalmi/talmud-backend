@@ -7,11 +7,13 @@ export enum CommentType {
 
 export class Comment {
   commentID: ObjectId;
-  line: number;
-  fromWord: string;
-  toWord: string;
+  title: string;
   text: string;
   type: CommentType;
   tractate: string;
-  title: string;
+  chapter: string;
+  mishna: string;
+  line: number;
+  fromWord: string;
+  toWord: string;
 }

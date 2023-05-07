@@ -7,11 +7,9 @@ enum CommentTypeDTO {
 
 export class CommentDto {
   @IsNotEmpty()
-  @IsNumber()
-  line: number;
-  @IsNotEmpty()
   @IsString()
   title: string;
+  @IsNotEmpty()
   @IsString()
   text: string;
   @IsNotEmpty()
@@ -21,6 +19,15 @@ export class CommentDto {
   @IsNotEmpty()
   @IsString()
   tractate: string;
+  @IsNotEmpty()
+  @IsString()
+  chapter: string;
+  @IsNotEmpty()
+  @IsString()
+  mishna: string;
+  @IsNotEmpty()
+  @IsNumber()
+  line: number;
   @IsNotEmpty()
   @IsString()
   fromWord: string;
