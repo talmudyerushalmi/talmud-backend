@@ -32,8 +32,11 @@ export class UsersRepository {
             $filter: {
               input: `$comments`,
               as: 'comment',
-              cond: {
+              cond: { // TODO: check if have a better way to do this
                 $and: [
+                  {
+                    $eq: ['$$comment.type', CommentType.PRIVATE],
+                  },
                   { $eq: ['$$comment.tractate', tractate] },
                   {
                     $eq: ['$$comment.chapter', chapter],

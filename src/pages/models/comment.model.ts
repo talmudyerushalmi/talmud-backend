@@ -16,4 +16,5 @@ export class Comment {
   line: number;
   fromWord: string;
   toWord: string;
+  subline: number;
 }

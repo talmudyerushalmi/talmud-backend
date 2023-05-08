@@ -34,6 +34,9 @@ export class CommentDto {
   @IsNotEmpty()
   @IsString()
   toWord: string;
+  @IsNotEmpty()
+  @IsNumber()
+  subline: string;
 }
 
 export class UpdateCommentDto extends CommentDto {
