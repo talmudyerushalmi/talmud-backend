@@ -22,6 +22,19 @@ export class UsersController {
     return this.usersService.getCommentsForModeration();
   }
 
+  @Post('/comments/moderation/:commentID')
+  async approveComment(
+    @Response() res,
+    @Param('commentID') commentID: string,
+  ): Promise<any> {
+    const comment = await this.usersService.approveComment(
+      res.locals.user?.email,
+      commentID,
+    );
+    console.log(comment);
+    return res.json(comment);
+  }
+
   @Get('/comments/:tractate/:chapter/:mishna')
   async getCommentsByUser(
     @Response() res,

@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import { CommentDto, UpdateCommentDto } from '../dto/comment.dto';
 import { CommentType } from '../models/comment.model';
 import { User } from '../schemas/users.schema';
+import { Comment } from '../models/comment.model';
 
 @Injectable()
 export class UsersRepository {
@@ -32,7 +33,8 @@ export class UsersRepository {
             $filter: {
               input: `$comments`,
               as: 'comment',
-              cond: { // TODO: check if have a better way to do this
+              cond: {
+                // TODO: check if have a better way to do this
                 $and: [
                   {
                     $eq: ['$$comment.type', CommentType.PRIVATE],
@@ -102,6 +104,22 @@ export class UsersRepository {
         },
       },
     ]);
+  }
+
+  async approveComment(userID: string, commentID: string): Promise<Comment> {
+    const commentObjId = new ObjectId(commentID);
+    return this.userModel
+      .findOneAndUpdate(
+        { userID },
+        {
+          $pull: {
+            comments: { commentID: commentObjId },
+          },
+        },
+      )
+      .then(user =>
+        user.comments.find(comment => comment.commentID.equals(commentObjId)),
+      );
   }
 
   async updateComment(
