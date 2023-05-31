@@ -108,6 +108,13 @@ export class UsersService {
       });
   }
 
+  async rejectComment(userID: string, commentID: string): Promise<any> {
+    await this.usersRepository.rejectComment(userID, commentID);
+    return {
+      success: true,
+    }
+  }
+
   async updateComment(
     userID: string,
     comment: UpdateCommentDto,

@@ -85,22 +85,28 @@ export class UsersRepository {
   async getCommentsForModeration(): Promise<User[]> {
     return this.userModel.aggregate([
       {
-        $project: {
-          userID: 1,
-          comments: {
-            $filter: {
-              input: `$comments`,
-              as: 'comment',
-              cond: {
-                $eq: ['$$comment.type', CommentType.MODERATION],
-              },
-            },
-          },
-        },
+        $unwind: '$comments',
       },
       {
         $match: {
-          $expr: { $gt: [{ $size: '$comments' }, 0] },
+          'comments.type': CommentType.MODERATION,
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          userID: 1,
+          commentID: '$comments.commentID',
+          line: '$comments.line',
+          text: '$comments.text',
+          type: '$comments.type',
+          tractate: '$comments.tractate',
+          title: '$comments.title',
+          fromWord: '$comments.fromWord',
+          toWord: '$comments.toWord',
+          chapter: '$comments.chapter',
+          mishna: '$comments.mishna',
+          subline: '$comments.subline',
         },
       },
     ]);
@@ -120,6 +126,10 @@ export class UsersRepository {
       .then(user =>
         user.comments.find(comment => comment.commentID.equals(commentObjId)),
       );
+  }
+
+  async rejectComment(userID: string, commentID: string): Promise<User> {
+    return this.removeComment(userID, commentID);
   }
 
   async updateComment(

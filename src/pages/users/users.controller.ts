@@ -22,16 +22,23 @@ export class UsersController {
     return this.usersService.getCommentsForModeration();
   }
 
-  @Post('/comments/moderation/:commentID')
+  @Post('/comments/moderation/:userID/:commentID')
   async approveComment(
     @Response() res,
+    @Param('userID') userID: string,
     @Param('commentID') commentID: string,
   ): Promise<any> {
-    const comment = await this.usersService.approveComment(
-      res.locals.user?.email,
-      commentID,
-    );
-    console.log(comment);
+    const comment = await this.usersService.approveComment(userID, commentID);
+    return res.json(comment);
+  }
+
+  @Delete('/comments/moderation/:userID/:commentID')
+  async rejectComment(
+    @Response() res,
+    @Param('userID') userID: string,
+    @Param('commentID') commentID: string,
+  ): Promise<any> {
+    const comment = await this.usersService.rejectComment(userID, commentID);
     return res.json(comment);
   }
 
@@ -75,7 +82,7 @@ export class UsersController {
     return res.json(updatedComment);
   }
 
-  @Delete('/comments/:commentID')
+  @Delete('/comments/:commentID/:?userID')
   async removeComment(
     @Response() res,
     @Param('commentID') commentID: string,
