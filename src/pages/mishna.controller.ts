@@ -28,7 +28,7 @@ export class MishnaController {
   constructor(private pagesService: PagesService) {}
 
   private throwIfForbidden(tractate: string, userGroup: UserGroup) {
-    const canView = tractateSettings[tractate].public || userGroup === UserGroup.Editor;
+    const canView = tractateSettings[tractate]?.public || userGroup === UserGroup.Editor;
     if (!canView) {
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
     }

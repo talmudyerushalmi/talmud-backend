@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Tractate } from './schemas/tractate.schema';
@@ -34,7 +34,12 @@ export class PagesService {
     chapter: string,
     mishna: string,
   ): Promise<Mishna> {
-    return this.mishnaRepository.find(tractate, chapter, mishna).lean();
+    const find = await this.mishnaRepository.find(tractate, chapter, mishna).lean();
+    if (!find) {
+      throw new HttpException('Not found', HttpStatus. NOT_FOUND);
+    } else {
+      return find
+    }
   }
 
   async getMishnaTEI(
