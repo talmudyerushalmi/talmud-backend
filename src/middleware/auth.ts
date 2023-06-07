@@ -10,7 +10,7 @@ export class AuthMiddleware implements NestMiddleware {
       next();
     } else {
       res.status(401).json({
-        error: new Error('Invalid request!'),
+        error: 'Invalid request!',
       });
     }
   }
