@@ -82,7 +82,7 @@ export class UsersController {
     return res.json(updatedComment);
   }
 
-  @Delete('/comments/:commentID/:?userID')
+  @Delete('/comments/:commentID')
   async removeComment(
     @Response() res,
     @Param('commentID') commentID: string,

@@ -28,10 +28,10 @@ export class CommentDto {
   @IsNotEmpty()
   @IsNumber()
   line: number;
-  @IsNotEmpty()
+  // @IsNotEmpty()
   @IsString()
   fromWord: string;
-  @IsNotEmpty()
+  // @IsNotEmpty()
   @IsString()
   toWord: string;
   @IsNotEmpty()

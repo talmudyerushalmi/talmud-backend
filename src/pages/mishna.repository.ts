@@ -159,7 +159,9 @@ export class MishnaRepository {
     const mishnaDoc = await this.find(tractate, chapter, mishna);
     const lineFrom = mishnaDoc.lines[excerptToSave.selection.fromLine];
     const lineTo = mishnaDoc.lines[excerptToSave.selection.toLine];
-    new ExcerptUtils(excerptToSave).updateExcerptSubline(lineFrom, lineTo);
+    if (excerptToSave.type !== 'COMMENT') {
+      new ExcerptUtils(excerptToSave).updateExcerptSubline(lineFrom, lineTo);
+    }
     if (excerptToSave.key) {
       const indexExcerpt = mishnaDoc.excerpts.findIndex(
         excerpt => excerpt.key === excerptToSave.key,
@@ -218,7 +220,7 @@ export class MishnaRepository {
     line: string,
     parallel: InternalLink,
   ): Promise<any> {
-    console.log('saving ',this.getGUID(tractate, chapter, mishna) )
+    console.log('saving ', this.getGUID(tractate, chapter, mishna));
     return this.mishnaModel.updateOne(
       {
         guid: this.getGUID(tractate, chapter, mishna),
@@ -235,7 +237,14 @@ export class MishnaRepository {
     line: string,
     parallel: InternalLink,
   ): Promise<any> {
-    console.log('removing parallel from ', tractate,chapter,mishna,line, parallel)
+    console.log(
+      'removing parallel from ',
+      tractate,
+      chapter,
+      mishna,
+      line,
+      parallel,
+    );
     return this.mishnaModel.updateOne(
       {
         guid: this.getGUID(tractate, chapter, mishna),

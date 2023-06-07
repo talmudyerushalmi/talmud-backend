@@ -51,8 +51,10 @@ export class UsersService {
         {
           type: 'COMMENT',
           seeReference: false,
-          source: {},
-          sourceLocation: approvedComment.subline.toString(),
+          source: {
+            title: approvedComment.title,
+          },
+          sourceLocation: '',
           editorStateFullQuote: {
             blocks: [
               {
@@ -96,7 +98,7 @@ export class UsersService {
           },
         },
       )
-      .then(res => {
+      .then(() => {
         return {
           success: true,
         };
@@ -112,7 +114,7 @@ export class UsersService {
     await this.usersRepository.rejectComment(userID, commentID);
     return {
       success: true,
-    }
+    };
   }
 
   async updateComment(
