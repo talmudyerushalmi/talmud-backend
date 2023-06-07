@@ -13,12 +13,13 @@ import { SettingsService } from 'src/settings/settings.service';
 import { Mishna } from 'src/pages/schemas/mishna.schema';
 import MiscUtils from 'src/shared/MiscUtils';
 import { SublineService } from 'src/pages/subline.service';
-import { Synopsis } from 'src/pages/models/line.model';
-import { getTextForSynopsis } from 'src/pages/inc/synopsisUtils';
+import { SourceType, Synopsis } from 'src/pages/models/line.model';
+import { getSynopsisText, getTextForSynopsis, tranformTextToLeiden } from 'src/pages/inc/synopsisUtils';
 import {
   createEditorContentFromText,
   getTextFromEditorContent,
 } from 'src/pages/inc/editorUtils';
+import { LineService } from 'src/pages/line.service';
 @Console()
 @Injectable()
 export class ImportService {
@@ -45,6 +46,7 @@ export class ImportService {
     private mishnaRepo: MishnaRepository,
     private settingsService: SettingsService,
     private sublineService: SublineService,
+    private lineService: LineService,
   ) {}
 
   readFile(filename: string): void {
@@ -495,7 +497,7 @@ export class ImportService {
           );
           const synopsisLeiden: Synopsis = {
             id: 'leiden',
-            type: 'direct_sources',
+            type: SourceType.DIRECT_SOURCES,
             text: { content, simpleText: subline.text },
             code: 'leiden',
             name: 'כתב יד ליידן',
@@ -504,7 +506,7 @@ export class ImportService {
 
           const synopsisDfus: Synopsis = {
             id: 'dfus_rishon',
-            type: 'direct_sources',
+            type: SourceType.DIRECT_SOURCES,
             text: { content, simpleText: subline.text },
             code: 'dfus_rishon',
             name: 'דפוס ראשון',
@@ -659,12 +661,83 @@ export class ImportService {
   async fixSublines(tractate: string): Promise<void> {
     const r = this.mishnaRepo.getAllForTractate(tractate);
     await this.mishnaRepo.forEachMishna(async (mishna: Mishna) => {
-      const lines = mishna.lines.filter(l=>l.sugiaName !== "").forEach(l => {
-        l.sublines[0].sugiaName = l.sugiaName
-      })
+      const lines = mishna.lines
+        .filter(l => l.sugiaName !== '')
+        .forEach(l => {
+          l.sublines[0].sugiaName = l.sugiaName;
+        });
       mishna.markModified('lines');
-      await mishna.save()
-
+      await mishna.save();
     }, tractate);
+  }
+
+  async wait(t: number) {
+    return new Promise((res, _) => {
+      setTimeout(res, t);
+    });
+  }
+
+  @Command({
+    command: 'synopsis:getParallels <tractate>',
+    description: 'Get parallel synopsis for line',
+  })
+  async getParallels(tractate: string): Promise<void> {
+    await this.mishnaRepo.forEachMishnaSerial(async (mishna: Mishna) => {
+      console.log('process ', mishna.guid);
+      let changed = false;
+      for (const line of mishna.lines) {
+        if (line.parallels) {
+          changed = true;
+          await this.lineService.updateLineParallels(mishna, line.lineNumber);
+        }
+      }
+      console.log('done ', mishna.guid);
+      mishna.markModified('lines')
+      await mishna.save();
+    }, tractate);
+    // for await(const line of mishna.lines) {
+
+    //   await this.lineService.updateLineParallels(mishna, line.lineNumber)
+    // }
+    console.log('done');
+    //await this.lineService.updateLineParallels(r[0], '00010')
+
+    // await this.mishnaRepo.forEachMishna(async (mishna: Mishna) => {
+    //   for await(const line of mishna.lines) {
+
+    //     await this.lineService.updateLineParallels(mishna, line.lineNumber)
+    //   }
+
+    // }, tractate);
+  }
+
+  @Command({
+    command: 'synopsis:setLeiden <tractate>',
+    description: 'Set leiden synopsis for tractate',
+  })
+  async setLeidenSynopsis(tractate: string): Promise<void> {
+    await this.mishnaRepo.forEachMishnaSerial(async (mishna: Mishna) => {
+      for (const line of mishna.lines) {
+        for (const subline of line.sublines) {
+          if (!getSynopsisText(subline,"leiden")) {
+            subline.synopsis.push({
+              text: {
+                simpleText: tranformTextToLeiden(subline.text),
+              },
+              type: SourceType.DIRECT_SOURCES,
+              name: "כתב יד ליידן",
+              id: "leiden",
+              code: "leiden",
+              button_code: "leiden",
+            })
+          }
+
+        }
+      }
+      console.log('done ', mishna.guid);
+      mishna.markModified('lines')
+      await mishna.save();
+    }, tractate);
+   
   }
 }

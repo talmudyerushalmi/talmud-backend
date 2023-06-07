@@ -1,14 +1,13 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { Tractate } from './schemas/tractate.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Mishna } from './schemas/mishna.schema';
 import * as _ from 'lodash';
-import { LineMarkDto } from './dto/line-mark.dto';
-import * as numeral from 'numeral';
 
 @Injectable()
-export class TractateRepository {
+export class TractateRepository implements OnModuleInit {
+  tractates: Tractate[]
   constructor(
     @InjectModel(Tractate.name) private tractateModel: Model<Tractate>,
   ) {}
@@ -22,6 +21,14 @@ export class TractateRepository {
 
     }
     
+  }
+
+  async onModuleInit() {
+    this.tractates = await this.getAll();
+  }
+  
+  getCachedTractate(tractate: string): Tractate {
+    return this.tractates.find(t => t.id === tractate)
   }
 
   async getAll() : Promise<any> {

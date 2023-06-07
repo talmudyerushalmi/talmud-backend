@@ -34,6 +34,8 @@ import { User, UserSchema } from './schemas/users.schema';
 import { UsersController } from './users/users.controller';
 import { UsersService } from './users/users.service';
 import { UsersRepository } from './users/users.repository';
+import { ActionsMishnaController } from './actions.mishna.controller';
+import { SynopsisService } from './synopsis.service';
 
 @Module({
   imports: [
@@ -53,6 +55,7 @@ import { UsersRepository } from './users/users.repository';
     RelatedController,
     MishnaController,
     EditMishnaController,
+    ActionsMishnaController,
     EditMishnaExcerptController,
     ManuscriptsController,
     UsersController,
@@ -65,13 +68,20 @@ import { UsersRepository } from './users/users.repository';
     SublineService,
     ManuscriptsService,
     UsersService,
+    SynopsisService,
     TractateRepository,
     MishnaRepository,
     RelatedRepository,
     ManuscriptsRepository,
     UsersRepository,
   ],
-  exports: [PagesService, SublineService, TractateRepository, MishnaRepository],
+  exports: [
+    PagesService,
+    SublineService,
+    SynopsisService,
+    TractateRepository,
+    MishnaRepository,
+  ],
 })
 export class PagesModule {
   configure(consumer: MiddlewareConsumer): void {
@@ -80,10 +90,12 @@ export class PagesModule {
       .forRoutes({ path: '*', method: RequestMethod.ALL });
     consumer
       .apply(AuthMiddleware)
-      .forRoutes({ path: 'edit/*', method: RequestMethod.ALL });
+      .forRoutes(
+        { path: 'edit/*', method: RequestMethod.ALL },
+        { path: 'users/comments/moderation*', method: RequestMethod.ALL },
+      );
     consumer
       .apply(CheckIfAuthenticatedMiddleware)
       .forRoutes({ path: 'users/comments*', method: RequestMethod.ALL });
-      // TODO: getModerationComments - only for admin
   }
 }

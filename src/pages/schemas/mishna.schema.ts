@@ -47,6 +47,7 @@ export class Mishna extends Document {
   updateSublinesIndex: () => void;
   updateExcerpts: () => void;
   getLineText: (index: number) => string;
+  getLine: (lineNumber: string) => Line|undefined;
   getSublines: () => SubLine[];
   getSubline: (index: number) => [SubLine, number];
   getLineOfSubline: (subline: SubLine) => Line;
@@ -143,5 +144,8 @@ MishnaSchema.methods.normalizeExcerpts = async function(
   await this.save();
 };
 
+MishnaSchema.methods.getLine =  function (lineNumber: string): Line|undefined {
+  return this.lines.find(l => l.lineNumber === lineNumber)
+};
 
 MishnaSchema.methods.createSublineFromLine = createSublineFromLine

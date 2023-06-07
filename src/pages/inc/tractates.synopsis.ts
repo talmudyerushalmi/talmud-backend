@@ -217,6 +217,12 @@ export const synopsisList = {
         button_code: "likutim_l_3",
         name: "ליקוטים ל׳ ג׳",
     },
+    translation: {
+        type: "translation",
+        code: "translation", 
+        button_code: "translation",
+        name: "תרגום",
+    },
 
 
 }
