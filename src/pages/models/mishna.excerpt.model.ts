@@ -19,7 +19,7 @@ export interface iSelection {
   toOffset: number;
 }
 export class MishnaExcerpt {
-  key: number;
+  key?: number;
   type: string;
   @IsBoolean()
   seeReference: boolean;

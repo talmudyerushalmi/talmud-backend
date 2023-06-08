@@ -5,7 +5,7 @@ import { iSelection } from '../models/mishna.excerpt.model';
 export class SaveMishnaExcerptDto {
   @IsOptional()
   @IsNumber()
-  key: number;
+  key?: number;
   @IsString()
   type: string;
   @IsOptional()

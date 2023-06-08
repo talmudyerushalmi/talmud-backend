@@ -26,15 +26,15 @@ function calculateSublineOffset(
   let index = 0;
   let subline = line.sublines[index];
   while (lineOffset >= subline.text.length + SPACE_BETWEEN_LINES) {
-    if (lineOffset === subline.text.length + SPACE_BETWEEN_LINES) { // moving to next line
-     lineOffset = lineOffset - subline.text.length - SPACE_BETWEEN_LINES; 
+    if (lineOffset === subline.text.length + SPACE_BETWEEN_LINES) {
+      // moving to next line
+      lineOffset = lineOffset - subline.text.length - SPACE_BETWEEN_LINES;
+    } else if (lineOffset > subline.text.length + SPACE_BETWEEN_LINES) {
+      // moving to next line
+      lineOffset = lineOffset - subline.text.length - SPACE_BETWEEN_LINES;
+    } else if (lineOffset < subline.text.length + SPACE_BETWEEN_LINES) {
+      lineOffset = lineOffset - subline.text.length;
     }
-    else if (lineOffset > subline.text.length + SPACE_BETWEEN_LINES) { // moving to next line
-        lineOffset = lineOffset - subline.text.length - SPACE_BETWEEN_LINES; 
-    }
-    else if (lineOffset < subline.text.length + SPACE_BETWEEN_LINES) {
-        lineOffset = lineOffset - subline.text.length; 
-    };
     index++;
     subline = line.sublines[index];
   }
@@ -56,7 +56,11 @@ function getOffsetAddition(oldNosach: string[], newNosach: string[]): number {
   return sublines - 1;
 }
 
-function getSublineIndex(wordSelection: string, occurence:number, line: Line) : [number, number] {
+function getSublineIndex(
+  wordSelection: string,
+  occurence: number,
+  line: Line,
+): [number, number] {
   let subline: SubLine;
   let index = 0;
   let found = 0;
@@ -66,38 +70,61 @@ function getSublineIndex(wordSelection: string, occurence:number, line: Line) : 
   do {
     subline = line.sublines[index];
     wordsInSubline = ExcerptUtils.getWordsInText(subline.text, wordSelection);
-    found+= wordsInSubline;
-    sublineWordCount-= wordsInSubline
+    found += wordsInSubline;
+    sublineWordCount -= wordsInSubline;
     index++;
-  } while (index < line.sublines.length && found<occurence);
-  return [subline.index, sublineWordCount+wordsInSubline];
+  } while (index < line.sublines.length && found < occurence);
+  console.log(subline.index, sublineWordCount + wordsInSubline);
+  return [subline.index, sublineWordCount + wordsInSubline];
 }
 export class ExcerptUtils {
   constructor(private excerpt: MishnaExcerpt) {}
 
   static stripCharacters(text: string): string {
     const quotesOutside = /^["]*([א-ת\s]+)["]*$/g; // remove quotes marks and return the word they surround (leave quotes inside)
-    text = text.replace(quotesOutside,"$1");
+    text = text.replace(quotesOutside, '$1');
     const pattern = /[^א-ת\s'"]/g;
-    return text.replace(pattern,'');
+    return text.replace(pattern, '');
   }
 
   static getWords(text: string): string[] {
     const stripped = ExcerptUtils.stripCharacters(text);
     let pattern = /[א-ת\"'><[\]]+/g;
-    const words = _.words(stripped,pattern);
+    const words = _.words(stripped, pattern);
     return words;
   }
-  static getWordsInText(text: string, wordToSearch: string){
-  
+  static getWordsInText(text: string, wordToSearch: string) {
     const words = ExcerptUtils.getWords(text);
 
     return words.filter(word => word === wordToSearch).length;
   }
 
   updateExcerptSubline(fromLine: Line, toLine: Line): void {
-    [this.excerpt.selection.fromSubline, this.excerpt.selection.fromWordOccurenceSubline]= getSublineIndex(this.excerpt.selection.fromWord, this.excerpt.selection.fromWordOccurence, fromLine);
-    [this.excerpt.selection.toSubline, this.excerpt.selection.toWordOccurenceSubline] = getSublineIndex(this.excerpt.selection.toWord, this.excerpt.selection.toWordOccurence, toLine);
+    if (
+      this.excerpt.selection.fromWord === '' &&
+      this.excerpt.selection.toWord === ''
+    ) {
+      this.excerpt.selection.fromSubline = fromLine.sublines[0].index;
+      this.excerpt.selection.toSubline =
+        toLine.sublines[toLine.sublines.length - 1].index;
+      return;
+    }
+    [
+      this.excerpt.selection.fromSubline,
+      this.excerpt.selection.fromWordOccurenceSubline,
+    ] = getSublineIndex(
+      this.excerpt.selection.fromWord,
+      this.excerpt.selection.fromWordOccurence,
+      fromLine,
+    );
+    [
+      this.excerpt.selection.toSubline,
+      this.excerpt.selection.toWordOccurenceSubline,
+    ] = getSublineIndex(
+      this.excerpt.selection.toWord,
+      this.excerpt.selection.toWordOccurence,
+      toLine,
+    );
   }
 
   updateExcerptSublineold(sublineIndex: number, newNosach: string[]): void {
@@ -122,23 +149,25 @@ export class ExcerptUtils {
     }
   }
   calculateSublineOffset(lineFrom: Line, lineTo: Line): void {
-    [
-      this.excerpt.selection.fromSubline,
-      ] = calculateSublineOffset(lineFrom, this.excerpt.selection.fromOffset);
+    [this.excerpt.selection.fromSubline] = calculateSublineOffset(
+      lineFrom,
+      this.excerpt.selection.fromOffset,
+    );
 
-    [
-      this.excerpt.selection.toSubline,
-     ] = calculateSublineOffset(lineTo, this.excerpt.selection.toOffset);
+    [this.excerpt.selection.toSubline] = calculateSublineOffset(
+      lineTo,
+      this.excerpt.selection.toOffset,
+    );
   }
   calculateSublineSelection(lineFrom: Line, lineTo: Line): void {
-    [
-      this.excerpt.selection.fromSubline,
-    ] = calculateSublineOffset(lineFrom, this.excerpt.selection.fromOffset);
-    [
-      this.excerpt.selection.toSubline,
-    ] = calculateSublineOffset(lineTo, this.excerpt.selection.toOffset);
-
-  
+    [this.excerpt.selection.fromSubline] = calculateSublineOffset(
+      lineFrom,
+      this.excerpt.selection.fromOffset,
+    );
+    [this.excerpt.selection.toSubline] = calculateSublineOffset(
+      lineTo,
+      this.excerpt.selection.toOffset,
+    );
   }
   updateExcerptOffset(
     lineIndex: number,
