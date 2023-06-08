@@ -97,7 +97,7 @@ export class UsersRepository {
           _id: 0,
           userID: 1,
           commentID: '$comments.commentID',
-          line: '$comments.line',
+          lineNumber: '$comments.lineNumber',
           text: '$comments.text',
           type: '$comments.type',
           tractate: '$comments.tractate',
@@ -107,6 +107,9 @@ export class UsersRepository {
           chapter: '$comments.chapter',
           mishna: '$comments.mishna',
           subline: '$comments.subline',
+          lineIndex: '$comments.lineIndex',
+          fromSubline: '$comments.fromSubline',
+          toSubline: '$comments.toSubline',
         },
       },
     ]);

@@ -40,8 +40,7 @@ export class MishnaRepository {
     return this.mishnaModel.findOne({ tractate, 'lines.lineNumber': line });
   }
 
-  
-  async findByLink(link: InternalLink): Promise<Line|undefined> {
+  async findByLink(link: InternalLink): Promise<Line | undefined> {
     const mishna = await this.find(link.tractate, link.chapter, link.mishna);
     return mishna.getLine(link.lineNumber);
   }
@@ -86,8 +85,8 @@ export class MishnaRepository {
       ? await this.getAllForTractate(tractate)
       : await this.getAll();
     for (const mishna of mishnaiot) {
-      await cb(mishna)
-    }  
+      await cb(mishna);
+    }
   }
 
   getAllForTractate(tractate: string): QueryWithHelpers<Mishna[], any> {
@@ -179,9 +178,7 @@ export class MishnaRepository {
     const mishnaDoc = await this.find(tractate, chapter, mishna);
     const lineFrom = mishnaDoc.lines[excerptToSave.selection.fromLine];
     const lineTo = mishnaDoc.lines[excerptToSave.selection.toLine];
-    if (excerptToSave.type !== 'COMMENT') {
-      new ExcerptUtils(excerptToSave).updateExcerptSubline(lineFrom, lineTo);
-    }
+    new ExcerptUtils(excerptToSave).updateExcerptSubline(lineFrom, lineTo);
     if (excerptToSave.key) {
       const indexExcerpt = mishnaDoc.excerpts.findIndex(
         excerpt => excerpt.key === excerptToSave.key,

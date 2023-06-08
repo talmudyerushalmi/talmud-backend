@@ -26,7 +26,21 @@ export class UsersService {
   }
 
   async createComment(userID: string, comment: CommentDto): Promise<User> {
-    return this.usersRepository.createComment(userID, comment);
+    const mishnaDocSublines = (
+      await this.mishnaRepository.find(
+        comment.tractate,
+        comment.chapter,
+        comment.mishna,
+      )
+    ).lines[comment.lineIndex].sublines;
+    const fromSubline = mishnaDocSublines[0].index;
+    const toSubline = mishnaDocSublines[mishnaDocSublines.length - 1].index;
+    const newComment = {
+      ...comment,
+      fromSubline,
+      toSubline,
+    };
+    return this.usersRepository.createComment(userID, newComment);
   }
 
   async removeComment(userID: string, commentID: string): Promise<User> {
@@ -42,7 +56,7 @@ export class UsersService {
       userID,
       commentID,
     );
-    console.log(approvedComment);
+
     return await this.mishnaRepository
       .saveExcerpt(
         approvedComment.tractate,
@@ -85,14 +99,12 @@ export class UsersService {
             entityMap: {},
           },
           selection: {
-            fromLine: approvedComment.line,
-            fromWord: approvedComment.fromWord,
+            fromLine: approvedComment.lineIndex,
+            fromWord: '',
             fromOffset: 1,
-            toLine: approvedComment.line,
-            toWord: approvedComment.toWord,
+            toLine: approvedComment.lineIndex,
+            toWord: '',
             toOffset: 1,
-            fromSubline: approvedComment.subline,
-            toSubline: approvedComment.subline,
             fromWordOccurence: 1,
             toWordOccurence: 1,
           },

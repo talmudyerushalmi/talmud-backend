@@ -27,16 +27,15 @@ export class CommentDto {
   mishna: string;
   @IsNotEmpty()
   @IsNumber()
-  line: number;
+  lineIndex: number;
+  @IsNotEmpty()
+  lineNumber: string;
   // @IsNotEmpty()
   @IsString()
   fromWord: string;
   // @IsNotEmpty()
   @IsString()
   toWord: string;
-  @IsNotEmpty()
-  @IsNumber()
-  subline: string;
 }
 
 export class UpdateCommentDto extends CommentDto {

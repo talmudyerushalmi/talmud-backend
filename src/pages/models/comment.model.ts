@@ -13,8 +13,10 @@ export class Comment {
   tractate: string;
   chapter: string;
   mishna: string;
-  line: number;
+  lineNumber: string;
   fromWord: string;
   toWord: string;
-  subline: number;
+  fromSubline: number;
+  toSubline: number;
+  lineIndex: number;
 }
