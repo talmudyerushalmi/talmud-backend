@@ -115,7 +115,7 @@ export class UsersRepository {
     ]);
   }
 
-  async approveComment(userID: string, commentID: string): Promise<Comment> {
+  async removeCommentForApproval(userID: string, commentID: string): Promise<Comment> {
     const commentObjId = new ObjectId(commentID);
     return this.userModel
       .findOneAndUpdate(

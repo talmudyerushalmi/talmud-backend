@@ -1,5 +1,7 @@
+import { Comment } from '../models/comment.model';
+import { ExcerptMishna } from '../models/excerpt.model';
 import { Line, SubLine } from '../models/line.model';
-import { MishnaExcerpt } from '../models/mishna.excerpt.model';
+import { ExcerptType, MishnaExcerpt } from '../models/mishna.excerpt.model';
 import { Mishna } from '../schemas/mishna.schema';
 import * as _ from 'lodash';
 
@@ -97,6 +99,56 @@ export class ExcerptUtils {
     const words = ExcerptUtils.getWords(text);
 
     return words.filter(word => word === wordToSearch).length;
+  }
+
+  static buildExcerptComment(approvedComment: Comment): MishnaExcerpt {
+    return {
+      type: ExcerptType.COMMENT,
+      seeReference: false,
+      source: {
+        title: approvedComment.title,
+      },
+      sourceLocation: '',
+      editorStateFullQuote: {
+        blocks: [
+          {
+            key: '',
+            text: approvedComment.text,
+            type: 'unstyled',
+            depth: 0,
+            inlineStyleRanges: [],
+            entityRanges: [],
+            data: {},
+          },
+        ],
+        entityMap: {},
+      },
+      synopsis: '',
+      editorStateComments: {
+        blocks: [
+          {
+            key: 'imprt',
+            text: '',
+            type: 'unstyled',
+            depth: 0,
+            inlineStyleRanges: [],
+            entityRanges: [],
+            data: {},
+          },
+        ],
+        entityMap: {},
+      },
+      selection: {
+        fromLine: approvedComment.lineIndex,
+        fromWord: '',
+        fromOffset: 1,
+        toLine: approvedComment.lineIndex,
+        toWord: '',
+        toOffset: 1,
+        fromWordOccurence: 1,
+        toWordOccurence: 1,
+      },
+    };
   }
 
   updateExcerptSubline(fromLine: Line, toLine: Line): void {

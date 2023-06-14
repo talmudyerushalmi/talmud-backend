@@ -3,6 +3,7 @@ import { CommentDto, UpdateCommentDto } from '../dto/comment.dto';
 import { UsersRepository } from './users.repository';
 import { User } from '../schemas/users.schema';
 import { MishnaRepository } from '../mishna.repository';
+import { ExcerptUtils } from '../inc/excerptUtils';
 
 @Injectable()
 export class UsersService {
@@ -52,7 +53,7 @@ export class UsersService {
   }
 
   async approveComment(userID: string, commentID: string): Promise<any> {
-    const approvedComment = await this.usersRepository.approveComment(
+    const approvedComment = await this.usersRepository.removeCommentForApproval(
       userID,
       commentID,
     );
@@ -62,53 +63,7 @@ export class UsersService {
         approvedComment.tractate,
         approvedComment.chapter,
         approvedComment.mishna,
-        {
-          type: 'COMMENT',
-          seeReference: false,
-          source: {
-            title: approvedComment.title,
-          },
-          sourceLocation: '',
-          editorStateFullQuote: {
-            blocks: [
-              {
-                key: '',
-                text: approvedComment.text,
-                type: 'unstyled',
-                depth: 0,
-                inlineStyleRanges: [],
-                entityRanges: [],
-                data: {},
-              },
-            ],
-            entityMap: {},
-          },
-          synopsis: '',
-          editorStateComments: {
-            blocks: [
-              {
-                key: 'imprt',
-                text: '',
-                type: 'unstyled',
-                depth: 0,
-                inlineStyleRanges: [],
-                entityRanges: [],
-                data: {},
-              },
-            ],
-            entityMap: {},
-          },
-          selection: {
-            fromLine: approvedComment.lineIndex,
-            fromWord: '',
-            fromOffset: 1,
-            toLine: approvedComment.lineIndex,
-            toWord: '',
-            toOffset: 1,
-            fromWordOccurence: 1,
-            toWordOccurence: 1,
-          },
-        },
+        ExcerptUtils.buildExcerptComment(approvedComment),
       )
       .then(() => {
         return {

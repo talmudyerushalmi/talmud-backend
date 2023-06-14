@@ -13,10 +13,7 @@ import { EditMishnaExcerptController } from './edit.excerpt.controller';
 import { SettingsModule } from 'src/settings/settings.module';
 import { TractatesController } from './tractates/tractates.controller';
 import { SublineService } from './subline.service';
-import {
-  AuthMiddleware,
-  CheckIfAuthenticatedMiddleware,
-} from 'src/middleware/auth';
+import { EditorMiddleware, AuthenticatedMiddleware } from 'src/middleware/auth';
 import { NavigationtController } from './navigation.controller';
 import { NavigationService } from './navigation.service';
 import { RelatedController } from './related.controller';
@@ -89,13 +86,13 @@ export class PagesModule {
       .apply(UserMiddleware)
       .forRoutes({ path: '*', method: RequestMethod.ALL });
     consumer
-      .apply(AuthMiddleware)
+      .apply(EditorMiddleware)
       .forRoutes(
         { path: 'edit/*', method: RequestMethod.ALL },
         { path: 'users/comments/moderation*', method: RequestMethod.ALL },
       );
     consumer
-      .apply(CheckIfAuthenticatedMiddleware)
+      .apply(AuthenticatedMiddleware)
       .forRoutes({ path: 'users/comments*', method: RequestMethod.ALL });
   }
 }

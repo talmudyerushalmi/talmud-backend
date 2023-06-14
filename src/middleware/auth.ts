@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { UserGroup } from './userType';
 
 @Injectable()
-export class AuthMiddleware implements NestMiddleware {
+export class EditorMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: () => void): any {
     const userGroup = res.locals.userGroup;
     if (userGroup == UserGroup.Editor) {
@@ -16,7 +16,7 @@ export class AuthMiddleware implements NestMiddleware {
   }
 }
 
-export class CheckIfAuthenticatedMiddleware implements NestMiddleware {
+export class AuthenticatedMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: () => void): any {
     const userGroup = res.locals.userGroup;
     if (userGroup !== UserGroup.Unauthenticated) {

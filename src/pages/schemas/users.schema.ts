@@ -4,10 +4,7 @@ import { Comment } from '../models/comment.model';
 
 @Schema()
 export class User extends Document {
-  @Prop()
-  id: string;
-
-  @Prop()
+  @Prop({ index: true, unique: true })
   userID: string;
 
   @Prop()
