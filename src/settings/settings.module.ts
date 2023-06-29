@@ -6,7 +6,7 @@ import { Settings, SettingsSchema } from './schemas/settings.schema';
 import { SettingsService } from './settings.service';
 import { SettingsController } from './settings.controller';
 import { UserMiddleware } from 'src/middleware/userType';
-import { AuthMiddleware } from 'src/middleware/auth';
+import { EditorMiddleware } from 'src/middleware/auth';
 
 @Module({
   imports: [
@@ -14,12 +14,11 @@ import { AuthMiddleware } from 'src/middleware/auth';
       { name: Settings.name, schema: SettingsSchema },
     ]),
     ConsoleModule,
-    CsvParser
+    CsvParser,
   ],
-  providers: [SettingsService,CsvParser],
+  providers: [SettingsService, CsvParser],
   exports: [SettingsService],
-  controllers: [SettingsController]
-
+  controllers: [SettingsController],
 })
 export class SettingsModule {
   configure(consumer: MiddlewareConsumer): void {
@@ -27,7 +26,7 @@ export class SettingsModule {
       .apply(UserMiddleware)
       .forRoutes({ path: '*', method: RequestMethod.ALL });
     consumer
-      .apply(AuthMiddleware)
+      .apply(EditorMiddleware)
       .forRoutes({ path: '*/add', method: RequestMethod.ALL });
   }
 }

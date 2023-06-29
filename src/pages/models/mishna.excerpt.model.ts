@@ -19,23 +19,25 @@ export interface iSelection {
   toOffset: number;
 }
 export class MishnaExcerpt {
-  key: number;
+  key?: number;
   type: string;
   @IsBoolean()
   seeReference: boolean;
   @IsNotEmpty()
   @IsString()
-  source: Record<string, unknown>;;
+  source: Record<string, unknown>;
   @IsString()
   sourceLocation: string;
   editorStateFullQuote: Record<string, unknown>;
   @IsString()
   synopsis: string;
-  editorStateComments:Record<string, unknown>;
+  editorStateComments: Record<string, unknown>;
   selection: iSelection;
   automaticImport?: boolean;
   flagNeedUpdate?: boolean;
+}
 
-};
-
-
+export enum ExcerptType {
+  COMMENT = 'COMMENT',
+  // TODO: add all excerpt types
+}

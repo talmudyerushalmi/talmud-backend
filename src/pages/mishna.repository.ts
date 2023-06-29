@@ -40,8 +40,7 @@ export class MishnaRepository {
     return this.mishnaModel.findOne({ tractate, 'lines.lineNumber': line });
   }
 
-  
-  async findByLink(link: InternalLink): Promise<Line|undefined> {
+  async findByLink(link: InternalLink): Promise<Line | undefined> {
     const mishna = await this.find(link.tractate, link.chapter, link.mishna);
     return mishna.getLine(link.lineNumber);
   }
@@ -86,8 +85,8 @@ export class MishnaRepository {
       ? await this.getAllForTractate(tractate)
       : await this.getAll();
     for (const mishna of mishnaiot) {
-      await cb(mishna)
-    }  
+      await cb(mishna);
+    }
   }
 
   getAllForTractate(tractate: string): QueryWithHelpers<Mishna[], any> {
@@ -238,7 +237,7 @@ export class MishnaRepository {
     line: string,
     parallel: InternalLink,
   ): Promise<any> {
-    console.log('saving ',this.getGUID(tractate, chapter, mishna) )
+    console.log('saving ', this.getGUID(tractate, chapter, mishna));
     return this.mishnaModel.updateOne(
       {
         guid: this.getGUID(tractate, chapter, mishna),
@@ -255,7 +254,14 @@ export class MishnaRepository {
     line: string,
     parallel: InternalLink,
   ): Promise<any> {
-    console.log('removing parallel from ', tractate,chapter,mishna,line, parallel)
+    console.log(
+      'removing parallel from ',
+      tractate,
+      chapter,
+      mishna,
+      line,
+      parallel,
+    );
     return this.mishnaModel.updateOne(
       {
         guid: this.getGUID(tractate, chapter, mishna),
