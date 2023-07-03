@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, SchemaTypes, Types } from 'mongoose';
 import { Line, SubLine } from '../models/line.model';
-import { ObjectID } from 'mongodb';
 import { MishnaLink } from '../models/mishna.link.model';
 import { MishnaExcerpt } from '../models/mishna.excerpt.model';
 import * as _ from 'lodash';

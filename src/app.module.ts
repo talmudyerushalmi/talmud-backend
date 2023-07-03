@@ -14,8 +14,7 @@ const dbConfig = config.get('db');
     MongooseModule.forRoot(dbConfig.connection,
       {
         "user": dbConfig.user,
-        "pass": dbConfig.password,
-        useNewUrlParser: true}),
+        "pass": dbConfig.password,}),
     PagesModule,
     ImportModule,
     SettingsModule,
