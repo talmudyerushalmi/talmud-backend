@@ -45,6 +45,7 @@ export class NavigationService {
     });
     return {
       mishna: mishnaDoc.mishna,
+      id: mishnaDoc.guid,
       lines,
       previous: mishnaDoc.previous,
       next: mishnaDoc.next,
