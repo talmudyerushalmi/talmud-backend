@@ -1,0 +1,20 @@
+version: '3'
+services:
+  mongo:
+    container_name: mongo-for-talmud
+    image: mongo:latest
+    ports:
+      - 27017:27017
+    volumes:
+      - "./mongo-data:/data/db"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoadmin
+      MONGO_INITDB_ROOT_PASSWORD: secret
+
+  backend:
+    container_name: backend-for-talmud
+    image: test/talmud
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
