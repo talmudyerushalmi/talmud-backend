@@ -11,10 +11,8 @@ import { ConfigModule } from '@nestjs/config';
 const dbConfig = config.get('db');
 @Module({
   imports: [
-    MongooseModule.forRoot(dbConfig.connection,
-      {
-        "user": dbConfig.user,
-        "pass": dbConfig.password,}),
+    MongooseModule.forRoot(process.env.DB_CONNECTION,
+      {}),
     PagesModule,
     ImportModule,
     SettingsModule,
