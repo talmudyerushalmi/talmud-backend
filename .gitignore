@@ -39,6 +39,6 @@ config/dev.json
 config/production.json
 /dump
 restore.sh
-.env
+.env*
 
 mongo-data
