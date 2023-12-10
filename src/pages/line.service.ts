@@ -6,7 +6,7 @@ import * as _ from 'lodash';
 import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './mishna.repository';
 import { InternalLink, Line } from './models/line.model';
-import MiscUtils from 'src/shared/MiscUtils';
+import MiscUtils from '../shared/MiscUtils';
 import { compareSynopsis, filterParallelSynopsis, getSynopsisText } from './inc/synopsisUtils';
 import { SynopsisService } from './synopsis.service';
 

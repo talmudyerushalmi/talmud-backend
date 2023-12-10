@@ -5,8 +5,8 @@ import { ConsoleModule } from 'nestjs-console';
 import { Settings, SettingsSchema } from './schemas/settings.schema';
 import { SettingsService } from './settings.service';
 import { SettingsController } from './settings.controller';
-import { UserMiddleware } from 'src/middleware/userType';
-import { EditorMiddleware } from 'src/middleware/auth';
+import { UserMiddleware } from '../middleware/userType';
+import { EditorMiddleware } from '../middleware/auth';
 
 @Module({
   imports: [

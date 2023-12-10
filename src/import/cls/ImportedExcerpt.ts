@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
-import { MishnaRepository } from "src/pages/mishna.repository";
+import { MishnaRepository } from "../../pages/mishna.repository";
 import * as numeral from 'numeral';
-import MiscUtils from "src/shared/MiscUtils";
+import MiscUtils from "../../shared/MiscUtils";
 
 
 @Injectable()
