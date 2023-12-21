@@ -5,15 +5,12 @@
 //const jwksUri = `${issuer}/.well-known/jwks.json`;
 //https://cognito-idp.eu-west-1.amazonaws.com/eu-west-1_dwviLBYxz/.well-known/jwks.json
 
-import * as config from 'config';
-
-const cognitoConfig = config.get('cognito');
 
 export const key = {
-  alg: cognitoConfig.alg,
-  e: cognitoConfig.e,
-  kid: cognitoConfig.kid,
-  kty: cognitoConfig.kty,
-  n:cognitoConfig.n,
-  use: cognitoConfig.use,
+  alg: "RS256",
+  e: "AQAB",
+  kid: process.env.COGNITO_KID,
+  kty: "RSA",
+  n: process.env.COGNITO_N,
+  use: "sig",
 };

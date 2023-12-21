@@ -5,10 +5,8 @@ import { PagesModule } from './pages/pages.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ImportModule } from './import/import.module';
 import { SettingsModule } from './settings/settings.module';
-import * as config from 'config';
 import { ConfigModule } from '@nestjs/config';
 
-const dbConfig = config.get('db');
 @Module({
   imports: [
     MongooseModule.forRoot(process.env.DB_CONNECTION,
