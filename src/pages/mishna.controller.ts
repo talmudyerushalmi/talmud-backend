@@ -30,7 +30,7 @@ export class MishnaController {
   private throwIfForbidden(tractate: string, userGroup: UserGroup) {
     const canView = tractateSettings[tractate]?.public || userGroup === UserGroup.Editor;
     if (!canView) {
-      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+     throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
     }
   }
 
@@ -69,7 +69,7 @@ export class MishnaController {
     @Query() query: GetChapterDTO,
     @Response() res,
   ) {
-    this.throwIfForbidden(tractate, res.locals.userType);
+    this.throwIfForbidden(tractate, res.locals.userGroup);
     const chapterDoc = await this.pagesService.getChapter(tractate, chapter, query.mishna);
     return res.json(chapterDoc);
   }
