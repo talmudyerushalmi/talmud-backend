@@ -21,7 +21,6 @@ import { RelatedService } from './related.service';
 import { Related } from './models/related.model';
 import { RelatedSchema } from './schemas/related.schema';
 import { RelatedRepository } from './related.repository';
-import { UserMiddleware } from '../middleware/userType';
 import { ManuscriptsController } from './manuscripts.controller';
 import { Manuscripts, ManuscriptSchema } from './schemas/manuscripts.schema';
 import { ManuscriptsRepository } from './manuscripts.repository';
@@ -82,9 +81,6 @@ import { SynopsisService } from './synopsis.service';
 })
 export class PagesModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer
-      .apply(UserMiddleware)
-      .forRoutes({ path: '*', method: RequestMethod.ALL });
     consumer
       .apply(EditorMiddleware)
       .forRoutes(

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PagesModule } from './pages/pages.module';
@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ImportModule } from './import/import.module';
 import { SettingsModule } from './settings/settings.module';
 import { ConfigModule } from '@nestjs/config';
+import { UserMiddleware } from './middleware/userType';
 
 @Module({
   imports: [
@@ -21,4 +22,10 @@ import { ConfigModule } from '@nestjs/config';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer
+      .apply(UserMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
+}
