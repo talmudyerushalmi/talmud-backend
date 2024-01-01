@@ -5,8 +5,7 @@ import { ConsoleModule } from 'nestjs-console';
 import { Settings, SettingsSchema } from './schemas/settings.schema';
 import { SettingsService } from './settings.service';
 import { SettingsController } from './settings.controller';
-import { UserMiddleware } from 'src/middleware/userType';
-import { EditorMiddleware } from 'src/middleware/auth';
+import { EditorMiddleware } from '../middleware/auth';
 
 @Module({
   imports: [
@@ -22,9 +21,6 @@ import { EditorMiddleware } from 'src/middleware/auth';
 })
 export class SettingsModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer
-      .apply(UserMiddleware)
-      .forRoutes({ path: '*', method: RequestMethod.ALL });
     consumer
       .apply(EditorMiddleware)
       .forRoutes({ path: '*/add', method: RequestMethod.ALL });

@@ -32,6 +32,10 @@ function getUserGroup(decodedToken: any){
 @Injectable()
 export class UserMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: Function): any {
+    if (res.locals.userGroup) {
+      next()
+      return
+    }
     const autoken = req.headers.authorization;
     const token = autoken && autoken.split(' ')[1];
     const pem = jwkToPem(key);
@@ -45,3 +49,4 @@ export class UserMiddleware implements NestMiddleware {
     });
   }
 }
+

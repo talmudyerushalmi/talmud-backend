@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { Command, Console } from 'nestjs-console';
 import { PagesService } from '../pages/pages.service';
-import { TractateRepository } from 'src/pages/tractate.repository';
-import { MishnaRepository } from 'src/pages/mishna.repository';
+import { TractateRepository } from '../pages/tractate.repository';
+import { MishnaRepository } from '../pages/mishna.repository';
 import { CsvParser } from 'nest-csv-parser';
-import { SettingsService } from 'src/settings/settings.service';
+import { SettingsService } from '../settings/settings.service';
 
-import { SublineService } from 'src/pages/subline.service';
-import { Mishna } from 'src/pages/schemas/mishna.schema';
-import { Line } from 'src/pages/models/line.model';
-import { createEditorContentFromText } from 'src/pages/inc/editorUtils';
-import { MishnaExcerpt } from 'src/pages/models/mishna.excerpt.model';
-import { ExcerptUtils } from 'src/pages/inc/excerptUtils';
+import { SublineService } from '../pages/subline.service';
+import { Mishna } from '../pages/schemas/mishna.schema';
+import { Line } from '../pages/models/line.model';
+import { createEditorContentFromText } from '../pages/inc/editorUtils';
+import { MishnaExcerpt } from '../pages/models/mishna.excerpt.model';
+import { ExcerptUtils } from '../pages/inc/excerptUtils';
 @Console()
 @Injectable()
 export class NormalizeService {

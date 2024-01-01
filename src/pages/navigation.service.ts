@@ -8,7 +8,7 @@ import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './mishna.repository';
 import { iTractate } from './pages.service';
 import { InternalLink } from './models/line.model';
-import MiscUtils from 'src/shared/MiscUtils';
+import MiscUtils from '../shared/MiscUtils';
 
 export enum LinkFormat {
   TractateChapterMishna = 'TractateChapterMishna',

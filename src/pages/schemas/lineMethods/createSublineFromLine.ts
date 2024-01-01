@@ -1,4 +1,4 @@
-import { createEditorContentFromText } from "src/pages/inc/editorUtils";
+import { createEditorContentFromText } from "../../inc/editorUtils";
 import { SubLine } from "src/pages/models/line.model";
 
 

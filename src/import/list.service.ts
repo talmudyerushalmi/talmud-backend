@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { Command, Console } from 'nestjs-console';
 import { PagesService } from '../pages/pages.service';
-import { TractateRepository } from 'src/pages/tractate.repository';
-import { MishnaRepository } from 'src/pages/mishna.repository';
+import { TractateRepository } from '../pages/tractate.repository';
+import { MishnaRepository } from '../pages/mishna.repository';
 import { CsvParser } from 'nest-csv-parser';
-import { SettingsService } from 'src/settings/settings.service';
+import { SettingsService } from '../settings/settings.service';
 import * as fs from 'fs';
-import { SublineService } from 'src/pages/subline.service';
-import { Mishna } from 'src/pages/schemas/mishna.schema';
+import { SublineService } from '../pages/subline.service';
+import { Mishna } from '../pages/schemas/mishna.schema';
 
 class Entity {
 

@@ -3,23 +3,23 @@ import { Command, Console } from 'nestjs-console';
 import { PagesService } from '../pages/pages.service';
 import * as fs from 'fs';
 import * as numeral from 'numeral';
-import { TractateRepository } from 'src/pages/tractate.repository';
-import { Tractate } from 'src/pages/schemas/tractate.schema';
-import { LineMarkDto } from 'src/pages/dto/line-mark.dto';
-import { MishnaRepository } from 'src/pages/mishna.repository';
+import { TractateRepository } from '../pages/tractate.repository';
+import { Tractate } from '../pages/schemas/tractate.schema';
+import { LineMarkDto } from '../pages/dto/line-mark.dto';
+import { MishnaRepository } from '../pages/mishna.repository';
 import { CsvParser } from 'nest-csv-parser';
 import ImportedExcerpt from './cls/ImportedExcerpt';
-import { SettingsService } from 'src/settings/settings.service';
-import { Mishna } from 'src/pages/schemas/mishna.schema';
-import MiscUtils from 'src/shared/MiscUtils';
-import { SublineService } from 'src/pages/subline.service';
-import { SourceType, Synopsis } from 'src/pages/models/line.model';
-import { getSynopsisText, getTextForSynopsis, tranformTextToLeiden } from 'src/pages/inc/synopsisUtils';
+import { SettingsService } from '../settings/settings.service';
+import { Mishna } from '../pages/schemas/mishna.schema';
+import MiscUtils from '../shared/MiscUtils';
+import { SublineService } from '../pages/subline.service';
+import { SourceType, Synopsis } from '../pages/models/line.model';
+import { getSynopsisText, getTextForSynopsis, tranformTextToLeiden } from '../pages/inc/synopsisUtils';
 import {
   createEditorContentFromText,
   getTextFromEditorContent,
-} from 'src/pages/inc/editorUtils';
-import { LineService } from 'src/pages/line.service';
+} from '../pages/inc/editorUtils';
+import { LineService } from '../pages/line.service';
 @Console()
 @Injectable()
 export class ImportService {

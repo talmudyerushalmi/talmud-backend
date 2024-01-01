@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
 import {  IsNumber, IsOptional } from 'class-validator';
-import { toNumber } from 'src/helpers/cast.helper';
+import { toNumber } from '../../helpers/cast.helper';
 
 
 export class GetChapterDTO {
