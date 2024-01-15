@@ -98,6 +98,7 @@ export class UsersRepository {
           userID: 1,
           commentID: '$comments.commentID',
           lineNumber: '$comments.lineNumber',
+          userName: '$comments.userName',
           text: '$comments.text',
           type: '$comments.type',
           tractate: '$comments.tractate',
@@ -115,7 +116,10 @@ export class UsersRepository {
     ]);
   }
 
-  async removeCommentForApproval(userID: string, commentID: string): Promise<Comment> {
+  async removeCommentForApproval(
+    userID: string,
+    commentID: string,
+  ): Promise<Comment> {
     const commentObjId = new ObjectId(commentID);
     return this.userModel
       .findOneAndUpdate(
@@ -126,8 +130,8 @@ export class UsersRepository {
           },
         },
       )
-      .then(user =>
-        user.comments.find(comment => comment.commentID.equals(commentObjId)),
+      .then((user) =>
+        user.comments.find((comment) => comment.commentID.equals(commentObjId)),
       );
   }
 

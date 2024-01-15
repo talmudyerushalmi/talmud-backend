@@ -7,6 +7,7 @@ export enum CommentType {
 
 export class Comment {
   commentID: ObjectId;
+  userName: string;
   title: string;
   text: string;
   type: CommentType;

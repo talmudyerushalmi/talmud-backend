@@ -70,7 +70,7 @@ export class UsersService {
           success: true,
         };
       })
-      .catch(err => {
+      .catch((err) => {
         return {
           error: err,
         };

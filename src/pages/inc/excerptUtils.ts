@@ -98,7 +98,7 @@ export class ExcerptUtils {
   static getWordsInText(text: string, wordToSearch: string) {
     const words = ExcerptUtils.getWords(text);
 
-    return words.filter(word => word === wordToSearch).length;
+    return words.filter((word) => word === wordToSearch).length;
   }
 
   static buildExcerptComment(approvedComment: Comment): MishnaExcerpt {
@@ -108,7 +108,8 @@ export class ExcerptUtils {
       source: {
         title: approvedComment.title,
       },
-      sourceLocation: '',
+      sourceLocation: `\n
+      נכתב בידי -  ${approvedComment.userName}`,
       editorStateFullQuote: {
         blocks: [
           {
