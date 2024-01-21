@@ -34,6 +34,7 @@ jobs:
           template_content=$(<"docker-compose-backend.template.yml")
           cat version.txt
           VERSION=$(<"version.txt")
+          echo "IMAGE is $IMAGE"
           IMAGE="$IMAGE:$VERSION"
           echo "version is $VERSION"
           echo "IMAGE is $IMAGE"
