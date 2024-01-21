@@ -8,13 +8,15 @@ jobs:
   Deploy:
     name: Deploy to staging
     runs-on: ubuntu-latest
+    environment:
+      name: staging
     
     steps:
       - name: Build & Deploy
         env:
-            PRIVATE_KEY: ${{ secrets.SSH_STAGING }}
-            HOSTNAME: ${{secrets.STAGING_HOST}}
-            USER_NAME: ${{secrets.USER_NAME}}
+            PRIVATE_KEY: ${{ secrets.SSH_KEY }}
+            HOSTNAME: ${{secrets.SSH_HOST}}
+            USER_NAME: ${{secrets.SSH_USER}}
             IMAGE_REGISTRY: ${{secrets.IMAGE_REGISTRY}}
       
         run: |
@@ -22,7 +24,6 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
               # Now we have got the access of EC2 and we will start the deploy .
               echo "test $IMAGE_REGISTRY"
-              aws ecr get-login-password  | docker login --username AWS --password-stdin $IMAGE_REGISTRY
               docker-compose -f docker-compose-backend.yml down
               docker-compose -f docker-compose-backend.yml up --detach
               '
