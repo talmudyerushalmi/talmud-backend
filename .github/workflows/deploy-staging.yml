@@ -26,7 +26,7 @@ jobs:
             PRIVATE_KEY: ${{ secrets.SSH_KEY }}
             HOSTNAME: ${{secrets.SSH_HOST}}
             USER_NAME: ${{secrets.SSH_USER}}
-            IMAGE: "424334533647.dkr.ecr.eu-west-1.amazonaws.com/talmud"
+            IMAGE: ${{secrets.IMAGE_REGISTRY}}
       
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
@@ -37,9 +37,8 @@ jobs:
           IMAGE="$IMAGE:$VERSION"
           echo "version is $VERSION"
           echo "IMAGE is $IMAGE"
- 
-
-          echo "$template_content" | sed "s|\${IMAGE}|$IMAGE|g" > docker-compose.yaron.yml
+          echo "$template_content" | sed "s|\${IMAGE}|$IMAGE|g" > docker-compose-backend.yml
+          scp -i private_key docker-compose-backend.yml ${USER_NAME}@${HOSTNAME}:
           cat docker-compose.yaron.yml
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
               # Now we have got the access of EC2 and we will start the deploy .
