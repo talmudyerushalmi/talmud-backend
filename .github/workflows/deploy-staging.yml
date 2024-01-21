@@ -39,6 +39,7 @@ jobs:
           echo "version is $VERSION"
           echo "IMAGE is $IMAGE"
           echo "$template_content" | sed "s|\${IMAGE}|$IMAGE|g" > docker-compose-backend.yml
+          cat docker-compose-backend.yml
           scp -i private_key -o StrictHostKeyChecking=no docker-compose-backend.yml ${USER_NAME}@${HOSTNAME}:
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
               # Now we have got the access of EC2 and we will start the deploy .
