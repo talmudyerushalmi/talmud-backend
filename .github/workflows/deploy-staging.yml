@@ -20,8 +20,9 @@ jobs:
           AWS_DEFAULT_REGION: 'eu-west-1'
         run: |
             make upload
+            echo "version is $VERSION"
 
-      - name: Build & Deploy
+      - name: Deploy
         env:
             PRIVATE_KEY: ${{ secrets.SSH_KEY }}
             HOSTNAME: ${{secrets.SSH_HOST}}
@@ -32,8 +33,8 @@ jobs:
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           template_file="docker-compose-backend.template.yml"
           template_content=$(<"docker-compose-backend.template.yml")
-          GIT_TAG ?= $(shell git tag --points-at)
-          IMAGE = "$IMAGE:$GIT_TAG"
+          echo "version is $VERSION"
+          IMAGE = "$IMAGE:$VERSION"
           echo "tag is $GIT_TAG"
           echo "image is $IMAGE"
 
