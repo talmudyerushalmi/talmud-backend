@@ -35,9 +35,7 @@ jobs:
           cat version.txt
           VERSION=$(<"version.txt")
           echo "version is $VERSION"
-          IMAGE = "$IMAGE:$VERSION"
-          echo "tag is $GIT_TAG"
-          echo "image is $IMAGE"
+ 
 
           echo "$template_content" | sed "s|\${IMAGE}|$IMAGE|g" > docker-compose.yaron.yml
           cat docker-compose.yaron.yml
