@@ -1,0 +1,27 @@
+name: Deploy to staging
+
+on:
+
+  workflow_dispatch:
+
+jobs:
+  Deploy:
+    name: Deploy to staging
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Build & Deploy
+        env:
+            PRIVATE_KEY: ${{ secrets.SSH_STAGING }}
+            HOSTNAME: ${{secrets.STAGING_HOST}}
+            USER_NAME: ${{secrets.USER_NAME}}
+            IMAGE_REGISTRY: ${{secrets.IMAGE_REGISTRY}}
+      
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+              # Now we have got the access of EC2 and we will start the deploy .
+              aws ecr get-login-password  | docker login --username AWS --password-stdin ${IMAGE_REGISTRY}
+              docker-compose -f docker-compose-backend.yml down
+              docker-compose -f docker-compose-backend.yml up --detach
+              '
