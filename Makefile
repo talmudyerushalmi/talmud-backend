@@ -12,6 +12,7 @@ else
 endif
 	@test -n "$(VERSION)"
 	@echo "ver $(VERSION)"
+	echo "$(VERSION)" > version.txt
 
 build: version
 	echo "build $(REPO)"

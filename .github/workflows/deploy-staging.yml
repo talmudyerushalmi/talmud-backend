@@ -20,7 +20,6 @@ jobs:
           AWS_DEFAULT_REGION: 'eu-west-1'
         run: |
             make upload
-            echo "version is $VERSION"
 
       - name: Deploy
         env:
@@ -33,6 +32,8 @@ jobs:
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           template_file="docker-compose-backend.template.yml"
           template_content=$(<"docker-compose-backend.template.yml")
+          cat version.txt
+          VERSION=$(<"version.txt")
           echo "version is $VERSION"
           IMAGE = "$IMAGE:$VERSION"
           echo "tag is $GIT_TAG"
