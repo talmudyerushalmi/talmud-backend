@@ -21,6 +21,7 @@ jobs:
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
               # Now we have got the access of EC2 and we will start the deploy .
+              echo "test $IMAGE_REGISTRY"
               aws ecr get-login-password  | docker login --username AWS --password-stdin $IMAGE_REGISTRY
               docker-compose -f docker-compose-backend.yml down
               docker-compose -f docker-compose-backend.yml up --detach
