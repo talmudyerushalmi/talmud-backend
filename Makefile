@@ -12,6 +12,7 @@ else
 endif
 	@test -n "$(VERSION)"
 	@echo "ver $(VERSION)"
+	echo "$(VERSION)" > version.txt
 
 build: version
 	echo "build $(REPO)"
@@ -20,5 +21,5 @@ build: version
 
 upload: version build
 	echo "upload"
-	aws ecr get-login-password --profile talmud | docker login --username AWS --password-stdin $(CONTAINER_SERVICE)
+	aws ecr get-login-password | docker login --username AWS --password-stdin $(CONTAINER_SERVICE)
 	docker push $(REPO):$(VERSION)
