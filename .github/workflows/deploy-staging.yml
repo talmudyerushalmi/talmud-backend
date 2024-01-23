@@ -30,14 +30,11 @@ jobs:
       
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          scp -i private_key -o StrictHostKeyChecking=no image.txt ${USER_NAME}@${HOSTNAME}:
           template_file="docker-compose-backend.template.yml"
           template_content=$(<"docker-compose-backend.template.yml")
-          cat version.txt
           VERSION=$(<"version.txt")
-          echo "IMAGE is $IMAGE"
           IMAGE="$IMAGE:$VERSION"
-          echo "version is $VERSION"
-          echo "IMAGE is $IMAGE"
           echo "$template_content" | sed "s|\${IMAGE}|$IMAGE|g" > docker-compose-backend.yml
           cat docker-compose-backend.yml
           scp -i private_key -o StrictHostKeyChecking=no docker-compose-backend.yml ${USER_NAME}@${HOSTNAME}:
