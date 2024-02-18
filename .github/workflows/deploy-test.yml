@@ -24,5 +24,7 @@ jobs:
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           cat private_key
+          scp -i private_key -o StrictHostKeyChecking=no image.txt ${USER_NAME}@${HOSTNAME}:
 
-              '
+
+              
