@@ -1,0 +1,28 @@
+name: Deploy to test
+
+on:
+
+  workflow_dispatch:
+
+jobs:
+  Deploy:
+    name: Deploy to test
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+    
+    steps:
+
+
+      - name: Deploy
+        env:
+            PRIVATE_KEY: ${{ secrets.SSH_KEY }}
+            HOSTNAME: ${{secrets.SSH_HOST}}
+            USER_NAME: ${{secrets.SSH_USER}}
+            IMAGE: ${{secrets.IMAGE_REGISTRY}}
+      
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          cat private_keys
+
+              '
