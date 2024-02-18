@@ -1,0 +1,47 @@
+name: Deploy to production
+
+on:
+
+  workflow_dispatch:
+
+jobs:
+  Deploy:
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build        
+        env:
+          AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          AWS_DEFAULT_REGION: 'eu-west-1'
+        run: |
+            make upload
+
+      - name: Deploy
+        env:
+            PRIVATE_KEY: ${{ secrets.SSH_KEY }}
+            HOSTNAME: ${{secrets.SSH_HOST}}
+            USER_NAME: ${{secrets.SSH_USER}}
+            IMAGE: ${{secrets.IMAGE_REGISTRY}}
+      
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          scp -i private_key -o StrictHostKeyChecking=no image.txt ${USER_NAME}@${HOSTNAME}:
+          template_file="docker-compose-backend.template.yml"
+          template_content=$(<"docker-compose-backend.template.yml")
+          VERSION=$(<"version.txt")
+          IMAGE="$IMAGE:$VERSION"
+          echo "$template_content" | sed "s|\${IMAGE}|$IMAGE|g" > docker-compose-backend.yml
+          cat docker-compose-backend.yml
+          scp -i private_key -o StrictHostKeyChecking=no docker-compose-backend.yml ${USER_NAME}@${HOSTNAME}:
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+              # Now we have got the access of EC2 and we will start the deploy .
+              source ~/.bash_profile
+              aws ecr get-login-password  | docker login --username AWS --password-stdin $IMAGE_REGISTRY
+              docker-compose -f docker-compose-backend.yml down
+              docker-compose -f docker-compose-backend.yml up --detach
+              '
