@@ -12,6 +12,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+    - uses: actions/checkout@v3
+    - name: copy file via ssh
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        source: "docker-compose-backend.template.yml"
+        target: .
     - name: print out example job
       uses: appleboy/ssh-action@v0.1.10
       with:
