@@ -1,29 +1,23 @@
-name: Deploy to test
+name: SSH test
 
 on:
 
   workflow_dispatch:
 
 jobs:
-  Deploy:
-    name: Deploy to test
-    runs-on: ubuntu-latest
+  run_example_job:
+    name: deploy test
     environment:
       name: staging
-    
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-
-
-      - name: Deploy
-        env:
-            PRIVATE_KEY: ${{ secrets.SSH_KEY }}
-            HOSTNAME: ${{secrets.SSH_HOST}}
-            USER_NAME: ${{secrets.SSH_USER}}
-            IMAGE: ${{secrets.IMAGE_REGISTRY}}
-      
-        run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          cat private_key
-          scp -i private_key -o StrictHostKeyChecking=no image.txt ${USER_NAME}@${HOSTNAME}:
-
-              
+    - name: print out example job
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        command_timeout: 30m
+        script: | 
+          echo "Nice Job!!!"
