@@ -4,44 +4,59 @@ on:
 
   workflow_dispatch:
 
+
 jobs:
-  Deploy:
-    name: Deploy to production
-    runs-on: ubuntu-latest
+  run_example_job:
+    name: deploy to production
     environment:
       name: production
-    
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v3
-      - name: Build        
-        env:
-          AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
-          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-          AWS_DEFAULT_REGION: 'eu-west-1'
-        run: |
-            make upload
+    - name: Set myValue
+      run: echo "myValue=wibble" >> $GITHUB_ENV
+    - name: Echo myValue
+      run: echo "test pass steps $myValue"
+    - uses: actions/checkout@v3
+    - name: Build  
+      id: build      
+      env:
+        AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+        AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+        AWS_DEFAULT_REGION: 'eu-west-1'
+        IMAGE: ${{secrets.IMAGE_REGISTRY}}
 
-      - name: Deploy
-        env:
-            PRIVATE_KEY: ${{ secrets.SSH_KEY }}
-            HOSTNAME: ${{secrets.SSH_HOST}}
-            USER_NAME: ${{secrets.SSH_USER}}
-            IMAGE: ${{secrets.IMAGE_REGISTRY}}
-      
-        run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          scp -i private_key -o StrictHostKeyChecking=no image.txt ${USER_NAME}@${HOSTNAME}:
-          template_file="docker-compose-backend.template.yml"
-          template_content=$(<"docker-compose-backend.template.yml")
-          VERSION=$(<"version.txt")
-          IMAGE="$IMAGE:$VERSION"
-          echo "$template_content" | sed "s|\${IMAGE}|$IMAGE|g" > docker-compose-backend.yml
-          cat docker-compose-backend.yml
-          scp -i private_key -o StrictHostKeyChecking=no docker-compose-backend.yml ${USER_NAME}@${HOSTNAME}:
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-              # Now we have got the access of EC2 and we will start the deploy .
-              source ~/.bash_profile
-              aws ecr get-login-password  | docker login --username AWS --password-stdin $IMAGE_REGISTRY
-              docker-compose -f docker-compose-backend.yml down
-              docker-compose -f docker-compose-backend.yml up --detach
-              '
+      run: |
+        make upload
+        VERSION=$(<"version.txt")
+        IMAGE="$IMAGE:$VERSION"
+        echo "IMAGE=$IMAGE" >> $GITHUB_OUTPUT
+        template_file="docker-compose-backend.template.yml"
+        template_content=$(<"docker-compose-backend.template.yml")
+        echo "$template_content" | sed "s|\${IMAGE}|$IMAGE|g" > docker-compose-backend.yml
+
+
+    - name: copy file via ssh
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        source: "docker-compose-backend.yml"
+        target: .
+    - name: print out example job
+      uses: appleboy/ssh-action@v1.0.3
+      env:
+        IMAGE: ${{ steps.build.outputs.IMAGE }}
+        IMAGE_REGISTRY: ${{secrets.IMAGE_REGISTRY}}
+        TEST: "yaron-test"
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        envs: IMAGE,IMAGE_REGISTRY
+        command_timeout: 30m
+        script: | 
+          aws ecr get-login-password  | docker login --username AWS --password-stdin $IMAGE_REGISTRY
+          docker-compose  -f docker-compose-backend.yml down
+          docker-compose -f docker-compose-backend.yml up -d
