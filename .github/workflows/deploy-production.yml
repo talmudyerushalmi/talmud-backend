@@ -13,10 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-    - name: Set myValue
-      run: echo "myValue=wibble" >> $GITHUB_ENV
-    - name: Echo myValue
-      run: echo "test pass steps $myValue"
     - uses: actions/checkout@v3
     - name: Build  
       id: build      
