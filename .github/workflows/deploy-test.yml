@@ -13,6 +13,13 @@ jobs:
     timeout-minutes: 5
     steps:
     - uses: actions/checkout@v3
+    - name: Build        
+      env:
+        AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+        AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+        AWS_DEFAULT_REGION: 'eu-west-1'
+      run: |
+          echo "image=image-test" >> $GITHUB_OUTPUT
     - name: copy file via ssh
       uses: appleboy/scp-action@v0.1.7
       with:
@@ -23,10 +30,15 @@ jobs:
         target: .
     - name: print out example job
       uses: appleboy/ssh-action@v0.1.10
+      env:
+        IMAGE: ${{ steps.vars.outputs.image }}
+        TEST: "yaron-test"
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_KEY }}
+        envs: IMAGE,TEST
         command_timeout: 30m
         script: | 
-          echo "Nice Job!!!"
+
+          echo "Nice Job!!! $IMAGE $TEST"
