@@ -4,6 +4,7 @@ on:
 
   workflow_dispatch:
 
+
 jobs:
   run_example_job:
     name: deploy test
@@ -19,7 +20,8 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
         AWS_DEFAULT_REGION: 'eu-west-1'
       run: |
-          echo "image=image-test" >> $GITHUB_OUTPUT
+          echo "::set-env name=IMAGE::image-test"
+          echo "::set-env name=IMAGE2::image-test"
     - name: copy file via ssh
       uses: appleboy/scp-action@v0.1.7
       with:
@@ -41,4 +43,4 @@ jobs:
         command_timeout: 30m
         script: | 
 
-          echo "Nice Job!!! $IMAGE $TEST"
+          echo "Nice Job!!! image $IMAGE image2 $IMAGE2 $TEST"
