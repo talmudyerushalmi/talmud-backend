@@ -109,7 +109,7 @@ export class ExcerptUtils {
         title: approvedComment.title,
       },
       sourceLocation: `\n
-      נכתב בידי -  ${approvedComment.userName}`,
+      נכתב בידי ${approvedComment.userName}`,
       editorStateFullQuote: {
         blocks: [
           {
