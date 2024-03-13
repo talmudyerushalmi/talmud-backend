@@ -1,4 +1,4 @@
-name: Deploy to staging
+name: Deploy to production
 
 on:
 
@@ -7,9 +7,9 @@ on:
 
 jobs:
   run_example_job:
-    name: deploy test
+    name: deploy to production
     environment:
-      name: staging
+      name: production
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

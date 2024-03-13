@@ -22,4 +22,5 @@ build: version
 upload: version build
 	echo "upload"
 	aws ecr get-login-password | docker login --username AWS --password-stdin $(CONTAINER_SERVICE)
+	echo "$(REPO):$(VERSION)" > image.txt
 	docker push $(REPO):$(VERSION)
