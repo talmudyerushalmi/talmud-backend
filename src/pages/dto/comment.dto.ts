@@ -36,6 +36,9 @@ export class CommentDto {
   // @IsNotEmpty()
   @IsString()
   toWord: string;
+  @IsString()
+  @IsNotEmpty()
+  userName: string;
 }
 
 export class UpdateCommentDto extends CommentDto {
