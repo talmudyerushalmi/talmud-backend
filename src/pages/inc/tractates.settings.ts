@@ -82,6 +82,7 @@ export const tractateSettings = {
         "kricha_5","translation"]
     },
     ketubbot: {
+        public: true,
         synopsisAllowed: ["leiden", "likutim_l_1","translation"]
     },
     nedarim: {
