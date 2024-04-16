@@ -96,7 +96,6 @@ export const tractateSettings = {
         synopsisAllowed: ["leiden","translation"]
     },
     qiddushin: {
-        public: true,
         synopsisAllowed: ["leiden","gniza_1", "gniza_2", "kricha_3","likutim_l_2","translation"]
     },
     bava_qama: {
