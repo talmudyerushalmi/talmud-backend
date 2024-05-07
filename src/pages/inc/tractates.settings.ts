@@ -116,7 +116,7 @@ export const tractateSettings = {
         synopsisAllowed: ["leiden", "gniza_1","kricha_2","translation"]
     },
     shevuot: {
-        synopsisAllowed: ["leiden", "gniza_1", "gniza_2", "kricha_3","translation"]
+        synopsisAllowed: ["leiden", "gniza_1", "gniza_2", "kricha_3","kricha_4","translation"]
     },
     avoda_zara: {
         synopsisAllowed: ["leiden", "gniza_1", "gniza_2","gniza_3", "kricha_5","likutim_4","translation"]
