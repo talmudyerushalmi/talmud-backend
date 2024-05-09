@@ -28,9 +28,10 @@ export class MishnaController {
   constructor(private pagesService: PagesService) {}
 
   private throwIfForbidden(tractate: string, userGroup: UserGroup) {
-    const canView = tractateSettings[tractate]?.public || userGroup === UserGroup.Editor;
+    const canView =
+      tractateSettings[tractate]?.public || userGroup === UserGroup.Editor;
     if (!canView) {
-     throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
     }
   }
 
@@ -58,7 +59,10 @@ export class MishnaController {
     @Param('mishna') mishna: string,
     @Res({ passthrough: true }) res: ResponseFromExpress,
   ) {
-     res.setHeader("Content-Disposition",`attachment; filename="tei_${tractate}_${chapter}_${mishna}.xml"`)
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="tei_${tractate}_${chapter}_${mishna}.xml"`,
+    );
     return this.pagesService.getMishnaTEI(tractate, chapter, mishna);
   }
 
@@ -70,8 +74,17 @@ export class MishnaController {
     @Response() res,
   ) {
     this.throwIfForbidden(tractate, res.locals.userGroup);
-    const chapterDoc = await this.pagesService.getChapter(tractate, chapter, query.mishna);
+    const chapterDoc = await this.pagesService.getChapter(
+      tractate,
+      chapter,
+      query.mishna,
+    );
     return res.json(chapterDoc);
+  }
+
+  @Get('/search?')
+  searchText(@Query('q') query: string) {
+    return this.pagesService.searchText(query);
   }
 
   @Get('/:tractate')

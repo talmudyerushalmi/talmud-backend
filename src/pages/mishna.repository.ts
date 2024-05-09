@@ -8,6 +8,7 @@ import { SaveMishnaExcerptDto } from './dto/save-mishna-excerpt.dto';
 import { ExcerptUtils } from './inc/excerptUtils';
 import { InternalLink, Line } from './models/line.model';
 import { MishnaLink } from './models/mishna.link.model';
+import { ISearch, ISearchResult } from './models/search.model';
 
 @Injectable()
 export class MishnaRepository {
@@ -67,6 +68,38 @@ export class MishnaRepository {
     return this.mishnaModel.find({});
   }
 
+  searchText(query: ISearch): Promise<ISearchResult[]> {
+    return this.mishnaModel
+      .aggregate([
+        {
+          $match: {
+            tractate: query.tractate,
+          },
+        },
+        {
+          $unwind: '$lines',
+        },
+        {
+          $match: {
+            'lines.mainLine': { $regex: query.text, $options: 'i' },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            guid: 1,
+            mainLine: '$lines.mainLine',
+            lineNumber: '$lines.lineNumber',
+          },
+        },
+        { $limit: 50 },
+      ])
+      .catch((e) => {
+        console.log('Error in search', e);
+        return [];
+      });
+  }
+
   async forEachMishna(
     cb: (mishna: Mishna) => Promise<void>,
     tractate?: string,
@@ -74,7 +107,7 @@ export class MishnaRepository {
     const mishnaiot = tractate
       ? await this.getAllForTractate(tractate)
       : await this.getAll();
-    await Promise.all(mishnaiot.map(mishna => cb(mishna)));
+    await Promise.all(mishnaiot.map((mishna) => cb(mishna)));
   }
 
   async forEachMishnaSerial(
@@ -103,7 +136,7 @@ export class MishnaRepository {
     const all = await this.getAllForTractate(tractate);
 
     for (const mishna of all) {
-      mishna.excerpts = mishna.excerpts.filter(e => !e.automaticImport);
+      mishna.excerpts = mishna.excerpts.filter((e) => !e.automaticImport);
       mishna.markModified('excerpts');
       await mishna.save();
     }
@@ -122,13 +155,13 @@ export class MishnaRepository {
       const fromWord = excerpt.selection.fromWord;
       const toWord = excerpt.selection.toWord;
       let fromSubline = mishnaDoc.lines[fromLine].sublines.find(
-        l => l.text.indexOf(fromWord) !== -1,
+        (l) => l.text.indexOf(fromWord) !== -1,
       );
       if (!fromSubline) {
         fromSubline = mishnaDoc.lines[fromLine].sublines[0];
       }
       let toSubline = mishnaDoc.lines[toLine].sublines.find(
-        l => l.text.indexOf(toWord) !== -1,
+        (l) => l.text.indexOf(toWord) !== -1,
       );
       if (!toSubline) {
         toSubline = mishnaDoc.lines[toLine].sublines[0];
@@ -181,7 +214,7 @@ export class MishnaRepository {
     new ExcerptUtils(excerptToSave).updateExcerptSubline(lineFrom, lineTo);
     if (excerptToSave.key) {
       const indexExcerpt = mishnaDoc.excerpts.findIndex(
-        excerpt => excerpt.key === excerptToSave.key,
+        (excerpt) => excerpt.key === excerptToSave.key,
       );
       if (indexExcerpt !== -1) {
         mishnaDoc.excerpts[indexExcerpt] = excerptToSave;
@@ -204,7 +237,7 @@ export class MishnaRepository {
     const mishnaDoc = await this.find(tractate, chapter, mishna);
     if (mishnaDoc) {
       const newExcerpts = mishnaDoc.excerpts.filter(
-        excerpt => excerpt.key !== excerptKey,
+        (excerpt) => excerpt.key !== excerptKey,
       );
       mishnaDoc.excerpts = newExcerpts;
       mishnaDoc.markModified('excerpts');

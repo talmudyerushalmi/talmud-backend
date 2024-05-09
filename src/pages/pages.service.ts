@@ -1,4 +1,9 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Tractate } from './schemas/tractate.schema';
@@ -15,6 +20,7 @@ import { synopsisList } from './inc/tractates.synopsis';
 import * as numeral from 'numeral';
 import { MishnaLink } from './models/mishna.link.model';
 import { create } from 'xmlbuilder2';
+import { base64ToJson } from 'src/shared/base64ToJson';
 
 export interface iTractate {
   title_eng: string;
@@ -33,12 +39,15 @@ export class PagesService {
     tractate: string,
     chapter: string,
     mishna: string,
-  ): Promise<Mishna|any> { //todo fix any
-    const find = await this.mishnaRepository.find(tractate, chapter, mishna).lean();
+  ): Promise<Mishna | any> {
+    //todo fix any
+    const find = await this.mishnaRepository
+      .find(tractate, chapter, mishna)
+      .lean();
     if (!find) {
-      throw new HttpException('Not found', HttpStatus. NOT_FOUND);
+      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
     } else {
-      return find
+      return find;
     }
   }
 
@@ -48,65 +57,88 @@ export class PagesService {
     mishna: string,
   ): Promise<any> {
     const m = await this.mishnaRepository.find(tractate, chapter, mishna);
-    const root = create().ele('tei').att('xmls','http://www.tei-c.org/ns/1.0');
-    root.ele('teiHeader')
+    const root = create().ele('tei').att('xmls', 'http://www.tei-c.org/ns/1.0');
+    root
+      .ele('teiHeader')
       .ele('titleStmt')
-        .ele('title').txt('Talmud Yerushalmi - Digital Critical Edition').up()
-        .ele('respStmt')
-          .ele('name').txt('Prof. Menachem Katz').up()
-          .ele('resp').txt('Editor').up().up()
-        .ele('respStmt')
-          .ele('name').txt('Dr. Hillel Gershuni').up()
-          .ele('resp').txt('Editor').up().up()
-        .ele('respStmt')
-          .ele('name').txt('Yaron Bar').up()
-          .ele('resp').txt('Developer').up().up()
+      .ele('title')
+      .txt('Talmud Yerushalmi - Digital Critical Edition')
       .up()
-
+      .ele('respStmt')
+      .ele('name')
+      .txt('Prof. Menachem Katz')
+      .up()
+      .ele('resp')
+      .txt('Editor')
+      .up()
+      .up()
+      .ele('respStmt')
+      .ele('name')
+      .txt('Dr. Hillel Gershuni')
+      .up()
+      .ele('resp')
+      .txt('Editor')
+      .up()
+      .up()
+      .ele('respStmt')
+      .ele('name')
+      .txt('Yaron Bar')
+      .up()
+      .ele('resp')
+      .txt('Developer')
+      .up()
+      .up()
+      .up();
 
     const text = root.ele('text');
 
-      m.lines.forEach( l => {
-            const lineTEI = text.ele('l');
-            if (l.sugiaName) {
-              text.ele('title').att('type','sub').txt(l.sugiaName)
-            }
-            l.sublines.forEach((subline) => {
-              const sublineTEI = lineTEI.ele('s');
+    m.lines.forEach((l) => {
+      const lineTEI = text.ele('l');
+      if (l.sugiaName) {
+        text.ele('title').att('type', 'sub').txt(l.sugiaName);
+      }
+      l.sublines.forEach((subline) => {
+        const sublineTEI = lineTEI.ele('s');
 
-              const appTEI = sublineTEI.ele('app');
+        const appTEI = sublineTEI.ele('app');
 
-              appTEI.ele('lem').txt(subline.text)
-              subline.synopsis.forEach(synopsis =>{
-                if (synopsis.text.simpleText) {
-                  appTEI.ele('rdg')
-                  .att('wit',`#${synopsis.id}`)
-                  .txt(synopsis.text.simpleText)
-                }
-              })
-            });
+        appTEI.ele('lem').txt(subline.text);
+        subline.synopsis.forEach((synopsis) => {
+          if (synopsis.text.simpleText) {
+            appTEI
+              .ele('rdg')
+              .att('wit', `#${synopsis.id}`)
+              .txt(synopsis.text.simpleText);
+          }
+        });
+      });
+    });
 
-
-          })
-
-// convert the XML tree to string
-const xml = root.end({ prettyPrint: true });
-
+    // convert the XML tree to string
+    const xml = root.end({ prettyPrint: true });
 
     return xml;
   }
 
-  async getChapter(tractate: string, chapter: string, mishna = 1): Promise<any> {
-    const mishnaiot = await this.mishnaRepository.getAllChapter(tractate, chapter);
-    const mishnaDocument = mishnaiot[mishna-1]
+  async getChapter(
+    tractate: string,
+    chapter: string,
+    mishna = 1,
+  ): Promise<any> {
+    const mishnaiot = await this.mishnaRepository.getAllChapter(
+      tractate,
+      chapter,
+    );
+    const mishnaDocument = mishnaiot[mishna - 1];
     if (!mishnaDocument) {
       throw new BadRequestException('Mishna not found');
     }
     const richTextsMishnas = mishnaiot.map((m: Mishna) => {
       return {
-      mishna: m.mishna,  
-      richTextMishna: m.richTextMishna
-    }})
+        mishna: m.mishna,
+        richTextMishna: m.richTextMishna,
+      };
+    });
 
     return {
       tractate,
@@ -114,9 +146,14 @@ const xml = root.end({ prettyPrint: true });
       totalMishnaiot: mishnaiot.length,
       richTextsMishnas,
       //@ts-ignore
-      mishnaDocument: {...mishnaDocument._doc},
-      mishna
+      mishnaDocument: { ...mishnaDocument._doc },
+      mishna,
     };
+  }
+
+  async searchText(query: string): Promise<any> {
+    const queryObj = base64ToJson(query);
+    return this.mishnaRepository.searchText(queryObj);
   }
 
   async saveMishna(
@@ -206,7 +243,7 @@ const xml = root.end({ prettyPrint: true });
       {},
     );
     const found = mishnaDocument.lines.findIndex(
-      line => line.lineNumber === setLineDto.line,
+      (line) => line.lineNumber === setLineDto.line,
     );
     if (found !== -1) {
       // console.log('found ', found);
@@ -254,7 +291,7 @@ const xml = root.end({ prettyPrint: true });
       'lines.lineNumber': line,
     });
     const lineIndex = mishnaDoc.lines.findIndex(
-      lineItem => lineItem.lineNumber === line,
+      (lineItem) => lineItem.lineNumber === line,
     );
     mishnaDoc.lines[lineIndex].sublines = updateMishnaLine.sublines;
     mishnaDoc.markModified('lines');
@@ -306,7 +343,7 @@ const xml = root.end({ prettyPrint: true });
     );
 
     const previousChapter = sortedLastDown.find(
-      c => parseInt(c.id) < parseInt(chapter),
+      (c) => parseInt(c.id) < parseInt(chapter),
     );
     if (!previousChapter) {
       return null;
@@ -342,11 +379,11 @@ const xml = root.end({ prettyPrint: true });
     let nextMishna = mishna;
     const currentMishnaiot = (
       await this.tractateRepository.get(tractate, true)
-    ).chapters.find(c => c.id === chapter).mishnaiot;
+    ).chapters.find((c) => c.id === chapter).mishnaiot;
 
     // while can traverse the mishnaiot
     while (
-      currentMishnaiot.some(m => parseInt(m.mishna) > parseInt(nextMishna)) &&
+      currentMishnaiot.some((m) => parseInt(m.mishna) > parseInt(nextMishna)) &&
       !nextMishnaDoc
     ) {
       // increment mishna
