@@ -83,7 +83,7 @@ export class MishnaController {
   }
 
   @Get('/search?')
-  searchText(@Query('q') query: string) {
+  searchText(@Query('query') query: string) {
     return this.pagesService.searchText(query);
   }
 

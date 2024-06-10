@@ -5,8 +5,6 @@ export interface ISearch {
 
 export interface ISearchResult {
   guid: string;
-  results: {
-    mainLine: string;
-    lineNumber: string;
-  }[];
+  mainLine: string;
+  lineNumber: string;
 }
