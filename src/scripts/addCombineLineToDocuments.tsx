@@ -1,4 +1,9 @@
-import { CompositeDecorator, convertFromRaw, EditorState } from 'draft-js';
+import {
+  CompositeDecorator,
+  convertFromRaw,
+  convertToRaw,
+  EditorState,
+} from 'draft-js';
 import mongoose from 'mongoose';
 
 // Run with: npx tsx src/scripts/addCombineLineToDocuments.tsx from root
@@ -83,49 +88,62 @@ const main = async () => {
   console.log(`Found ${mishnas.length} mishnas`);
 
   for (const mishna of mishnas) {
-    console.log(mishna._id.toString());
-    for (const [lineIndex, line] of mishna.lines.entries()) {
-      if (line.sublines && Array.isArray(line.sublines)) {
-        for (const [sublineIndex, subline] of line.sublines.entries()) {
-          const contentState = convertFromRaw(subline.nosach);
-          const newEditorState = EditorState.createWithContent(
-            contentState,
-            compoundCombinedDecorators,
-          );
-          const combinedText = newEditorState
-            .getCurrentContent()
-            .getPlainText();
+    if (mishna._id.toString() === '5facfe0b103ed8f611161d42') {
+      for (const [lineIndex, line] of mishna.lines.entries()) {
+        if (line.sublines && Array.isArray(line.sublines)) {
+          for (const [sublineIndex, subline] of line.sublines.entries()) {
+            let combinedText = '';
+            const contentState = convertFromRaw(subline.nosach);
+            const newEditorState = EditorState.createWithContent(
+              contentState,
+              compoundCombinedDecorators,
+            );
 
-          subline.combinedText = combinedText;
-          // save the subline to the database
-          await mongoose.connection.db
-            .collection('mishnas')
-            .updateOne(
-              {
-                _id: mishna._id,
-                [`lines.lineNumber`]: line.lineNumber,
-              },
-              {
-                $set: {
-                  [`lines.${lineIndex}.sublines.${sublineIndex}`]: subline,
-                },
-              },
-            )
-            .then((result) => {
-              if (result.modifiedCount === 0) {
-                failedUpdates.push(
-                  `Mishna: ${mishna._id}, Line: ${line.lineNumber}, Subline: ${sublineIndex} - No changes made`,
-                );
-              }
-            })
-            .catch((error) => {
-              failedUpdates.push(
-                `Mishna: ${mishna._id}, Line: ${line.lineNumber}, Subline: ${sublineIndex} - Error: ${error.message}`,
-              );
-            });
+            console.log(JSON.stringify(newEditorState.getCurrentContent()));
+
+            const { blocks } = convertToRaw(newEditorState.getCurrentContent());
+            const mappedBlocks = blocks.map(
+              (block) => (!block.text.trim() && '\n') || block.text,
+            );
+
+            combinedText = mappedBlocks.reduce((acc, block) => {
+              let returned = acc;
+              if (block === '\n') returned += block;
+              else returned += `${block}\n`;
+              return returned;
+            }, '');
+
+            // console.log(combinedText);
+            // save the subline to the database
+            // await mongoose.connection.db
+            //   .collection('mishnas')
+            //   .updateOne(
+            //     {
+            //       _id: mishna._id,
+            //       [`lines.lineNumber`]: line.lineNumber,
+            //     },
+            //     {
+            //       $set: {
+            //         [`lines.${lineIndex}.sublines.${sublineIndex}`]: subline,
+            //       },
+            //     },
+            //   )
+            //   .then((result) => {
+            //     if (result.modifiedCount === 0) {
+            //       failedUpdates.push(
+            //         `Mishna: ${mishna._id}, Line: ${line.lineNumber}, Subline: ${sublineIndex} - No changes made`,
+            //       );
+            //     }
+            //   })
+            //   .catch((error) => {
+            //     failedUpdates.push(
+            //       `Mishna: ${mishna._id}, Line: ${line.lineNumber}, Subline: ${sublineIndex} - Error: ${error.message}`,
+            //     );
+            //   });
+          }
+        } else {
+          console.log(`Mishna ${mishna._id} has no sublines`);
         }
-      } else {
-        console.log(`Mishna ${mishna._id} has no sublines`);
       }
     }
   }
