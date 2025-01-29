@@ -13,7 +13,7 @@
     "runconsole": "ts-node -r tsconfig-paths/register src/console.ts normalize:excerpts",
     "start:dev": "dotenv-run-script .env dev",
     "dev": "nest start --watch",
-    "start-win": "set NODE_ENV=dev&& nest start --watch ",
+    "start-win": "dotenv-run-script .env dev ",
     "start:dev-prod": "NODE_ENV=production nest start --watch",
     "start-win-dev-prod": "set NODE_ENV=production&& nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -99,5 +99,6 @@
     },
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
