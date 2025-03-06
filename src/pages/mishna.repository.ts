@@ -69,6 +69,8 @@ export class MishnaRepository {
   }
 
   searchText(query: ISearch): Promise<ISearchResult[]> {
+    console.log('Search query:', query);
+    const queryTextWithoutQuotes = query.text.replace(/"/g, '');
     return this.mishnaModel
       .aggregate([
         {
@@ -80,16 +82,35 @@ export class MishnaRepository {
           $unwind: '$lines',
         },
         {
+          $unwind: {
+            path: '$lines.sublines',
+          },
+        },
+        {
           $match: {
-            'lines.mainLine': { $regex: query.text, $options: 'i' },
+            $or: [
+              {
+                'lines.sublines.text': {
+                  $regex: queryTextWithoutQuotes,
+                  $options: 'i',
+                },
+              },
+              {
+                'lines.sublines.originalText': {
+                  $regex: query.text,
+                  $options: 'i',
+                },
+              },
+            ],
           },
         },
         {
           $project: {
             _id: 0,
             guid: 1,
-            mainLine: '$lines.mainLine',
             lineNumber: '$lines.lineNumber',
+            sublineIndex: '$lines.sublines.index',
+            nosach: '$lines.sublines.nosach',
           },
         },
         { $limit: 50 },
