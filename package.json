@@ -14,7 +14,7 @@
     "runconsole:normalize:nosach-original-text": "ts-node -r tsconfig-paths/register src/console.ts normalize:nosach-original-text",
     "start:dev": "dotenv-run-script .env dev",
     "dev": "nest start --watch",
-    "start-win": "set NODE_ENV=dev&& nest start --watch ",
+    "start-win": "dotenv-run-script .env dev ",
     "start:dev-prod": "NODE_ENV=production nest start --watch",
     "start-win-dev-prod": "set NODE_ENV=production&& nest start --watch",
     "start:debug": "nest start --debug --watch",

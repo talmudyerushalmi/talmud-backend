@@ -9,5 +9,3 @@ export NODE_ENV=production && node dist/console.js import:sublines ./nosach_2610
 after update the excerpt selection to the new structure
 
 export NODE_ENV=production && node dist/console.js set:excerptSelectionSublines yevamot
-
-export NODE_ENV=dev && node dist/console.js normalize:nosach
