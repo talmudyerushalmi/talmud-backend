@@ -13,6 +13,7 @@ import {
   createEditorContentFromText,
 } from './inc/editorUtils';
 import { LineService } from './line.service';
+import { generateOriginalText } from './inc/draftjsUtils';
 
 @Injectable()
 export class SublineService {
@@ -31,15 +32,24 @@ export class SublineService {
     updateLineDto: UpdateLineDto,
   ): Promise<Mishna> {
     if (updateLineDto.parallels) {
-      await this.lineService.setParallel(tractate, chapter, mishna, line, updateLineDto.parallels)
+      await this.lineService.setParallel(
+        tractate,
+        chapter,
+        mishna,
+        line,
+        updateLineDto.parallels,
+      );
     }
     const mishnaDoc = await this.mishnaRepository.find(
       tractate,
       chapter,
       mishna,
     );
-    const lineIndex = mishnaDoc.lines.findIndex(l => l.lineNumber === line);
+    const lineIndex = mishnaDoc.lines.findIndex((l) => l.lineNumber === line);
     mishnaDoc.lines[lineIndex].sublines = updateLineDto.sublines;
+    mishnaDoc.lines[lineIndex].sublines.forEach((subline) => {
+      subline.originalText = generateOriginalText(subline.nosach);
+    });
     mishnaDoc.markModified('lines');
     return mishnaDoc.save();
   }
@@ -56,30 +66,36 @@ export class SublineService {
       chapter,
       mishna,
     );
-    const lineIndex = mishnaDoc.lines.findIndex(l => l.lineNumber === line);
+    const lineIndex = mishnaDoc.lines.findIndex((l) => l.lineNumber === line);
     const lineToUpdate = mishnaDoc.lines[lineIndex];
     if (!lineToUpdate.sublines) {
-      throw new HttpException("Sublines empty!", HttpStatus.UNPROCESSABLE_ENTITY)
+      throw new HttpException(
+        'Sublines empty!',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
     }
     const sublineToUpdate = lineToUpdate.sublines.find(
-      line => line.index === updateNosachDto.sublineIndex,
+      (line) => line.index === updateNosachDto.sublineIndex,
     );
     const synopsisToSave = sublineToUpdate.synopsis;
-    const emptySynopsis = synopsisToSave.map(s => {
+    const emptySynopsis = synopsisToSave.map((s) => {
       return { ...s, text: { content: null, simpleText: '' } };
     });
 
-    const newSublines: SubLine[] = updateNosachDto.nosach.map( (sublineNosach, index) => {
-      return {
-        text: updateNosachDto.nosachText[index],
-        index: null,
-        nosach: sublineNosach,
-        synopsis: emptySynopsis,
-      };
-    });
+    const newSublines: SubLine[] = updateNosachDto.nosach.map(
+      (sublineNosach, index) => {
+        return {
+          text: updateNosachDto.nosachText[index],
+          index: null,
+          nosach: sublineNosach,
+          synopsis: emptySynopsis,
+          originalText: generateOriginalText(sublineNosach),
+        };
+      },
+    );
     newSublines[0].synopsis = synopsisToSave;
     const sublineArrayIndex = lineToUpdate.sublines.findIndex(
-      subline => subline.index === updateNosachDto.sublineIndex,
+      (subline) => subline.index === updateNosachDto.sublineIndex,
     );
     lineToUpdate.sublines.splice(sublineArrayIndex, 1, ...newSublines);
     mishnaDoc.updateSublinesIndex();
@@ -103,12 +119,12 @@ export class SublineService {
       chapter,
       mishna,
     );
-    const lineIndex = mishnaDoc.lines.findIndex(l => l.lineNumber === line);
+    const lineIndex = mishnaDoc.lines.findIndex((l) => l.lineNumber === line);
     const [sublineToDelete, indexInLine] = mishnaDoc.getSubline(subline);
     const [sublineToUpdate] = mishnaDoc.getSubline(subline - 1);
 
-    sublineToUpdate.synopsis.forEach(synopsis => {
-      const synop = sublineToDelete.synopsis.find(s => s.id === synopsis.id);
+    sublineToUpdate.synopsis.forEach((synopsis) => {
+      const synop = sublineToDelete.synopsis.find((s) => s.id === synopsis.id);
       synopsis.text.simpleText =
         synopsis.text.simpleText + ' ' + synop.text.simpleText;
       synopsis.text.content = createEditorContentFromText(
@@ -119,10 +135,13 @@ export class SublineService {
     sublineToUpdate.text =
       sublineToUpdate.text.replace(/[\n\r]+/g, '') + ' ' + sublineToDelete.text;
 
-    sublineToUpdate.nosach = addBlockToContentState(sublineToUpdate.nosach,sublineToDelete.nosach.blocks[0],
-      sublineToDelete.nosach.entityMap)
-     
-     // .blocks.push(...sublineToDelete.nosach.blocks);  
+    sublineToUpdate.nosach = addBlockToContentState(
+      sublineToUpdate.nosach,
+      sublineToDelete.nosach.blocks[0],
+      sublineToDelete.nosach.entityMap,
+    );
+
+    // .blocks.push(...sublineToDelete.nosach.blocks);
     // delete
     mishnaDoc.lines[lineIndex].sublines.splice(indexInLine, 1);
 

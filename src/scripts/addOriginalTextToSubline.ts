@@ -3,6 +3,7 @@ import {
   ContentState,
   ContentBlock,
   DraftEntityMutability,
+  RawDraftContentState,
 } from 'draft-js';
 import mongoose from 'mongoose';
 
@@ -258,5 +259,3 @@ const main = async () => {
   console.log('MongoDB connection closed');
   process.exit(0);
 };
-
-main();

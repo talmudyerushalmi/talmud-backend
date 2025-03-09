@@ -10,14 +10,13 @@ import { UserMiddleware } from './middleware/userType';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(process.env.DB_CONNECTION,
-      {}),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    MongooseModule.forRoot(process.env.DB_CONNECTION, {}),
     PagesModule,
     ImportModule,
     SettingsModule,
-    ConfigModule.forRoot({
-      isGlobal: true,
-    })
   ],
   controllers: [AppController],
   providers: [AppService],
