@@ -29,6 +29,7 @@ export class SubLine {
   index: number;
   sugiaName?: string;
   nosach: RawDraftContentState;
+  originalText: string;
   synopsis: Synopsis[]
 }
 
