@@ -1,16 +1,19 @@
 name: Deploy to staging2
+
 on:
+
   workflow_dispatch:
+
+
 jobs:
   run_example_job:
     name: deploy test
     environment:
       name: staging
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     steps:
     - uses: actions/checkout@v4
-    
     - name: Build  
       id: build      
       env:
@@ -18,40 +21,31 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
         AWS_DEFAULT_REGION: 'eu-west-1'
         IMAGE: ${{secrets.IMAGE_REGISTRY}}
+
       run: |
-        set -e  # Exit on error
         make upload
-        if [ ! -f "version.txt" ]; then
-          echo "Error: version.txt not found"
-          exit 1
-        fi
         VERSION=$(<"version.txt")
         IMAGE="$IMAGE:$VERSION"
         echo "IMAGE=$IMAGE" >> $GITHUB_OUTPUT
-        
-        if [ ! -f "docker-compose-backend.template.yml" ]; then
-          echo "Error: docker-compose-backend.template.yml not found"
-          exit 1
-        fi
+        template_file="docker-compose-backend.template.yml"
         template_content=$(<"docker-compose-backend.template.yml")
         echo "$template_content" | sed "s|\${IMAGE}|$IMAGE|g" > docker-compose-backend.yml
-        
-        echo "Built image: $IMAGE"
-    
-    - name: Copy file via SSH
-      uses: appleboy/scp-action@v0.1.8
+
+
+    - name: copy file via ssh
+      uses: appleboy/scp-action@v1.0.0
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_KEY }}
         source: "docker-compose-backend.yml"
         target: .
-    
-    - name: Deploy to staging
+    - name: print out example job
       uses: appleboy/ssh-action@v1.0.3
       env:
         IMAGE: ${{ steps.build.outputs.IMAGE }}
         IMAGE_REGISTRY: ${{secrets.IMAGE_REGISTRY}}
+        TEST: "yaron-test"
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
@@ -59,37 +53,6 @@ jobs:
         envs: IMAGE,IMAGE_REGISTRY
         command_timeout: 30m
         script: | 
-          set -e  # Exit on error
-          
-          echo "Logging into ECR..."
-          aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin $IMAGE_REGISTRY
-          
-          echo "Stopping existing containers..."
-          docker-compose -f docker-compose-backend.yml down --remove-orphans || true
-          
-          echo "Starting new containers..."
+          aws ecr get-login-password  | docker login --username AWS --password-stdin $IMAGE_REGISTRY
+          docker-compose  -f docker-compose-backend.yml down
           docker-compose -f docker-compose-backend.yml up -d
-          
-          echo "Cleaning up unused images..."
-          docker image prune -f
-          
-          echo "Deployment completed successfully"
-    
-    - name: Health Check
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_KEY }}
-        command_timeout: 5m
-        script: |
-          echo "Waiting for services to start..."
-          sleep 30
-          
-          echo "Checking container status..."
-          docker-compose -f docker-compose-backend.yml ps
-          
-          # Add your specific health check here
-          # Example: curl -f http://localhost:8080/health || exit 1
-          
-          echo "Health check completed"
