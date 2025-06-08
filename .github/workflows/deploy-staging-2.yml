@@ -21,6 +21,7 @@ jobs:
         AWS_DEFAULT_REGION: 'eu-west-1'
         IMAGE: ${{secrets.IMAGE_REGISTRY}}
       run: |
+        echo "secret id $AWS_ACCESS_KEY_ID"
         aws ecr get-login-password
     
     - uses: actions/checkout@v4
