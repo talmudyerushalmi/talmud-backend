@@ -41,7 +41,7 @@ jobs:
         source: "docker-compose-backend.yml"
         target: .
     - name: print out example job
-      uses: appleboy/ssh-action@v1.0.3
+      uses: appleboy/ssh-action@v1.2.2
       env:
         IMAGE: ${{ steps.build.outputs.IMAGE }}
         IMAGE_REGISTRY: ${{secrets.IMAGE_REGISTRY}}
@@ -53,6 +53,8 @@ jobs:
         envs: IMAGE,IMAGE_REGISTRY
         command_timeout: 30m
         script: | 
+          echo "aws ecr?"
+          aws ecr get-login-password
           aws ecr get-login-password  | docker login --username AWS --password-stdin $IMAGE_REGISTRY
           docker-compose  -f docker-compose-backend.yml down
           docker-compose -f docker-compose-backend.yml up -d
