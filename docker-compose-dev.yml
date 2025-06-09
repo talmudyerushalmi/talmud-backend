@@ -11,4 +11,16 @@ services:
       MONGO_INITDB_ROOT_USERNAME: mongoadmin
       MONGO_INITDB_ROOT_PASSWORD: secret
 
+  neo4j:
+    container_name: neo4j-for-talmud
+    image: neo4j:latest
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    volumes:
+      - "./neo4j-data/data:/data"
+    environment:
+      NEO4J_AUTH: neo4j/password
+     
+
 
