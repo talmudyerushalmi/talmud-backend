@@ -42,3 +42,4 @@ restore.sh
 .env*
 
 mongo-data
+neo4j-data

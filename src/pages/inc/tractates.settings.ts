@@ -53,6 +53,7 @@ export const tractateSettings = {
         synopsisAllowed: ["leiden", "gniza_1", "gniza_2", "gniza_3", "kricha_5", "likutim_4","translation"]
     },
     sukka: {
+        public: true,
         synopsisAllowed: ["leiden","translation"] 
     },
     yom_tov: {
