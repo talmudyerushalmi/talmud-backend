@@ -35,6 +35,33 @@ export class PagesService {
     @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>,
   ) {}
 
+  private addPlaceholderSynopsisToMishna(mishnaData: any): void {
+    // Add a placeholder synopsis element to sublines that belong to parallel lines (not saved to DB)
+    if (mishnaData.lines) {
+      mishnaData.lines.forEach(line => {
+        // Only add placeholder synopsis if this line has parallels
+        if (line.parallels && line.parallels.length > 0 && line.sublines) {
+          line.sublines.forEach(subline => {
+            if (subline.synopsis) {
+              const placeholderSynopsis = {
+                id: 'placeholder',
+                type: 'direct_sources',
+                text: { 
+                  content: null, 
+                  simpleText: 'Placeholder text' 
+                },
+                code: 'placeholder',
+                name: 'Placeholder Synopsis',
+                button_code: 'placeholder'
+              };
+              subline.synopsis.push(placeholderSynopsis);
+            }
+          });
+        }
+      });
+    }
+  }
+
   async getMishna(
     tractate: string,
     chapter: string,
@@ -47,6 +74,7 @@ export class PagesService {
     if (!find) {
       throw new HttpException('Not found', HttpStatus.NOT_FOUND);
     } else {
+      this.addPlaceholderSynopsisToMishna(find);
       return find;
     }
   }
