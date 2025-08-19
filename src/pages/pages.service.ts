@@ -22,7 +22,8 @@ import { MishnaLink } from './models/mishna.link.model';
 import { create } from 'xmlbuilder2';
 import { base64ToJson } from 'src/shared/base64ToJson';
 import * as StringSimilarity from 'string-similarity';
-import { InternalLink, Line } from './models/line.model';
+import { InternalLink, Line, Synopsis, SourceType } from './models/line.model';
+
 
 export interface iTractate {
   title_eng: string;
@@ -37,7 +38,7 @@ export class PagesService {
     @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>,
   ) {}
 
-  private async addParallelSynopsisToMishna(mishnaData: any): Promise<void> {
+  private async addParallelSynopsisToMishna(mishnaData: Mishna): Promise<void> {
     // Add parallel synopsis elements to sublines that belong to parallel lines (not saved to DB)
     if (mishnaData.lines) {
       for (const line of mishnaData.lines) {
@@ -46,7 +47,6 @@ export class PagesService {
           
           // Process ALL parallel lines, not just the first one
           for (const subline of line.sublines) {
-            if (subline.synopsis) {
               for (const parallel of line.parallels) {
                 try {
                   // Fetch the parallel line data
@@ -72,9 +72,9 @@ export class PagesService {
                     
                     // If we found a match, add it as a synopsis element
                     if (bestMatch) {
-                      const parallelSynopsis = {
+                      const parallelSynopsisSubline: Synopsis = {
                         id: `parallel_${parallel.tractate}_${parallel.chapter}_${parallel.mishna}_${parallel.lineNumber}`,
-                        type: 'parallel_source',
+                        type: SourceType.PARALLEL_SOURCE,
                         text: { 
                           content: null, 
                           simpleText: bestMatch.text 
@@ -82,8 +82,8 @@ export class PagesService {
                         code: 'parallel',
                         name: `${parallel.linkText || `${parallel.tractate} ${parallel.chapter}:${parallel.mishna} line ${parallel.lineNumber}`}`,
                         button_code: 'parallel'
-                      };
-                      subline.synopsis.push(parallelSynopsis);
+                      }
+                      subline.synopsis.push(parallelSynopsisSubline);
                     }
                   }
                 } catch (error) {
@@ -91,7 +91,6 @@ export class PagesService {
                   // If there's an error fetching the parallel line, just continue without adding synopsis
                 }
               }
-            }
           }
         }
       }
