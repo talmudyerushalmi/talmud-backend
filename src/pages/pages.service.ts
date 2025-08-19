@@ -101,10 +101,11 @@ export class PagesService {
     tractate: string,
     chapter: string,
     mishna: string,
-  ): Promise<Mishna> {
+  ): Promise<Mishna | any> {
     //todo fix any
     const find = await this.mishnaRepository
-      .find(tractate, chapter, mishna);
+      .find(tractate, chapter, mishna)
+      .lean();
     if (!find) {
       throw new HttpException('Not found', HttpStatus.NOT_FOUND);
     } else {
