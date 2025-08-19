@@ -21,6 +21,8 @@ import * as numeral from 'numeral';
 import { MishnaLink } from './models/mishna.link.model';
 import { create } from 'xmlbuilder2';
 import { base64ToJson } from 'src/shared/base64ToJson';
+import * as StringSimilarity from 'string-similarity';
+import { InternalLink, Line } from './models/line.model';
 
 export interface iTractate {
   title_eng: string;
@@ -35,30 +37,64 @@ export class PagesService {
     @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>,
   ) {}
 
-  private addPlaceholderSynopsisToMishna(mishnaData: any): void {
-    // Add a placeholder synopsis element to sublines that belong to parallel lines (not saved to DB)
+  private async addParallelSynopsisToMishna(mishnaData: any): Promise<void> {
+    // Add parallel synopsis elements to sublines that belong to parallel lines (not saved to DB)
     if (mishnaData.lines) {
-      mishnaData.lines.forEach(line => {
-        // Only add placeholder synopsis if this line has parallels
+      for (const line of mishnaData.lines) {
+        // Only process lines that have parallels
         if (line.parallels && line.parallels.length > 0 && line.sublines) {
-          line.sublines.forEach(subline => {
-            if (subline.synopsis) {
-              const placeholderSynopsis = {
-                id: 'placeholder',
-                type: 'direct_sources',
-                text: { 
-                  content: null, 
-                  simpleText: 'Placeholder text' 
-                },
-                code: 'placeholder',
-                name: 'Placeholder Synopsis',
-                button_code: 'placeholder'
-              };
-              subline.synopsis.push(placeholderSynopsis);
+          // Take the first parallel line
+          const firstParallel: InternalLink = line.parallels[0];
+          
+          try {
+            // Fetch the parallel line data
+            const parallelLine = await this.mishnaRepository.findByLink(firstParallel);
+            
+            if (parallelLine && parallelLine.sublines) {
+              // For each subline in the current line, try to find a match in parallel sublines
+              for (const subline of line.sublines) {
+                if (subline.synopsis) {
+                  let bestMatch = null;
+                  let bestSimilarity = 0;
+                  const MINIMUM_MATCH = 0.3;
+                  
+                  // Compare with all parallel sublines to find the best match
+                  for (const parallelSubline of parallelLine.sublines) {
+                    const similarity = StringSimilarity.compareTwoStrings(
+                      subline.text, 
+                      parallelSubline.text
+                    );
+                    
+                    if (similarity > MINIMUM_MATCH && similarity > bestSimilarity) {
+                      bestSimilarity = similarity;
+                      bestMatch = parallelSubline;
+                    }
+                  }
+                  
+                  // If we found a match, add it as a synopsis element
+                  if (bestMatch) {
+                    const parallelSynopsis = {
+                      id: `parallel_${firstParallel.tractate}_${firstParallel.chapter}_${firstParallel.mishna}_${firstParallel.lineNumber}`,
+                      type: 'parallel_source',
+                      text: { 
+                        content: null, 
+                        simpleText: bestMatch.text 
+                      },
+                      code: 'parallel',
+                      name: `${firstParallel.linkText || `${firstParallel.tractate} ${firstParallel.chapter}:${firstParallel.mishna} line ${firstParallel.lineNumber}`}`,
+                      button_code: 'parallel'
+                    };
+                    subline.synopsis.push(parallelSynopsis);
+                  }
+                }
+              }
             }
-          });
+          } catch (error) {
+            console.error('Error fetching parallel line:', error);
+            // If there's an error fetching the parallel line, just continue without adding synopsis
+          }
         }
-      });
+      }
     }
   }
 
@@ -74,7 +110,7 @@ export class PagesService {
     if (!find) {
       throw new HttpException('Not found', HttpStatus.NOT_FOUND);
     } else {
-      this.addPlaceholderSynopsisToMishna(find);
+      await this.addParallelSynopsisToMishna(find);
       return find;
     }
   }
