@@ -8,7 +8,9 @@ import { RawDraftContentState } from 'draft-js';
 import { ExcerptUtils } from '../inc/excerptUtils';
 import { createSublineFromLine } from './lineMethods/createSublineFromLine';
 
-@Schema()
+@Schema({
+  minimize: false
+})
 export class Mishna extends Document {
   @Prop()
   guid: string;

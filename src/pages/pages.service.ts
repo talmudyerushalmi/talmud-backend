@@ -104,12 +104,11 @@ export class PagesService {
   ): Promise<Mishna | any> {
     //todo fix any
     const find = await this.mishnaRepository
-      .find(tractate, chapter, mishna)
-      .lean();
+      .find(tractate, chapter, mishna);
     if (!find) {
       throw new HttpException('Not found', HttpStatus.NOT_FOUND);
     } else {
-      await this.addParallelSynopsisToMishna(find as Mishna);
+      await this.addParallelSynopsisToMishna(find);
       return find;
     }
   }
