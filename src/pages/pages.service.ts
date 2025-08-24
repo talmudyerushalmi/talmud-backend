@@ -70,20 +70,23 @@ export class PagesService {
                       }
                     }
                     
-                    // If we found a match, add it as a synopsis element
-                    if (bestMatch) {
-                      const parallelSynopsisSubline: Synopsis = {
-                        id: `parallel_${parallel.tractate}_${parallel.chapter}_${parallel.mishna}_${parallel.lineNumber}`,
-                        type: SourceType.PARALLEL_SOURCE,
-                        text: { 
-                          content: null, 
-                          simpleText: bestMatch.text 
-                        },
-                        code: 'parallel',
-                        name: `${parallel.linkText || `${parallel.tractate} ${parallel.chapter}:${parallel.mishna} line ${parallel.lineNumber}`}`,
-                        button_code: 'parallel'
-                      }
-                      subline.synopsis.push(parallelSynopsisSubline);
+                    // If we found a match, copy its direct sources as parallel sources
+                    if (bestMatch && bestMatch.synopsis) {
+                      // Find all direct sources from the matched parallel subline
+                      const directSources = bestMatch.synopsis.filter(s => s.type === SourceType.DIRECT_SOURCES);
+                      
+                      // Convert each direct source to a parallel source and add to our subline
+                      directSources.forEach(directSource => {
+                        const parallelSynopsis: Synopsis = {
+                          id: `parallel_${parallel.tractate}_${parallel.chapter}_${parallel.mishna}_${parallel.lineNumber}_${directSource.id}`,
+                          type: SourceType.PARALLEL_SOURCE,
+                          text: directSource.text, // Copy the original text from the direct source
+                          code: directSource.code,
+                          name: `${parallel.linkText || `${parallel.tractate} ${parallel.chapter}:${parallel.mishna} line ${parallel.lineNumber}`} - ${directSource.name}`,
+                          button_code: directSource.button_code
+                        };
+                        subline.synopsis.push(parallelSynopsis);
+                      });
                     }
                   }
                 } catch (error) {

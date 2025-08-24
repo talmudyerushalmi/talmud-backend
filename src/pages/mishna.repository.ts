@@ -42,8 +42,12 @@ export class MishnaRepository {
   }
 
   async findByLink(link: InternalLink): Promise<Line | undefined> {
-    const mishna = await this.find(link.tractate, link.chapter, link.mishna);
-    return mishna.getLine(link.lineNumber);
+    return (this.mishnaModel as any).findLineByLink(
+      link.tractate, 
+      link.chapter, 
+      link.mishna, 
+      link.lineNumber
+    );
   }
 
   getRangeLines(
