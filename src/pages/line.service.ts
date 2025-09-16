@@ -5,7 +5,7 @@ import { Mishna } from './schemas/mishna.schema';
 import * as _ from 'lodash';
 import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './mishna.repository';
-import { InternalLink, Line } from './models/line.model';
+import { InternalParallelLink, Line } from './models/line.model';
 import MiscUtils from '../shared/MiscUtils';
 import { compareSynopsis, filterParallelSynopsis, getSynopsisText } from './inc/synopsisUtils';
 import { SynopsisService } from './synopsis.service';
@@ -24,12 +24,28 @@ export class LineService {
     chapter: string,
     mishna: string,
     line: string,
+    targetSublineIndex?: number,
+    sourceSublineIndex?: number,
   ) {
     const tractateName = (await this.tractateRepository.get(tractate))
       .title_heb;
-    return `${tractateName} ${MiscUtils.hebrewMap.get(
+    let linkText = `${tractateName} ${MiscUtils.hebrewMap.get(
       parseInt(chapter),
     )} ${MiscUtils.hebrewMap.get(parseInt(mishna))} [${line}]`;
+    
+    // Add subline info to the display text
+    const sublineParts: string[] = [];
+    if (sourceSublineIndex !== undefined) {
+      sublineParts.push(`מקור: ${sourceSublineIndex + 1}`);
+    }
+    if (targetSublineIndex !== undefined) {
+      sublineParts.push(`יעד: ${targetSublineIndex + 1}`);
+    }
+    if (sublineParts.length > 0) {
+      linkText += ` [${sublineParts.join(', ')}]`;
+    }
+    
+    return linkText;
   }
 
   findFirstMatch(line1, line2: Line) {
@@ -96,7 +112,7 @@ export class LineService {
     chapter: string,
     mishna: string,
     line: string,
-    parallels: InternalLink[],
+    parallels: InternalParallelLink[],
   ): Promise<Mishna> {
     const mishnaDoc = await this.mishnaRepository.find(
       tractate,
@@ -106,13 +122,13 @@ export class LineService {
     const lineIndex = mishnaDoc.lines.findIndex(l => l.lineNumber === line);
     const currentLine = mishnaDoc.lines[lineIndex];
 
-    const added: InternalLink[] = _.differenceWith(
+    const added: InternalParallelLink[] = _.differenceWith(
       parallels,
-      currentLine.parallels,
+      currentLine.parallels || [],
       _.isEqual,
     );
     const removed = _.differenceWith(
-      currentLine.parallels,
+      currentLine.parallels || [],
       parallels,
       _.isEqual,
     );
@@ -126,17 +142,20 @@ export class LineService {
           p.chapter,
           p.mishna,
           p.lineNumber,
+          p.sublineIndex,
+          p.sourceSublineIndex,
         );
       }),
     );
 
     for await (const link of added) {
-      const parallelLink: InternalLink = {
-        linkText: await this.getLinkName(tractate, chapter, mishna, line),
+      const parallelLink: InternalParallelLink = {
+        linkText: await this.getLinkName(tractate, chapter, mishna, line, link.sourceSublineIndex, link.sublineIndex),
         tractate,
         chapter,
         mishna,
         lineNumber: line,
+        ...(link.sourceSublineIndex !== undefined && { sourceSublineIndex: link.sourceSublineIndex }),
       };
 
       await this.mishnaRepository.addParallel(
@@ -149,11 +168,12 @@ export class LineService {
     }
 
     for (const link of removed) {
-      const parallelLink: InternalLink = {
+      const parallelLink: InternalParallelLink = {
         tractate,
         chapter,
         mishna,
         lineNumber: line,
+        ...(link.sourceSublineIndex !== undefined && { sourceSublineIndex: link.sourceSublineIndex }),
       };
       await this.mishnaRepository.removeParallel(
         link.tractate,

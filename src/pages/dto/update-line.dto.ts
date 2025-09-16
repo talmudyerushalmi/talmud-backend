@@ -1,5 +1,5 @@
 import { IsArray, IsOptional, IsString } from 'class-validator';
-import { InternalLink, SubLine } from '../models/line.model';
+import { InternalParallelLink, SubLine } from '../models/line.model';
 
 export class UpdateLineDto {
   @IsOptional()
@@ -7,5 +7,5 @@ export class UpdateLineDto {
   @IsArray()
   sublines: SubLine[];
   @IsOptional()
-  parallels?: InternalLink[];
+  parallels?: InternalParallelLink[];
 }
