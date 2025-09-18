@@ -24,6 +24,22 @@ export class SublineService {
     @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>,
   ) {}
 
+  async updateLineParallels(
+    tractate: string,
+    chapter: string,
+    mishna: string,
+    line: string,
+    parallels: any[],
+  ): Promise<Mishna> {
+    return this.lineService.setParallel(
+      tractate,
+      chapter,
+      mishna,
+      line,
+      parallels,
+    );
+  }
+
   async updateSubline(
     tractate: string,
     chapter: string,

@@ -33,14 +33,22 @@ export class SubLine {
   synopsis: Synopsis[]
 }
 
+export interface SublinePair {
+  sourceIndex: number;  // Index in current line
+  targetIndex: number;  // Index in target line
+}
+
 export class InternalParallelLink {
   linkText?: string;
   tractate: string;
   chapter: string;
   mishna: string;
   lineNumber: string;
-  sublineIndex?: number; // Target subline index
-  sourceSublineIndex?: number; // Source subline index
+  sublinePairs?: SublinePair[]; // Array of matched subline pairs
+  
+  // Legacy fields for backward compatibility during transition
+  sublineIndex?: number; 
+  sourceSublineIndex?: number;
 }
 
 export class Line {

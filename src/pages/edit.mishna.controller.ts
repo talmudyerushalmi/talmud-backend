@@ -93,6 +93,24 @@ export class EditMishnaController {
     );
   }
 
+  @Post('/:tractate/:chapter/:mishna/:line/parallels')
+  @UsePipes(ValidationPipe)
+  async updateParallels(
+    @Param('tractate') tractate: string,
+    @Param('chapter') chapter: string,
+    @Param('mishna') mishna: string,
+    @Param('line') line: string,
+    @Body() parallelsDto: { parallels: any[] },
+  ) {
+    return this.sublineService.updateLineParallels(
+      tractate,
+      chapter,
+      mishna,
+      line,
+      parallelsDto.parallels,
+    );
+  }
+
   @Delete('/:tractate/:chapter/:mishna/:line/:subline')
   @UsePipes(ValidationPipe)
   async deleteSubline(

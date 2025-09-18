@@ -24,8 +24,7 @@ export class LineService {
     chapter: string,
     mishna: string,
     line: string,
-    targetSublineIndex?: number,
-    sourceSublineIndex?: number,
+    parallelLink?: InternalParallelLink,
   ) {
     const tractateName = (await this.tractateRepository.get(tractate))
       .title_heb;
@@ -34,15 +33,27 @@ export class LineService {
     )} ${MiscUtils.hebrewMap.get(parseInt(mishna))} [${line}]`;
     
     // Add subline info to the display text
-    const sublineParts: string[] = [];
-    if (sourceSublineIndex !== undefined) {
-      sublineParts.push(`מקור: ${sourceSublineIndex + 1}`);
-    }
-    if (targetSublineIndex !== undefined) {
-      sublineParts.push(`יעד: ${targetSublineIndex + 1}`);
-    }
-    if (sublineParts.length > 0) {
-      linkText += ` [${sublineParts.join(', ')}]`;
+    if (parallelLink) {
+      // Handle new multiple subline pairs format
+      if (parallelLink.sublinePairs && parallelLink.sublinePairs.length > 0) {
+        const pairStrings = parallelLink.sublinePairs.map(pair => 
+          `${pair.sourceIndex + 1}→${pair.targetIndex + 1}`
+        );
+        linkText += ` [זוגות: ${pairStrings.join(', ')}]`;
+      }
+      // Backward compatibility for old format
+      else {
+        const sublineParts: string[] = [];
+        if (parallelLink.sourceSublineIndex !== undefined) {
+          sublineParts.push(`מקור: ${parallelLink.sourceSublineIndex + 1}`);
+        }
+        if (parallelLink.sublineIndex !== undefined) {
+          sublineParts.push(`יעד: ${parallelLink.sublineIndex + 1}`);
+        }
+        if (sublineParts.length > 0) {
+          linkText += ` [${sublineParts.join(', ')}]`;
+        }
+      }
     }
     
     return linkText;
@@ -142,21 +153,22 @@ export class LineService {
           p.chapter,
           p.mishna,
           p.lineNumber,
-          p.sublineIndex,
-          p.sourceSublineIndex,
+          p,
         );
       }),
     );
 
     for await (const link of added) {
       const parallelLink: InternalParallelLink = {
-        linkText: await this.getLinkName(tractate, chapter, mishna, line, link.sourceSublineIndex, link.sublineIndex),
         tractate,
         chapter,
         mishna,
         lineNumber: line,
         ...(link.sourceSublineIndex !== undefined && { sourceSublineIndex: link.sourceSublineIndex }),
+        ...(link.sublinePairs && { sublinePairs: link.sublinePairs }),
       };
+      
+      parallelLink.linkText = await this.getLinkName(tractate, chapter, mishna, line, parallelLink);
 
       await this.mishnaRepository.addParallel(
         link.tractate,
@@ -174,6 +186,7 @@ export class LineService {
         mishna,
         lineNumber: line,
         ...(link.sourceSublineIndex !== undefined && { sourceSublineIndex: link.sourceSublineIndex }),
+        ...(link.sublinePairs && { sublinePairs: link.sublinePairs }),
       };
       await this.mishnaRepository.removeParallel(
         link.tractate,
