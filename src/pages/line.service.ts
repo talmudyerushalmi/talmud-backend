@@ -33,27 +33,11 @@ export class LineService {
     )} ${MiscUtils.hebrewMap.get(parseInt(mishna))} [${line}]`;
     
     // Add subline info to the display text
-    if (parallelLink) {
-      // Handle new multiple subline pairs format
-      if (parallelLink.sublinePairs && parallelLink.sublinePairs.length > 0) {
-        const pairStrings = parallelLink.sublinePairs.map(pair => 
-          `${pair.sourceIndex + 1}→${pair.targetIndex + 1}`
-        );
-        linkText += ` [זוגות: ${pairStrings.join(', ')}]`;
-      }
-      // Backward compatibility for old format
-      else {
-        const sublineParts: string[] = [];
-        if (parallelLink.sourceSublineIndex !== undefined) {
-          sublineParts.push(`מקור: ${parallelLink.sourceSublineIndex + 1}`);
-        }
-        if (parallelLink.sublineIndex !== undefined) {
-          sublineParts.push(`יעד: ${parallelLink.sublineIndex + 1}`);
-        }
-        if (sublineParts.length > 0) {
-          linkText += ` [${sublineParts.join(', ')}]`;
-        }
-      }
+    if (parallelLink && parallelLink.sublinePairs && parallelLink.sublinePairs.length > 0) {
+      const pairStrings = parallelLink.sublinePairs.map(pair => 
+        `${pair.sourceIndex + 1}→${pair.targetIndex + 1}`
+      );
+      linkText += ` [זוגות: ${pairStrings.join(', ')}]`;
     }
     
     return linkText;
@@ -164,8 +148,7 @@ export class LineService {
         chapter,
         mishna,
         lineNumber: line,
-        ...(link.sourceSublineIndex !== undefined && { sourceSublineIndex: link.sourceSublineIndex }),
-        ...(link.sublinePairs && { sublinePairs: link.sublinePairs }),
+        sublinePairs: link.sublinePairs || [],
       };
       
       parallelLink.linkText = await this.getLinkName(tractate, chapter, mishna, line, parallelLink);
@@ -185,8 +168,7 @@ export class LineService {
         chapter,
         mishna,
         lineNumber: line,
-        ...(link.sourceSublineIndex !== undefined && { sourceSublineIndex: link.sourceSublineIndex }),
-        ...(link.sublinePairs && { sublinePairs: link.sublinePairs }),
+        sublinePairs: link.sublinePairs || [],
       };
       await this.mishnaRepository.removeParallel(
         link.tractate,

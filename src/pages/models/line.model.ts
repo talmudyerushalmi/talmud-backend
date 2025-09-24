@@ -45,10 +45,6 @@ export class InternalParallelLink {
   mishna: string;
   lineNumber: string;
   sublinePairs?: SublinePair[]; // Array of matched subline pairs
-  
-  // Legacy fields for backward compatibility during transition
-  sublineIndex?: number; 
-  sourceSublineIndex?: number;
 }
 
 export class Line {
