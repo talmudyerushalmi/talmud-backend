@@ -7,7 +7,7 @@ import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './mishna.repository';
 import { UpdateLineDto } from './dto/update-line.dto';
 import { UpdateNosachDto } from './dto/update-nosach.dto';
-import { SubLine } from './models/line.model';
+import { InternalParallelLink, SubLine } from './models/line.model';
 import {
   addBlockToContentState,
   createEditorContentFromText,
@@ -29,7 +29,7 @@ export class SublineService {
     chapter: string,
     mishna: string,
     line: string,
-    parallels: any[],
+    parallels: InternalParallelLink[],
   ): Promise<Mishna> {
     return this.lineService.setParallel(
       tractate,
