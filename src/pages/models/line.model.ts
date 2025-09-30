@@ -33,12 +33,18 @@ export class SubLine {
   synopsis: Synopsis[]
 }
 
-export class InternalLink {
+export interface SublinePair {
+  sourceIndex: number;  // Index in current line
+  targetIndex: number;  // Index in target line
+}
+
+export class InternalParallelLink {
   linkText?: string;
   tractate: string;
   chapter: string;
   mishna: string;
   lineNumber: string;
+  sublinePairs?: SublinePair[]; // Array of matched subline pairs
 }
 
 export class Line {
@@ -46,7 +52,7 @@ export class Line {
   lineNumber?: string;
   sourceReference?: string;
 
-  parallels?: InternalLink[]
+  parallels?: InternalParallelLink[]
 
   @IsNotEmpty()
   @IsString()

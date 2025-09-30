@@ -6,7 +6,7 @@ import { LineMarkDto } from './dto/line-mark.dto';
 import * as numeral from 'numeral';
 import { SaveMishnaExcerptDto } from './dto/save-mishna-excerpt.dto';
 import { ExcerptUtils } from './inc/excerptUtils';
-import { InternalLink, Line } from './models/line.model';
+import { InternalParallelLink, Line } from './models/line.model';
 import { MishnaLink } from './models/mishna.link.model';
 import { ISearch, ISearchResult } from './models/search.model';
 
@@ -41,7 +41,7 @@ export class MishnaRepository {
     return this.mishnaModel.findOne({ tractate, 'lines.lineNumber': line });
   }
 
-  async findByLink(link: InternalLink): Promise<Line | undefined> {
+  async findByLink(link: InternalParallelLink): Promise<Line | undefined> {
     const mishna = await this.find(link.tractate, link.chapter, link.mishna);
     return mishna.getLine(link.lineNumber);
   }
@@ -289,7 +289,7 @@ export class MishnaRepository {
     chapter: string,
     mishna: string,
     line: string,
-    parallel: InternalLink,
+    parallel: InternalParallelLink,
   ): Promise<any> {
     console.log('saving ', this.getGUID(tractate, chapter, mishna));
     return this.mishnaModel.updateOne(
@@ -306,7 +306,7 @@ export class MishnaRepository {
     chapter: string,
     mishna: string,
     line: string,
-    parallel: InternalLink,
+    parallel: InternalParallelLink,
   ): Promise<any> {
     console.log(
       'removing parallel from ',

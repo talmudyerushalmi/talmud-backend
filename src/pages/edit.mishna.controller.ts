@@ -13,6 +13,7 @@ import {
 import { UpdateLineDto } from './dto/update-line.dto';
 import { UpdateMishnaRichTextsDto } from './dto/update-mishna-texts.dto';
 import { UpdateNosachDto } from './dto/update-nosach.dto';
+import { UpdateParallelsDto } from './dto/update-parallels.dto';
 import { PagesService } from './pages.service';
 import { SublineService } from './subline.service';
 
@@ -90,6 +91,24 @@ export class EditMishnaController {
       mishna,
       line,
       updateLineDto,
+    );
+  }
+
+  @Post('/:tractate/:chapter/:mishna/:line/parallels')
+  @UsePipes(ValidationPipe)
+  async updateParallels(
+    @Param('tractate') tractate: string,
+    @Param('chapter') chapter: string,
+    @Param('mishna') mishna: string,
+    @Param('line') line: string,
+    @Body() updateParallelsDto: UpdateParallelsDto,
+  ) {
+    return this.sublineService.updateLineParallels(
+      tractate,
+      chapter,
+      mishna,
+      line,
+      updateParallelsDto.parallels,
     );
   }
 

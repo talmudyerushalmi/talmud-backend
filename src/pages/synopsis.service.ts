@@ -8,7 +8,7 @@ import { Mishna } from './schemas/mishna.schema';
 import * as _ from 'lodash';
 import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './mishna.repository';
-import { InternalLink, Line, SourceType, SubLine } from './models/line.model';
+import { InternalParallelLink, Line, SourceType, SubLine } from './models/line.model';
 import { NavigationService } from './navigation.service';
 
 
@@ -100,7 +100,7 @@ export class SynopsisService {
   copyParallelSynopsis(
   line: Line,
   parallelLine: Line,
-  link: InternalLink,
+  link: InternalParallelLink,
 ) {
   let match = this.findMatchingSynopsis(line, parallelLine);
   let copyIndex = match.text2.lineIndex;

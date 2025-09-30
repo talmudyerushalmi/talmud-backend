@@ -7,7 +7,7 @@ import * as _ from 'lodash';
 import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './mishna.repository';
 import { iTractate } from './pages.service';
-import { InternalLink } from './models/line.model';
+import { InternalParallelLink } from './models/line.model';
 import MiscUtils from '../shared/MiscUtils';
 
 export enum LinkFormat {
@@ -71,7 +71,7 @@ export class NavigationService {
 
  
   getLinkText(
-    link: InternalLink,
+    link: InternalParallelLink,
     format = LinkFormat.TractateChapterMishna,
   ) {
     switch (format) {

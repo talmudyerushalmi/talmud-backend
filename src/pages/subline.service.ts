@@ -7,7 +7,7 @@ import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './mishna.repository';
 import { UpdateLineDto } from './dto/update-line.dto';
 import { UpdateNosachDto } from './dto/update-nosach.dto';
-import { SubLine } from './models/line.model';
+import { InternalParallelLink, SubLine } from './models/line.model';
 import {
   addBlockToContentState,
   createEditorContentFromText,
@@ -23,6 +23,22 @@ export class SublineService {
     private lineService: LineService,
     @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>,
   ) {}
+
+  async updateLineParallels(
+    tractate: string,
+    chapter: string,
+    mishna: string,
+    line: string,
+    parallels: InternalParallelLink[],
+  ): Promise<Mishna> {
+    return this.lineService.setParallel(
+      tractate,
+      chapter,
+      mishna,
+      line,
+      parallels,
+    );
+  }
 
   async updateSubline(
     tractate: string,
