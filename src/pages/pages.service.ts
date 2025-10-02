@@ -21,6 +21,9 @@ import * as numeral from 'numeral';
 import { MishnaLink } from './models/mishna.link.model';
 import { create } from 'xmlbuilder2';
 import { base64ToJson } from 'src/shared/base64ToJson';
+import * as StringSimilarity from 'string-similarity';
+import { InternalLink, Line, Synopsis, SourceType } from './models/line.model';
+
 
 export interface iTractate {
   title_eng: string;
@@ -35,6 +38,68 @@ export class PagesService {
     @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>,
   ) {}
 
+  private async addParallelSynopsisToMishna(mishnaData: Mishna): Promise<void> {
+    // Add parallel synopsis elements to sublines that belong to parallel lines (not saved to DB)
+    if (mishnaData.lines) {
+      for (const line of mishnaData.lines) {
+        // Only process lines that have parallels
+        if (line.parallels && line.parallels.length > 0 && line.sublines) {
+          
+          // Process ALL parallel lines, not just the first one
+          for (const subline of line.sublines) {
+              for (const parallel of line.parallels) {
+                try {
+                  // Fetch the parallel line data
+                  const parallelLine = await this.mishnaRepository.findByLink(parallel);
+                  
+                  if (parallelLine && parallelLine.sublines) {
+                    let bestMatch = null;
+                    let bestSimilarity = 0;
+                    const MINIMUM_MATCH = 0.3;
+                    
+                    // Compare with all parallel sublines to find the best match
+                    for (const parallelSubline of parallelLine.sublines) {
+                      const similarity = StringSimilarity.compareTwoStrings(
+                        subline.text, 
+                        parallelSubline.text
+                      );
+                      
+                      if (similarity > MINIMUM_MATCH && similarity > bestSimilarity) {
+                        bestSimilarity = similarity;
+                        bestMatch = parallelSubline;
+                      }
+                    }
+                    
+                    // If we found a match, copy its direct sources as parallel sources
+                    if (bestMatch && bestMatch.synopsis) {
+                      // Find all direct sources from the matched parallel subline
+                      const directSources = bestMatch.synopsis.filter(s => s.type === SourceType.DIRECT_SOURCES);
+                      
+                      // Convert each direct source to a parallel source and add to our subline
+                      directSources.forEach(directSource => {
+                        const parallelSynopsis: Synopsis = {
+                          id: `parallel_${parallel.tractate}_${parallel.chapter}_${parallel.mishna}_${parallel.lineNumber}_${directSource.id}`,
+                          type: SourceType.PARALLEL_SOURCE,
+                          text: directSource.text, // Copy the original text from the direct source
+                          code: directSource.code,
+                          name: `${parallel.linkText || `${parallel.tractate} ${parallel.chapter}:${parallel.mishna} line ${parallel.lineNumber}`} - ${directSource.name}`,
+                          button_code: directSource.button_code
+                        };
+                        subline.synopsis.push(parallelSynopsis);
+                      });
+                    }
+                  }
+                } catch (error) {
+                  console.error('Error fetching parallel line:', error);
+                  // If there's an error fetching the parallel line, just continue without adding synopsis
+                }
+              }
+          }
+        }
+      }
+    }
+  }
+
   async getMishna(
     tractate: string,
     chapter: string,
@@ -42,11 +107,11 @@ export class PagesService {
   ): Promise<Mishna | any> {
     //todo fix any
     const find = await this.mishnaRepository
-      .find(tractate, chapter, mishna)
-      .lean();
+      .find(tractate, chapter, mishna);
     if (!find) {
       throw new HttpException('Not found', HttpStatus.NOT_FOUND);
     } else {
+      await this.addParallelSynopsisToMishna(find);
       return find;
     }
   }

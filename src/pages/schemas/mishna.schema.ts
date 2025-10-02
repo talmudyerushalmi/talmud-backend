@@ -8,7 +8,9 @@ import { RawDraftContentState } from 'draft-js';
 import { ExcerptUtils } from '../inc/excerptUtils';
 import { createSublineFromLine } from './lineMethods/createSublineFromLine';
 
-@Schema()
+@Schema({
+  minimize: false
+})
 export class Mishna extends Document {
   @Prop()
   guid: string;
@@ -145,6 +147,15 @@ MishnaSchema.methods.normalizeExcerpts = async function(
 
 MishnaSchema.methods.getLine =  function (lineNumber: string): Line|undefined {
   return this.lines.find(l => l.lineNumber === lineNumber)
+};
+
+// Efficient static method to fetch only a specific line
+MishnaSchema.statics.findLineByLink = async function(tractate: string, chapter: string, mishna: string, lineNumber: string) {
+  const result = await this.findOne(
+    { tractate, chapter, mishna, 'lines.lineNumber': lineNumber },
+    { 'lines.$': 1 }
+  ).exec();
+  return result?.lines?.[0];
 };
 
 MishnaSchema.methods.createSublineFromLine = createSublineFromLine
