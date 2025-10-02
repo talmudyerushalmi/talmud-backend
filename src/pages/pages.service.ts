@@ -22,7 +22,7 @@ import { MishnaLink } from './models/mishna.link.model';
 import { create } from 'xmlbuilder2';
 import { base64ToJson } from 'src/shared/base64ToJson';
 import * as StringSimilarity from 'string-similarity';
-import { InternalLink, Line, Synopsis, SourceType } from './models/line.model';
+import { Line, Synopsis, SourceType } from './models/line.model';
 
 
 export interface iTractate {
