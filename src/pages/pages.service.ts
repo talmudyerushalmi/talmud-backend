@@ -21,7 +21,6 @@ import * as numeral from 'numeral';
 import { MishnaLink } from './models/mishna.link.model';
 import { create } from 'xmlbuilder2';
 import { base64ToJson } from 'src/shared/base64ToJson';
-import * as StringSimilarity from 'string-similarity';
 import { Line, Synopsis, SourceType } from './models/line.model';
 
 
@@ -45,55 +44,42 @@ export class PagesService {
         // Only process lines that have parallels
         if (line.parallels && line.parallels.length > 0 && line.sublines) {
           
-          // Process ALL parallel lines, not just the first one
-          for (const subline of line.sublines) {
-              for (const parallel of line.parallels) {
-                try {
-                  // Fetch the parallel line data
-                  const parallelLine = await this.mishnaRepository.findByLink(parallel);
+          // Process ALL parallel lines using exact subline pairs
+          for (const parallel of line.parallels) {
+            try {
+              // Fetch the parallel line data
+              const parallelLine = await this.mishnaRepository.findByLink(parallel);
+              
+              if (parallelLine && parallelLine.sublines && parallel.sublinePairs) {
+                // Use exact subline pairs instead of similarity matching
+                for (const sublinePair of parallel.sublinePairs) {
+                  const sourceSubline = line.sublines[sublinePair.sourceIndex];
+                  const targetSubline = parallelLine.sublines[sublinePair.targetIndex];
                   
-                  if (parallelLine && parallelLine.sublines) {
-                    let bestMatch = null;
-                    let bestSimilarity = 0;
-                    const MINIMUM_MATCH = 0.3;
+                  // If we found the exact matching sublines, copy direct sources as parallel sources
+                  if (sourceSubline && targetSubline && targetSubline.synopsis) {
+                    // Find all direct sources from the matched parallel subline
+                    const directSources = targetSubline.synopsis.filter(s => s.type === SourceType.DIRECT_SOURCES);
                     
-                    // Compare with all parallel sublines to find the best match
-                    for (const parallelSubline of parallelLine.sublines) {
-                      const similarity = StringSimilarity.compareTwoStrings(
-                        subline.text, 
-                        parallelSubline.text
-                      );
-                      
-                      if (similarity > MINIMUM_MATCH && similarity > bestSimilarity) {
-                        bestSimilarity = similarity;
-                        bestMatch = parallelSubline;
-                      }
-                    }
-                    
-                    // If we found a match, copy its direct sources as parallel sources
-                    if (bestMatch && bestMatch.synopsis) {
-                      // Find all direct sources from the matched parallel subline
-                      const directSources = bestMatch.synopsis.filter(s => s.type === SourceType.DIRECT_SOURCES);
-                      
-                      // Convert each direct source to a parallel source and add to our subline
-                      directSources.forEach(directSource => {
-                        const parallelSynopsis: Synopsis = {
-                          id: `parallel_${parallel.tractate}_${parallel.chapter}_${parallel.mishna}_${parallel.lineNumber}_${directSource.id}`,
-                          type: SourceType.PARALLEL_SOURCE,
-                          text: directSource.text, // Copy the original text from the direct source
-                          code: directSource.code,
-                          name: `${parallel.linkText || `${parallel.tractate} ${parallel.chapter}:${parallel.mishna} line ${parallel.lineNumber}`} - ${directSource.name}`,
-                          button_code: directSource.button_code
-                        };
-                        subline.synopsis.push(parallelSynopsis);
-                      });
-                    }
+                    // Convert each direct source to a parallel source and add to our subline
+                    directSources.forEach(directSource => {
+                      const parallelSynopsis: Synopsis = {
+                        id: `parallel_${parallel.tractate}_${parallel.chapter}_${parallel.mishna}_${parallel.lineNumber}_${directSource.id}`,
+                        type: SourceType.PARALLEL_SOURCE,
+                        text: directSource.text, // Copy the original text from the direct source
+                        code: directSource.code,
+                        name: `${parallel.linkText || `${parallel.tractate} ${parallel.chapter}:${parallel.mishna} line ${parallel.lineNumber}`} - ${directSource.name}`,
+                        button_code: directSource.button_code
+                      };
+                      sourceSubline.synopsis.push(parallelSynopsis);
+                    });
                   }
-                } catch (error) {
-                  console.error('Error fetching parallel line:', error);
-                  // If there's an error fetching the parallel line, just continue without adding synopsis
                 }
               }
+            } catch (error) {
+              console.error('Error fetching parallel line:', error);
+              // If there's an error fetching the parallel line, just continue without adding synopsis
+            }
           }
         }
       }

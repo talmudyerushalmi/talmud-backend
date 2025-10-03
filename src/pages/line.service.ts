@@ -26,20 +26,16 @@ export class LineService {
     line: string,
     parallelLink?: InternalParallelLink,
   ) {
-    const tractateName = (await this.tractateRepository.get(tractate))
-      .title_heb;
-    let linkText = `${tractateName} ${MiscUtils.hebrewMap.get(
+    const tractateDoc = await this.tractateRepository.get(tractate);
+    const tractateName = tractateDoc?.title_heb || tractate;
+    console.log(`🔍 getLinkName: tractate=${tractate}, Hebrew=${tractateName}`);
+    
+    // Keep it simple - just the basic reference without subline pair details
+    const linkText = `${tractateName} ${MiscUtils.hebrewMap.get(
       parseInt(chapter),
     )} ${MiscUtils.hebrewMap.get(parseInt(mishna))} [${line}]`;
     
-    // Add subline info to the display text
-    if (parallelLink && parallelLink.sublinePairs && parallelLink.sublinePairs.length > 0) {
-      const pairStrings = parallelLink.sublinePairs.map(pair => 
-        `${pair.sourceIndex + 1}→${pair.targetIndex + 1}`
-      );
-      linkText += ` [זוגות: ${pairStrings.join(', ')}]`;
-    }
-    
+    console.log(`🔍 Generated linkText: ${linkText}`);
     return linkText;
   }
 
@@ -130,6 +126,7 @@ export class LineService {
 
     const name = (await this.tractateRepository.get(tractate)).title_heb;
 
+    // Generate clean Hebrew linkText for each parallel
     await Promise.all(
       parallels.map(async p => {
         p.linkText = await this.getLinkName(
@@ -137,7 +134,6 @@ export class LineService {
           p.chapter,
           p.mishna,
           p.lineNumber,
-          p,
         );
       }),
     );
@@ -151,7 +147,8 @@ export class LineService {
         sublinePairs: link.sublinePairs || [],
       };
       
-      parallelLink.linkText = await this.getLinkName(tractate, chapter, mishna, line, parallelLink);
+      // Generate clean Hebrew linkText
+      parallelLink.linkText = await this.getLinkName(tractate, chapter, mishna, line);
 
       await this.mishnaRepository.addParallel(
         link.tractate,
