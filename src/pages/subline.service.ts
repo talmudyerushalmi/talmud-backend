@@ -24,6 +24,13 @@ export class SublineService {
     @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>,
   ) {}
 
+  private isReadOnlySource(type: any): boolean {
+    return type === 'direct_sources' || 
+           type === 'parallel_source' ||
+           type === SourceType.DIRECT_SOURCES || 
+           type === SourceType.PARALLEL_SOURCE;
+  }
+
   async updateLineParallels(
     tractate: string,
     chapter: string,
@@ -75,27 +82,18 @@ export class SublineService {
         return {
           ...incomingSubline,
           synopsis: incomingSubline.synopsis.filter(s => 
-            s.type !== 'direct_sources' && 
-            s.type !== 'parallel_source' &&
-            s.type !== SourceType.DIRECT_SOURCES && 
-            s.type !== SourceType.PARALLEL_SOURCE
+            !this.isReadOnlySource(s.type)
           )
         };
       }
       
       // Existing subline - preserve read-only sources, update editable ones
       const readOnlySources = existingSubline.synopsis.filter(s => 
-        s.type === 'direct_sources' || 
-        s.type === 'parallel_source' ||
-        s.type === SourceType.DIRECT_SOURCES || 
-        s.type === SourceType.PARALLEL_SOURCE
+        this.isReadOnlySource(s.type)
       );
       
       const editableSources = incomingSubline.synopsis.filter(s => 
-        s.type !== 'direct_sources' && 
-        s.type !== 'parallel_source' &&
-        s.type !== SourceType.DIRECT_SOURCES && 
-        s.type !== SourceType.PARALLEL_SOURCE
+        !this.isReadOnlySource(s.type)
       );
       
       return {
