@@ -7,7 +7,7 @@ import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './mishna.repository';
 import { UpdateLineDto } from './dto/update-line.dto';
 import { UpdateNosachDto } from './dto/update-nosach.dto';
-import { InternalParallelLink, SubLine } from './models/line.model';
+import { InternalParallelLink, SubLine, SourceType } from './models/line.model';
 import {
   addBlockToContentState,
   createEditorContentFromText,
@@ -62,7 +62,49 @@ export class SublineService {
       mishna,
     );
     const lineIndex = mishnaDoc.lines.findIndex((l) => l.lineNumber === line);
-    mishnaDoc.lines[lineIndex].sublines = updateLineDto.sublines;
+    
+    // Get existing sublines to preserve read-only sources
+    const existingSublines = mishnaDoc.lines[lineIndex].sublines || [];
+    
+    // Process each incoming subline to preserve read-only synopsis
+    const updatedSublines = updateLineDto.sublines.map((incomingSubline, index) => {
+      const existingSubline = existingSublines[index];
+      
+      if (!existingSubline) {
+        // New subline - filter out any read-only sources that shouldn't be there
+        return {
+          ...incomingSubline,
+          synopsis: incomingSubline.synopsis.filter(s => 
+            s.type !== 'direct_sources' && 
+            s.type !== 'parallel_source' &&
+            s.type !== SourceType.DIRECT_SOURCES && 
+            s.type !== SourceType.PARALLEL_SOURCE
+          )
+        };
+      }
+      
+      // Existing subline - preserve read-only sources, update editable ones
+      const readOnlySources = existingSubline.synopsis.filter(s => 
+        s.type === 'direct_sources' || 
+        s.type === 'parallel_source' ||
+        s.type === SourceType.DIRECT_SOURCES || 
+        s.type === SourceType.PARALLEL_SOURCE
+      );
+      
+      const editableSources = incomingSubline.synopsis.filter(s => 
+        s.type !== 'direct_sources' && 
+        s.type !== 'parallel_source' &&
+        s.type !== SourceType.DIRECT_SOURCES && 
+        s.type !== SourceType.PARALLEL_SOURCE
+      );
+      
+      return {
+        ...incomingSubline,
+        synopsis: [...readOnlySources, ...editableSources]
+      };
+    });
+    
+    mishnaDoc.lines[lineIndex].sublines = updatedSublines;
     mishnaDoc.lines[lineIndex].sublines.forEach((subline) => {
       subline.originalText = generateOriginalText(subline.nosach);
     });
