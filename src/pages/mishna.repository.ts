@@ -320,12 +320,23 @@ export class MishnaRepository {
       line,
       parallel,
     );
+    
+    // Use query syntax to match only the core identifying fields
     return this.mishnaModel.updateOne(
       {
         guid: this.getGUID(tractate, chapter, mishna),
         'lines.lineNumber': line,
       },
-      { $pull: { 'lines.$.parallels': parallel } },
+      { 
+        $pull: { 
+          'lines.$.parallels': {
+            tractate: parallel.tractate,
+            chapter: parallel.chapter,
+            mishna: parallel.mishna,
+            lineNumber: parallel.lineNumber
+          }
+        } 
+      },
     );
   }
 }

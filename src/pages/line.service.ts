@@ -113,18 +113,9 @@ export class LineService {
     const lineIndex = mishnaDoc.lines.findIndex(l => l.lineNumber === line);
     const currentLine = mishnaDoc.lines[lineIndex];
 
-    const added: InternalParallelLink[] = _.differenceWith(
-      parallels,
-      currentLine.parallels || [],
-      _.isEqual,
-    );
-    const removed = _.differenceWith(
-      currentLine.parallels || [],
-      parallels,
-      _.isEqual,
-    );
-
     const name = (await this.tractateRepository.get(tractate)).title_heb;
+
+    console.log('🔍 Original parallels received from frontend:', JSON.stringify(parallels, null, 2));
 
     // Generate clean Hebrew linkText for each parallel
     await Promise.all(
@@ -138,45 +129,81 @@ export class LineService {
       }),
     );
 
-    for await (const link of added) {
-      const parallelLink: InternalParallelLink = {
+    console.log('🔍 Parallels after linkText generation:', JSON.stringify(parallels, null, 2));
+
+    // SIMPLIFIED APPROACH: Remove specific old reciprocals, then add all new ones
+    console.log('🔍 Updating reciprocals - remove specific old reciprocals, add all new ones');
+    
+    // Step 1: Remove only the reciprocals that point back to THIS line (from the OLD parallels)
+    const oldParallels = currentLine.parallels || [];
+    for await (const oldParallel of oldParallels) {
+      // Skip same-mishna parallels (frontend handles them)
+      const isSameMishna = oldParallel.tractate === tractate && 
+                          oldParallel.chapter === chapter && 
+                          oldParallel.mishna === mishna;
+      
+      if (isSameMishna) {
+        continue;
+      }
+
+      console.log('🔍 Removing specific reciprocal from:', `${oldParallel.tractate}/${oldParallel.chapter}/${oldParallel.mishna}/${oldParallel.lineNumber}`);
+      
+      // Remove only the reciprocal that points back to THIS line
+      await this.mishnaRepository.removeParallel(
+        oldParallel.tractate,
+        oldParallel.chapter,
+        oldParallel.mishna,
+        oldParallel.lineNumber,
+        { tractate, chapter, mishna, lineNumber: line, sublinePairs: [] }
+      );
+    }
+
+    // Step 2: Save the updated parallels to the current line
+    currentLine.parallels = parallels;
+    console.log('🔍 Saved to currentLine.parallels:', JSON.stringify(currentLine.parallels, null, 2));
+    
+    // Step 3: Add all new reciprocals
+    for await (const newParallel of parallels) {
+      // Skip same-mishna parallels (frontend handles them)
+      const isSameMishna = newParallel.tractate === tractate && 
+                          newParallel.chapter === chapter && 
+                          newParallel.mishna === mishna;
+      
+      if (isSameMishna) {
+        console.log('🔍 Same-mishna parallel detected - frontend will handle reciprocal');
+        continue;
+      }
+
+      // Create reciprocal with inverted sublinePairs
+      const invertedSublinePairs = newParallel.sublinePairs?.map(pair => ({
+        sourceIndex: pair.targetIndex,
+        targetIndex: pair.sourceIndex
+      })) || [];
+      
+      const reciprocalParallel: InternalParallelLink = {
         tractate,
         chapter,
         mishna,
         lineNumber: line,
-        sublinePairs: link.sublinePairs || [],
+        sublinePairs: invertedSublinePairs,
+        linkText: await this.getLinkName(tractate, chapter, mishna, line)
       };
-      
-      // Generate clean Hebrew linkText
-      parallelLink.linkText = await this.getLinkName(tractate, chapter, mishna, line);
+
+      console.log('🔍 Adding new reciprocal to:', {
+        target: `${newParallel.tractate}/${newParallel.chapter}/${newParallel.mishna}/${newParallel.lineNumber}`,
+        reciprocal: `${tractate}/${chapter}/${mishna}/${line}`,
+        originalSublinePairs: newParallel.sublinePairs,
+        invertedSublinePairs
+      });
 
       await this.mishnaRepository.addParallel(
-        link.tractate,
-        link.chapter,
-        link.mishna,
-        link.lineNumber,
-        parallelLink,
+        newParallel.tractate,
+        newParallel.chapter,
+        newParallel.mishna,
+        newParallel.lineNumber,
+        reciprocalParallel,
       );
     }
-
-    for (const link of removed) {
-      const parallelLink: InternalParallelLink = {
-        tractate,
-        chapter,
-        mishna,
-        lineNumber: line,
-        sublinePairs: link.sublinePairs || [],
-      };
-      await this.mishnaRepository.removeParallel(
-        link.tractate,
-        link.chapter,
-        link.mishna,
-        link.lineNumber,
-        parallelLink,
-      );
-    }
-
-    currentLine.parallels = parallels;
 
     mishnaDoc.markModified('lines');
     return mishnaDoc.save();
