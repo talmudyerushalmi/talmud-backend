@@ -28,14 +28,12 @@ export class LineService {
   ) {
     const tractateDoc = await this.tractateRepository.get(tractate);
     const tractateName = tractateDoc?.title_heb || tractate;
-    console.log(`🔍 getLinkName: tractate=${tractate}, Hebrew=${tractateName}`);
     
     // Keep it simple - just the basic reference without subline pair details
     const linkText = `${tractateName} ${MiscUtils.hebrewMap.get(
       parseInt(chapter),
     )} ${MiscUtils.hebrewMap.get(parseInt(mishna))} [${line}]`;
     
-    console.log(`🔍 Generated linkText: ${linkText}`);
     return linkText;
   }
 
@@ -45,20 +43,6 @@ export class LineService {
       for (let j = 0; j < line2.sublines.length; j++) {
         const text2 = line2.sublines[j].text;
 
-        console.log(
-          'original ',
-          text1
-            .split('')
-            .reverse()
-            .join(''),
-        );
-        console.log(
-          'parallels ',
-          text2
-            .split('')
-            .reverse()
-            .join(''),
-        );
          compareSynopsis(text1, text2)
 
       }
@@ -73,7 +57,6 @@ export class LineService {
       return;
     }
 
-    console.log(lineNumber)
     filterParallelSynopsis(line);
     for (const parallel of line?.parallels) {
       const parallelLine = await this.mishnaRepository.findByLink(parallel);
@@ -115,8 +98,6 @@ export class LineService {
 
     const name = (await this.tractateRepository.get(tractate)).title_heb;
 
-    console.log('🔍 Original parallels received from frontend:', JSON.stringify(parallels, null, 2));
-
     // Generate clean Hebrew linkText for each parallel
     await Promise.all(
       parallels.map(async p => {
@@ -129,10 +110,7 @@ export class LineService {
       }),
     );
 
-    console.log('🔍 Parallels after linkText generation:', JSON.stringify(parallels, null, 2));
-
     // SIMPLIFIED APPROACH: Remove specific old reciprocals, then add all new ones
-    console.log('🔍 Updating reciprocals - remove specific old reciprocals, add all new ones');
     
     // Step 1: Remove only the reciprocals that point back to THIS line (from the OLD parallels)
     const oldParallels = currentLine.parallels || [];
@@ -146,8 +124,6 @@ export class LineService {
         continue;
       }
 
-      console.log('🔍 Removing specific reciprocal from:', `${oldParallel.tractate}/${oldParallel.chapter}/${oldParallel.mishna}/${oldParallel.lineNumber}`);
-      
       // Remove only the reciprocal that points back to THIS line
       await this.mishnaRepository.removeParallel(
         oldParallel.tractate,
@@ -160,7 +136,6 @@ export class LineService {
 
     // Step 2: Save the updated parallels to the current line
     currentLine.parallels = parallels;
-    console.log('🔍 Saved to currentLine.parallels:', JSON.stringify(currentLine.parallels, null, 2));
     
     // Step 3: Add all new reciprocals
     for await (const newParallel of parallels) {
@@ -170,7 +145,6 @@ export class LineService {
                           newParallel.mishna === mishna;
       
       if (isSameMishna) {
-        console.log('🔍 Same-mishna parallel detected - frontend will handle reciprocal');
         continue;
       }
 
@@ -188,13 +162,6 @@ export class LineService {
         sublinePairs: invertedSublinePairs,
         linkText: await this.getLinkName(tractate, chapter, mishna, line)
       };
-
-      console.log('🔍 Adding new reciprocal to:', {
-        target: `${newParallel.tractate}/${newParallel.chapter}/${newParallel.mishna}/${newParallel.lineNumber}`,
-        reciprocal: `${tractate}/${chapter}/${mishna}/${line}`,
-        originalSublinePairs: newParallel.sublinePairs,
-        invertedSublinePairs
-      });
 
       await this.mishnaRepository.addParallel(
         newParallel.tractate,
