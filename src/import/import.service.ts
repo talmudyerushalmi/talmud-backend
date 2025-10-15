@@ -19,7 +19,7 @@ import {
   createEditorContentFromText,
   getTextFromEditorContent,
 } from '../pages/inc/editorUtils';
-import { LineService } from '../pages/line.service';
+import { ParallelService } from '../pages/parallel.service';
 @Console()
 @Injectable()
 export class ImportService {
@@ -46,7 +46,7 @@ export class ImportService {
     private mishnaRepo: MishnaRepository,
     private settingsService: SettingsService,
     private sublineService: SublineService,
-    private lineService: LineService,
+    private parallelService: ParallelService,
   ) {}
 
   readFile(filename: string): void {
@@ -688,7 +688,7 @@ export class ImportService {
       for (const line of mishna.lines) {
         if (line.parallels) {
           changed = true;
-          await this.lineService.updateLineParallels(mishna, line.lineNumber);
+          await this.parallelService.updateLineParallels(mishna, line.lineNumber);
         }
       }
       console.log('done ', mishna.guid);

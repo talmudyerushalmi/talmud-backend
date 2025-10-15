@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Controller, Param, Post } from '@nestjs/common';
-import { LineService } from './line.service';
+import { ParallelService } from './parallel.service';
 import { MishnaRepository } from './mishna.repository';
 
 @Controller('actions/mishna')
 export class ActionsMishnaController {
   constructor(
     private mishnaModel: MishnaRepository,
-    private lineService: LineService,
+    private parallelService: ParallelService,
   ) {}
 
   @Post('sync_parallels/:tractate/:chapter/:mishna/:line')
@@ -18,7 +18,7 @@ export class ActionsMishnaController {
     @Param('line') line: string,
   ) {
     const mishnaDoc = await this.mishnaModel.find(tractate, chapter, mishna);
-    await this.lineService.updateLineParallels(mishnaDoc, line);
+    await this.parallelService.updateLineParallels(mishnaDoc, line);
     mishnaDoc.markModified('lines');
     await mishnaDoc.save();
 

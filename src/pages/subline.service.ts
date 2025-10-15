@@ -12,7 +12,7 @@ import {
   addBlockToContentState,
   createEditorContentFromText,
 } from './inc/editorUtils';
-import { LineService } from './line.service';
+import { ParallelService } from './parallel.service';
 import { generateOriginalText } from './inc/draftjsUtils';
 
 @Injectable()
@@ -20,7 +20,7 @@ export class SublineService {
   constructor(
     private tractateRepository: TractateRepository,
     private mishnaRepository: MishnaRepository,
-    private lineService: LineService,
+    private parallelService: ParallelService,
     @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>,
   ) {}
 
@@ -31,22 +31,6 @@ export class SublineService {
            type === SourceType.PARALLEL_SOURCE;
   }
 
-  async updateLineParallels(
-    tractate: string,
-    chapter: string,
-    mishna: string,
-    line: string,
-    parallels: InternalParallelLink[],
-  ): Promise<Mishna> {
-    return this.lineService.setParallel(
-      tractate,
-      chapter,
-      mishna,
-      line,
-      parallels,
-    );
-  }
-
   async updateSubline(
     tractate: string,
     chapter: string,
@@ -54,15 +38,8 @@ export class SublineService {
     line: string,
     updateLineDto: UpdateLineDto,
   ): Promise<Mishna> {
-    if (updateLineDto.parallels) {
-      await this.lineService.setParallel(
-        tractate,
-        chapter,
-        mishna,
-        line,
-        updateLineDto.parallels,
-      );
-    }
+    // Note: Parallel updates are now handled by granular operations via the API
+    // The /parallels endpoint is deprecated - use /parallel/add, /parallel (DELETE), /parallel (PUT) instead
     const mishnaDoc = await this.mishnaRepository.find(
       tractate,
       chapter,
