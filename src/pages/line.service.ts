@@ -37,17 +37,6 @@ export class LineService {
     return linkText;
   }
 
-  findFirstMatch(line1, line2: Line) {
-    for (let i = 0; i < line1.sublines.length; i++) {
-      const text1 = getSynopsisText(line1.sublines[i], 'leiden');
-      for (let j = 0; j < line2.sublines.length; j++) {
-        const text2 = line2.sublines[j].text;
-
-         compareSynopsis(text1, text2)
-
-      }
-    }
-  }
   async updateLineParallels(
     mishnaDoc: Mishna,
     lineNumber: string,
@@ -62,20 +51,9 @@ export class LineService {
       const parallelLine = await this.mishnaRepository.findByLink(parallel);
       try {
         this.synopsisService.copyParallelSynopsis(line, parallelLine, parallel)
-
+      } catch (e) {
+        // Handle error silently
       }
-      catch (e){
-       // console.log('err',e)
-      }
-
-     // this.findFirstMatch(line, parallelLine)
-
-
-      // try {
-      //   this.findFirstMatch(line, parallelLine);
-      // } catch (e) {
-      //   console.log('err', e);
-      // }
     }
 
     return mishnaDoc;
