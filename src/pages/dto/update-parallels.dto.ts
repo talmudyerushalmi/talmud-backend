@@ -39,9 +39,3 @@ export class ParallelLinkDto {
   sublinePairs?: SublinePairDto[];
 }
 
-export class UpdateParallelsDto {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ParallelLinkDto)
-  parallels: ParallelLinkDto[];
-}

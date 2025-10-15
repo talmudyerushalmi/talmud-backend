@@ -14,7 +14,7 @@ import {
 import { UpdateLineDto } from './dto/update-line.dto';
 import { UpdateMishnaRichTextsDto } from './dto/update-mishna-texts.dto';
 import { UpdateNosachDto } from './dto/update-nosach.dto';
-import { UpdateParallelsDto } from './dto/update-parallels.dto';
+import { ParallelLinkDto } from './dto/update-parallels.dto';
 import { PagesService } from './pages.service';
 import { SublineService } from './subline.service';
 import { ParallelService } from './parallel.service';
@@ -111,7 +111,7 @@ export class EditMishnaController {
     @Param('chapter') chapter: string,
     @Param('mishna') mishna: string,
     @Param('line') line: string,
-    @Body() parallel: any, // TODO: Create proper DTO
+    @Body() parallel: ParallelLinkDto,
   ) {
     return this.parallelService.addParallel(tractate, chapter, mishna, line, parallel);
   }
@@ -123,7 +123,7 @@ export class EditMishnaController {
     @Param('chapter') chapter: string,
     @Param('mishna') mishna: string,
     @Param('line') line: string,
-    @Body() parallel: any, // TODO: Create proper DTO
+    @Body() parallel: ParallelLinkDto,
   ) {
     return this.parallelService.deleteParallel(tractate, chapter, mishna, line, parallel);
   }
@@ -135,15 +135,14 @@ export class EditMishnaController {
     @Param('chapter') chapter: string,
     @Param('mishna') mishna: string,
     @Param('line') line: string,
-    @Body() updateData: { oldParallel: any; newParallel: any }, // TODO: Create proper DTO
+    @Body() newParallel: ParallelLinkDto,
   ) {
     return this.parallelService.updateParallel(
       tractate, 
       chapter, 
       mishna, 
       line, 
-      updateData.oldParallel, 
-      updateData.newParallel
+      newParallel
     );
   }
 

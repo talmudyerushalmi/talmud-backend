@@ -165,17 +165,37 @@ export class ParallelService {
 
   /**
    * Update a single parallel relationship (with reciprocal)
+   * Finds the existing parallel by target coordinates and replaces it
    */
   async updateParallel(
     tractate: string,
     chapter: string,
     mishna: string,
     line: string,
-    oldParallel: InternalParallelLink,
     newParallel: InternalParallelLink,
   ): Promise<Mishna> {
-    // For updates, we delete the old and add the new
-    // This ensures reciprocals are properly updated
+    // Find the existing parallel by matching target coordinates
+    const mishnaDoc = await this.mishnaRepository.find(tractate, chapter, mishna);
+    const lineIndex = mishnaDoc.lines.findIndex(l => l.lineNumber === line);
+    const currentLine = mishnaDoc.lines[lineIndex];
+    
+    if (!currentLine.parallels) {
+      throw new Error('No parallels found to update');
+    }
+    
+    // Find the old parallel by matching target coordinates
+    const oldParallel = currentLine.parallels.find(p => 
+      p.tractate === newParallel.tractate &&
+      p.chapter === newParallel.chapter &&
+      p.mishna === newParallel.mishna &&
+      p.lineNumber === newParallel.lineNumber
+    );
+    
+    if (!oldParallel) {
+      throw new Error('Parallel to update not found');
+    }
+    
+    // Delete the old and add the new (ensures reciprocals are properly updated)
     await this.deleteParallel(tractate, chapter, mishna, line, oldParallel);
     return this.addParallel(tractate, chapter, mishna, line, newParallel);
   }
