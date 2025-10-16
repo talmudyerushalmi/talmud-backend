@@ -7,12 +7,11 @@ import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './mishna.repository';
 import { UpdateLineDto } from './dto/update-line.dto';
 import { UpdateNosachDto } from './dto/update-nosach.dto';
-import { InternalParallelLink, SubLine, SourceType } from './models/line.model';
+import { SubLine, SourceType } from './models/line.model';
 import {
   addBlockToContentState,
   createEditorContentFromText,
 } from './inc/editorUtils';
-import { ParallelService } from './parallel.service';
 import { generateOriginalText } from './inc/draftjsUtils';
 
 @Injectable()
@@ -20,7 +19,6 @@ export class SublineService {
   constructor(
     private tractateRepository: TractateRepository,
     private mishnaRepository: MishnaRepository,
-    private parallelService: ParallelService,
     @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>,
   ) {}
 
