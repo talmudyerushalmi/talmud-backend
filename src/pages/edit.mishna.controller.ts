@@ -63,14 +63,14 @@ export class EditMishnaController {
 
   @Post('/:tractate/:chapter/:mishna/:line')
   @UsePipes(ValidationPipe)
-  async updateLine(
+  async updateSublineContent(
     @Param('tractate') tractate: string,
     @Param('chapter') chapter: string,
     @Param('mishna') mishna: string,
     @Param('line') line: string,
     @Body() updateLineDto: UpdateLineDto,
   ) {
-    return this.sublineService.updateSubline(
+    return this.sublineService.updateSublineContent(
       tractate,
       chapter,
       mishna,
@@ -81,14 +81,14 @@ export class EditMishnaController {
 
   @Post('/:tractate/:chapter/:mishna/:line/nosach')
   @UsePipes(ValidationPipe)
-  async updateNosach(
+  async splitSublineText(
     @Param('tractate') tractate: string,
     @Param('chapter') chapter: string,
     @Param('mishna') mishna: string,
     @Param('line') line: string,
     @Body() updateLineDto: UpdateNosachDto,
   ) {
-    return this.sublineService.updateSublines(
+    return this.sublineService.splitSublineText(
       tractate,
       chapter,
       mishna,

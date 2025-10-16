@@ -525,7 +525,7 @@ export class ImportService {
         });
         const lineNumber = parseInt(line.lineNumber);
         if (range(lineNumber, 0, 441) || range(lineNumber, 454, 1087)) {
-          await this.sublineService.updateSubline(
+          await this.sublineService.updateSublineContent(
             tractate,
             mishna.chapter,
             mishna.mishna,
@@ -537,7 +537,7 @@ export class ImportService {
           );
         }
         if (range(lineNumber, 1088, 1149)) {
-          await this.sublineService.updateSubline(
+          await this.sublineService.updateSublineContent(
             tractate,
             mishna.chapter,
             mishna.mishna,
@@ -574,7 +574,7 @@ export class ImportService {
             return synopsisToupdate;
           });
         });
-        await this.sublineService.updateSubline(
+        await this.sublineService.updateSublineContent(
           tractate,
           mishna.chapter,
           mishna.mishna,
@@ -584,12 +584,6 @@ export class ImportService {
             sublines: line.sublines,
           },
         );
-        // if (parseInt(line.lineNumber) < 442 || parseInt(line.lineNumber) > 455) {
-        //   await this.sublineService.updateSubline(tractate, mishna.chapter, mishna.mishna, line.lineNumber, {
-        //     mainLine: line.mainLine + " testing ",
-        //     sublines: line.sublines
-        //   })
-        // }
       }
     }
   }
@@ -623,7 +617,7 @@ export class ImportService {
           subline.synopsis = newsynopsis;
           console.log('new ', subline.synopsis);
         });
-        await this.sublineService.updateSubline(
+        await this.sublineService.updateSublineContent(
           tractate,
           mishna.chapter,
           mishna.mishna,
@@ -633,12 +627,6 @@ export class ImportService {
             sublines: line.sublines,
           },
         );
-        // if (parseInt(line.lineNumber) < 442 || parseInt(line.lineNumber) > 455) {
-        //   await this.sublineService.updateSubline(tractate, mishna.chapter, mishna.mishna, line.lineNumber, {
-        //     mainLine: line.mainLine + " testing ",
-        //     sublines: line.sublines
-        //   })
-        // }
       }
     }
   }
@@ -695,20 +683,7 @@ export class ImportService {
       mishna.markModified('lines')
       await mishna.save();
     }, tractate);
-    // for await(const line of mishna.lines) {
-
-    //   await this.lineService.updateLineParallels(mishna, line.lineNumber)
-    // }
     console.log('done');
-    //await this.lineService.updateLineParallels(r[0], '00010')
-
-    // await this.mishnaRepo.forEachMishna(async (mishna: Mishna) => {
-    //   for await(const line of mishna.lines) {
-
-    //     await this.lineService.updateLineParallels(mishna, line.lineNumber)
-    //   }
-
-    // }, tractate);
   }
 
   @Command({

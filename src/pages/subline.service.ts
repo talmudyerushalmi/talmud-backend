@@ -29,7 +29,7 @@ export class SublineService {
            type === SourceType.PARALLEL_SOURCE;
   }
 
-  async updateSubline(
+  async updateSublineContent(
     tractate: string,
     chapter: string,
     mishna: string,
@@ -85,7 +85,7 @@ export class SublineService {
     return mishnaDoc.save();
   }
 
-  async updateSublines(
+  async splitSublineText(
     tractate: string,
     chapter: string,
     mishna: string,
