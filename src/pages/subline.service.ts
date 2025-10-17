@@ -7,7 +7,7 @@ import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './mishna.repository';
 import { UpdateLineDto } from './dto/update-line.dto';
 import { UpdateNosachDto } from './dto/update-nosach.dto';
-import { SubLine, SourceType } from './models/line.model';
+import { SubLine } from './models/line.model';
 import {
   addBlockToContentState,
   createEditorContentFromText,
@@ -21,13 +21,6 @@ export class SublineService {
     private mishnaRepository: MishnaRepository,
     @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>,
   ) {}
-
-  private isReadOnlySource(type: any): boolean {
-    return type === 'direct_sources' || 
-           type === 'parallel_source' ||
-           type === SourceType.DIRECT_SOURCES || 
-           type === SourceType.PARALLEL_SOURCE;
-  }
 
   async updateSublineContent(
     tractate: string,
@@ -45,39 +38,8 @@ export class SublineService {
     );
     const lineIndex = mishnaDoc.lines.findIndex((l) => l.lineNumber === line);
     
-    // Get existing sublines to preserve read-only sources
-    const existingSublines = mishnaDoc.lines[lineIndex].sublines || [];
-    
-    // Process each incoming subline to preserve read-only synopsis
-    const updatedSublines = updateLineDto.sublines.map((incomingSubline, index) => {
-      const existingSubline = existingSublines[index];
-      
-      if (!existingSubline) {
-        // New subline - filter out any read-only sources that shouldn't be there
-        return {
-          ...incomingSubline,
-          synopsis: incomingSubline.synopsis.filter(s => 
-            !this.isReadOnlySource(s.type)
-          )
-        };
-      }
-      
-      // Existing subline - preserve read-only sources, update editable ones
-      const readOnlySources = existingSubline.synopsis.filter(s => 
-        this.isReadOnlySource(s.type)
-      );
-      
-      const editableSources = incomingSubline.synopsis.filter(s => 
-        !this.isReadOnlySource(s.type)
-      );
-      
-      return {
-        ...incomingSubline,
-        synopsis: [...readOnlySources, ...editableSources]
-      };
-    });
-    
-    mishnaDoc.lines[lineIndex].sublines = updatedSublines;
+    // Frontend now filters out read-only sources, so we can trust the data
+    mishnaDoc.lines[lineIndex].sublines = updateLineDto.sublines;
     mishnaDoc.lines[lineIndex].sublines.forEach((subline) => {
       subline.originalText = generateOriginalText(subline.nosach);
     });
