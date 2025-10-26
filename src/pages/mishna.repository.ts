@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Mishna } from './schemas/mishna.schema';
+import { Mishna, MishnaModel } from './schemas/mishna.schema';
 import { Model, QueryWithHelpers } from 'mongoose';
 import { LineMarkDto } from './dto/line-mark.dto';
 import * as numeral from 'numeral';
@@ -12,7 +12,7 @@ import { ISearch, ISearchResult } from './models/search.model';
 
 @Injectable()
 export class MishnaRepository {
-  constructor(@InjectModel(Mishna.name) private mishnaModel: Model<Mishna>) {}
+  constructor(@InjectModel(Mishna.name) private mishnaModel: MishnaModel) {}
 
   getGUID(tractate: string, chapter: string, mishna: string): string {
     return `${tractate}_${chapter}_${mishna}`;
@@ -42,7 +42,7 @@ export class MishnaRepository {
   }
 
   async findByLink(link: InternalParallelLink): Promise<Line | undefined> {
-    return (this.mishnaModel as any).findLineByLink(
+    return this.mishnaModel.findLineByLink(
       link.tractate, 
       link.chapter, 
       link.mishna, 

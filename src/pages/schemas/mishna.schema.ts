@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, SchemaTypes, Types } from 'mongoose';
+import { Document, Model, SchemaTypes, Types } from 'mongoose';
 import { Line, SubLine } from '../models/line.model';
 import { MishnaLink } from '../models/mishna.link.model';
 import { MishnaExcerpt } from '../models/mishna.excerpt.model';
@@ -7,6 +7,16 @@ import * as _ from 'lodash';
 import { RawDraftContentState } from 'draft-js';
 import { ExcerptUtils } from '../inc/excerptUtils';
 import { createSublineFromLine } from './lineMethods/createSublineFromLine';
+
+// Interface for the Mishna model with custom static methods
+export interface MishnaModel extends Model<Mishna> {
+  findLineByLink(
+    tractate: string,
+    chapter: string,
+    mishna: string,
+    lineNumber: string
+  ): Promise<Line | undefined>;
+}
 
 @Schema({
   minimize: false
