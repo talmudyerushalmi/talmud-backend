@@ -6,6 +6,7 @@ import { Settings } from './schemas/settings.schema';
 import { FilterQuery, Model, UpdateQuery } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { AddCompositionDto } from './dto/add.compositionDto';
+import { synopsisList } from '../pages/inc/tractates.synopsis';
 
 class Entity {}
 
@@ -24,6 +25,10 @@ export class SettingsService {
     } else {
       return null;
     }
+  }
+
+  getSynopsisList(): any {
+    return synopsisList;
   }
 
   async addComposition(
