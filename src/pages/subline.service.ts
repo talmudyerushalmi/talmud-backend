@@ -7,7 +7,7 @@ import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './mishna.repository';
 import { UpdateLineDto } from './dto/update-line.dto';
 import { UpdateNosachDto } from './dto/update-nosach.dto';
-import { InternalParallelLink, SubLine } from './models/line.model';
+import { SubLine } from './models/line.model';
 import {
   addBlockToContentState,
   createEditorContentFromText,
