@@ -27,7 +27,7 @@ export class SettingsService {
     }
   }
 
-  getSynopsisList(): any {
+  getSynopsisList(): typeof synopsisList {
     return synopsisList;
   }
 
