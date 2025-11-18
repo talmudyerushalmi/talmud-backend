@@ -61,6 +61,7 @@ export class ParallelService {
 
   /**
    * Add a single parallel relationship (with reciprocal)
+   * Now handles both cross-mishna and same-mishna parallels
    */
   async addParallel(
     tractate: string,
@@ -87,26 +88,41 @@ export class ParallelService {
     }
     currentLine.parallels.push(parallel);
 
-    // Create reciprocal (skip if same-mishna - frontend handles it)
+    // Create reciprocal parallel
+    const invertedSublinePairs = parallel.sublinePairs?.map(pair => ({
+      sourceIndex: pair.targetIndex,
+      targetIndex: pair.sourceIndex
+    })) || [];
+    
+    const reciprocalParallel: InternalParallelLink = {
+      tractate,
+      chapter,
+      mishna,
+      lineNumber: line,
+      sublinePairs: invertedSublinePairs,
+      linkText: await this.getLinkName(tractate, chapter, mishna, line)
+    };
+
+    // Check if it's same-mishna parallel
     const isSameMishna = parallel.tractate === tractate && 
                         parallel.chapter === chapter && 
                         parallel.mishna === mishna;
     
-    if (!isSameMishna) {
-      const invertedSublinePairs = parallel.sublinePairs?.map(pair => ({
-        sourceIndex: pair.targetIndex,
-        targetIndex: pair.sourceIndex
-      })) || [];
+    if (isSameMishna) {
+      // For same-mishna parallels, add the reciprocal to the same document
+      const reciprocalLineIndex = mishnaDoc.lines.findIndex(
+        l => l.lineNumber === parallel.lineNumber
+      );
       
-      const reciprocalParallel: InternalParallelLink = {
-        tractate,
-        chapter,
-        mishna,
-        lineNumber: line,
-        sublinePairs: invertedSublinePairs,
-        linkText: await this.getLinkName(tractate, chapter, mishna, line)
-      };
-
+      if (reciprocalLineIndex !== -1) {
+        const reciprocalLine = mishnaDoc.lines[reciprocalLineIndex];
+        if (!reciprocalLine.parallels) {
+          reciprocalLine.parallels = [];
+        }
+        reciprocalLine.parallels.push(reciprocalParallel);
+      }
+    } else {
+      // For cross-mishna parallels, add to the other mishna
       await this.mishnaRepository.addParallel(
         parallel.tractate,
         parallel.chapter,
@@ -122,6 +138,7 @@ export class ParallelService {
 
   /**
    * Delete a single parallel relationship (with reciprocal)
+   * Now handles both cross-mishna and same-mishna parallels
    */
   async deleteParallel(
     tractate: string,
@@ -144,12 +161,30 @@ export class ParallelService {
       );
     }
 
-    // Remove reciprocal (skip if same-mishna - frontend handles it)
+    // Check if it's same-mishna parallel
     const isSameMishna = parallelToDelete.tractate === tractate && 
                         parallelToDelete.chapter === chapter && 
                         parallelToDelete.mishna === mishna;
     
-    if (!isSameMishna) {
+    if (isSameMishna) {
+      // For same-mishna parallels, remove the reciprocal from the same document
+      const reciprocalLineIndex = mishnaDoc.lines.findIndex(
+        l => l.lineNumber === parallelToDelete.lineNumber
+      );
+      
+      if (reciprocalLineIndex !== -1) {
+        const reciprocalLine = mishnaDoc.lines[reciprocalLineIndex];
+        if (reciprocalLine.parallels) {
+          reciprocalLine.parallels = reciprocalLine.parallels.filter(p =>
+            !(p.tractate === tractate &&
+              p.chapter === chapter &&
+              p.mishna === mishna &&
+              p.lineNumber === line)
+          );
+        }
+      }
+    } else {
+      // For cross-mishna parallels, remove from the other mishna
       await this.mishnaRepository.removeParallel(
         parallelToDelete.tractate,
         parallelToDelete.chapter,
