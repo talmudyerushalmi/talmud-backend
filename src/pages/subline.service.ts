@@ -29,8 +29,6 @@ export class SublineService {
     line: string,
     updateLineDto: UpdateLineDto,
   ): Promise<Mishna> {
-    // Note: Parallel updates are now handled by granular operations via the API
-    // The /parallels endpoint is deprecated - use /parallel/add, /parallel (DELETE), /parallel (PUT) instead
     const mishnaDoc = await this.mishnaRepository.find(
       tractate,
       chapter,

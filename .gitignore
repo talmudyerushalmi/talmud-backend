@@ -43,7 +43,3 @@ restore.sh
 
 mongo-data
 neo4j-data
-
-export-parallels.js
-export-parallels.sh
-parallels-report.txt
