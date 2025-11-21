@@ -34,7 +34,7 @@ export class MishnaRepository {
     return this.mishnaModel.find({
       tractate,
       chapter,
-    });
+    }).sort({ mishna: 1 });
   }
 
   findByLine(tractate: string, line: string): QueryWithHelpers<Mishna, any> {
