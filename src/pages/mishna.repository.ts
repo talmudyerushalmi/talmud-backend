@@ -1,11 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Mishna, MishnaModel } from './schemas/mishna.schema';
-<<<<<<< HEAD
 import { QueryWithHelpers } from 'mongoose';
-=======
-import { Model, QueryWithHelpers } from 'mongoose';
->>>>>>> master
 import { LineMarkDto } from './dto/line-mark.dto';
 import * as numeral from 'numeral';
 import { SaveMishnaExcerptDto } from './dto/save-mishna-excerpt.dto';
@@ -283,18 +279,6 @@ export class MishnaRepository {
     line: string,
     parallel: InternalParallelLink,
   ): Promise<any> {
-<<<<<<< HEAD
-=======
-    console.log(
-      'removing parallel from ',
-      tractate,
-      chapter,
-      mishna,
-      line,
-      parallel,
-    );
-    
->>>>>>> master
     // Use query syntax to match only the core identifying fields
     return this.mishnaModel.updateOne(
       {
