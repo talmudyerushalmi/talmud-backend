@@ -25,7 +25,7 @@ import { ManuscriptsController } from './manuscripts.controller';
 import { Manuscripts, ManuscriptSchema } from './schemas/manuscripts.schema';
 import { ManuscriptsRepository } from './manuscripts.repository';
 import { ManuscriptsService } from './manuscripts.service';
-import { LineService } from './line.service';
+import { ParallelService } from './parallel.service';
 import { User, UserSchema } from './schemas/users.schema';
 import { UsersController } from './users/users.controller';
 import { UsersService } from './users/users.service';
@@ -60,7 +60,7 @@ import { SynopsisService } from './synopsis.service';
     PagesService,
     RelatedService,
     NavigationService,
-    LineService,
+    ParallelService,
     SublineService,
     ManuscriptsService,
     UsersService,

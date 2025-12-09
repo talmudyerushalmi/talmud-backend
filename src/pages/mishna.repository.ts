@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Mishna } from './schemas/mishna.schema';
+import { Mishna, MishnaModel } from './schemas/mishna.schema';
 import { Model, QueryWithHelpers } from 'mongoose';
 import { LineMarkDto } from './dto/line-mark.dto';
 import * as numeral from 'numeral';
@@ -12,7 +12,7 @@ import { ISearch, ISearchResult } from './models/search.model';
 
 @Injectable()
 export class MishnaRepository {
-  constructor(@InjectModel(Mishna.name) private mishnaModel: Model<Mishna>) {}
+  constructor(@InjectModel(Mishna.name) private mishnaModel: MishnaModel) {}
 
   getGUID(tractate: string, chapter: string, mishna: string): string {
     return `${tractate}_${chapter}_${mishna}`;
@@ -42,8 +42,12 @@ export class MishnaRepository {
   }
 
   async findByLink(link: InternalParallelLink): Promise<Line | undefined> {
-    const mishna = await this.find(link.tractate, link.chapter, link.mishna);
-    return mishna.getLine(link.lineNumber);
+    return this.mishnaModel.findLineByLink(
+      link.tractate, 
+      link.chapter, 
+      link.mishna, 
+      link.lineNumber
+    );
   }
 
   getRangeLines(
@@ -316,12 +320,23 @@ export class MishnaRepository {
       line,
       parallel,
     );
+    
+    // Use query syntax to match only the core identifying fields
     return this.mishnaModel.updateOne(
       {
         guid: this.getGUID(tractate, chapter, mishna),
         'lines.lineNumber': line,
       },
-      { $pull: { 'lines.$.parallels': parallel } },
+      { 
+        $pull: { 
+          'lines.$.parallels': {
+            tractate: parallel.tractate,
+            chapter: parallel.chapter,
+            mishna: parallel.mishna,
+            lineNumber: parallel.lineNumber
+          }
+        } 
+      },
     );
   }
 }

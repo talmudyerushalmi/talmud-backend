@@ -7,21 +7,24 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Put,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { UpdateLineDto } from './dto/update-line.dto';
 import { UpdateMishnaRichTextsDto } from './dto/update-mishna-texts.dto';
 import { UpdateNosachDto } from './dto/update-nosach.dto';
-import { UpdateParallelsDto } from './dto/update-parallels.dto';
+import { ParallelLinkDto } from './dto/update-parallels.dto';
 import { PagesService } from './pages.service';
 import { SublineService } from './subline.service';
+import { ParallelService } from './parallel.service';
 
 @Controller('edit/mishna')
 export class EditMishnaController {
   constructor(
     private pagesService: PagesService,
     private sublineService: SublineService,
+    private parallelService: ParallelService,
   ) {}
 
   @Get('/:tractate/:chapter/:mishna')
@@ -60,14 +63,14 @@ export class EditMishnaController {
 
   @Post('/:tractate/:chapter/:mishna/:line')
   @UsePipes(ValidationPipe)
-  async updateLine(
+  async updateSublineContent(
     @Param('tractate') tractate: string,
     @Param('chapter') chapter: string,
     @Param('mishna') mishna: string,
     @Param('line') line: string,
     @Body() updateLineDto: UpdateLineDto,
   ) {
-    return this.sublineService.updateSubline(
+    return this.sublineService.updateSublineContent(
       tractate,
       chapter,
       mishna,
@@ -78,14 +81,14 @@ export class EditMishnaController {
 
   @Post('/:tractate/:chapter/:mishna/:line/nosach')
   @UsePipes(ValidationPipe)
-  async updateNosach(
+  async splitSublineText(
     @Param('tractate') tractate: string,
     @Param('chapter') chapter: string,
     @Param('mishna') mishna: string,
     @Param('line') line: string,
     @Body() updateLineDto: UpdateNosachDto,
   ) {
-    return this.sublineService.updateSublines(
+    return this.sublineService.splitSublineText(
       tractate,
       chapter,
       mishna,
@@ -94,21 +97,52 @@ export class EditMishnaController {
     );
   }
 
-  @Post('/:tractate/:chapter/:mishna/:line/parallels')
+  // OLD ENDPOINT REMOVED - Use granular operations instead:
+  // POST /:tractate/:chapter/:mishna/:line/parallel/add
+  // DELETE /:tractate/:chapter/:mishna/:line/parallel  
+  // PUT /:tractate/:chapter/:mishna/:line/parallel
+
+  // NEW GRANULAR PARALLEL OPERATIONS
+
+  @Post('/:tractate/:chapter/:mishna/:line/parallel/add')
   @UsePipes(ValidationPipe)
-  async updateParallels(
+  async addParallel(
     @Param('tractate') tractate: string,
     @Param('chapter') chapter: string,
     @Param('mishna') mishna: string,
     @Param('line') line: string,
-    @Body() updateParallelsDto: UpdateParallelsDto,
+    @Body() parallel: ParallelLinkDto,
   ) {
-    return this.sublineService.updateLineParallels(
-      tractate,
-      chapter,
-      mishna,
-      line,
-      updateParallelsDto.parallels,
+    return this.parallelService.addParallel(tractate, chapter, mishna, line, parallel);
+  }
+
+  @Delete('/:tractate/:chapter/:mishna/:line/parallel')
+  @UsePipes(ValidationPipe)
+  async deleteParallel(
+    @Param('tractate') tractate: string,
+    @Param('chapter') chapter: string,
+    @Param('mishna') mishna: string,
+    @Param('line') line: string,
+    @Body() parallel: ParallelLinkDto,
+  ) {
+    return this.parallelService.deleteParallel(tractate, chapter, mishna, line, parallel);
+  }
+
+  @Put('/:tractate/:chapter/:mishna/:line/parallel')
+  @UsePipes(ValidationPipe)
+  async updateParallel(
+    @Param('tractate') tractate: string,
+    @Param('chapter') chapter: string,
+    @Param('mishna') mishna: string,
+    @Param('line') line: string,
+    @Body() newParallel: ParallelLinkDto,
+  ) {
+    return this.parallelService.updateParallel(
+      tractate, 
+      chapter, 
+      mishna, 
+      line, 
+      newParallel
     );
   }
 

@@ -8,7 +8,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Settings, SettingsSchema } from '../settings/schemas/settings.schema';
 import { ListService } from './list.service';
 import { NormalizeService } from './normalize.service';
-import { LineService } from '../pages/line.service';
+import { ParallelService } from '../pages/parallel.service';
 import { Tractate, TractateSchema } from '../pages/schemas/tractate.schema';
 import { Mishna, MishnaSchema } from '../pages/schemas/mishna.schema';
 
@@ -28,7 +28,7 @@ import { Mishna, MishnaSchema } from '../pages/schemas/mishna.schema';
     SettingsService,
     ListService,
     NormalizeService,
-    LineService,
+    ParallelService,
   ],
 })
 export class ImportModule {}

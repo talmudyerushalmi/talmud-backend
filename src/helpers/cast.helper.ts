@@ -23,7 +23,6 @@ interface ToNumberOptions {
   }
   
   export function toNumber(value: string, opts: ToNumberOptions = {}): number {
-      console.log('value is ', value)
     let newValue: number = Number.parseInt(value || String(opts.default), 10);
   
     if (Number.isNaN(newValue)) {
@@ -39,7 +38,6 @@ interface ToNumberOptions {
         newValue = opts.max;
       }
     }
-    console.log('n',newValue)
   
     return newValue;
   }

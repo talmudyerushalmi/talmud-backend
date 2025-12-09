@@ -7,12 +7,11 @@ import { TractateRepository } from './tractate.repository';
 import { MishnaRepository } from './mishna.repository';
 import { UpdateLineDto } from './dto/update-line.dto';
 import { UpdateNosachDto } from './dto/update-nosach.dto';
-import { InternalParallelLink, SubLine } from './models/line.model';
+import { SubLine } from './models/line.model';
 import {
   addBlockToContentState,
   createEditorContentFromText,
 } from './inc/editorUtils';
-import { LineService } from './line.service';
 import { generateOriginalText } from './inc/draftjsUtils';
 
 @Injectable()
@@ -20,48 +19,24 @@ export class SublineService {
   constructor(
     private tractateRepository: TractateRepository,
     private mishnaRepository: MishnaRepository,
-    private lineService: LineService,
     @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>,
   ) {}
 
-  async updateLineParallels(
-    tractate: string,
-    chapter: string,
-    mishna: string,
-    line: string,
-    parallels: InternalParallelLink[],
-  ): Promise<Mishna> {
-    return this.lineService.setParallel(
-      tractate,
-      chapter,
-      mishna,
-      line,
-      parallels,
-    );
-  }
-
-  async updateSubline(
+  async updateSublineContent(
     tractate: string,
     chapter: string,
     mishna: string,
     line: string,
     updateLineDto: UpdateLineDto,
   ): Promise<Mishna> {
-    if (updateLineDto.parallels) {
-      await this.lineService.setParallel(
-        tractate,
-        chapter,
-        mishna,
-        line,
-        updateLineDto.parallels,
-      );
-    }
     const mishnaDoc = await this.mishnaRepository.find(
       tractate,
       chapter,
       mishna,
     );
     const lineIndex = mishnaDoc.lines.findIndex((l) => l.lineNumber === line);
+    
+    // Frontend now filters out read-only sources, so we can trust the data
     mishnaDoc.lines[lineIndex].sublines = updateLineDto.sublines;
     mishnaDoc.lines[lineIndex].sublines.forEach((subline) => {
       subline.originalText = generateOriginalText(subline.nosach);
@@ -70,7 +45,7 @@ export class SublineService {
     return mishnaDoc.save();
   }
 
-  async updateSublines(
+  async splitSublineText(
     tractate: string,
     chapter: string,
     mishna: string,
