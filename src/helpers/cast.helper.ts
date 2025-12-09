@@ -3,6 +3,18 @@ interface ToNumberOptions {
     min?: number;
     max?: number;
   }
+
+interface ClassTransformerValue {
+  value: string;
+  key?: string;
+  obj?: unknown;
+}
+
+type ToNumberInput = string | ClassTransformerValue;
+
+function isClassTransformerValue(value: ToNumberInput): value is ClassTransformerValue {
+  return typeof value === 'object' && value !== null && 'value' in value;
+}
   
   export function toLowerCase(value: string): string {
     return value.toLowerCase();
@@ -22,11 +34,9 @@ interface ToNumberOptions {
     return value === 'true' || value === '1' ? true : false;
   }
   
-export function toNumber(value: string | any, opts: ToNumberOptions = {}): number {
+export function toNumber(value: ToNumberInput, opts: ToNumberOptions = {}): number {
   // Handle class-transformer v0.5+ which passes an object with { value, key, obj, ... }
-  const actualValue = typeof value === 'object' && value !== null && 'value' in value 
-    ? value.value 
-    : value;
+  const actualValue: string = isClassTransformerValue(value) ? value.value : value;
   
   let newValue: number = Number.parseInt(actualValue || String(opts.default), 10);
 
