@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Mishna, MishnaModel } from './schemas/mishna.schema';
-import { Model, QueryWithHelpers } from 'mongoose';
+import { QueryWithHelpers } from 'mongoose';
 import { LineMarkDto } from './dto/line-mark.dto';
 import * as numeral from 'numeral';
 import { SaveMishnaExcerptDto } from './dto/save-mishna-excerpt.dto';
 import { ExcerptUtils } from './inc/excerptUtils';
 import { InternalParallelLink, Line } from './models/line.model';
-import { MishnaLink } from './models/mishna.link.model';
 import { ISearch, ISearchResult } from './models/search.model';
 
 @Injectable()
@@ -73,7 +72,6 @@ export class MishnaRepository {
   }
 
   searchText(query: ISearch): Promise<ISearchResult[]> {
-    console.log('Search query:', query);
     const queryTextWithoutQuotes = query.text.replace(/"/g, '');
     return this.mishnaModel
       .aggregate([
@@ -194,37 +192,9 @@ export class MishnaRepository {
       excerpt.selection.fromSubline = fromSubline?.index;
       excerpt.selection.toSubline = toSubline?.index;
       await this.saveExcerpt(tractate, chapter, mishna, excerpt);
-
-      console.log(
-        'checking',
-        mishnaDoc.id,
-        excerpts[i].selection,
-        ' line',
-        `${fromSubline?.index} - ${toSubline?.index}`,
-      );
     }
 
     return 'ok';
-  }
-  updateExcerptsWithSublineSelect2(mishnaDoc: Mishna): void {
-    const excerpts = mishnaDoc.excerpts;
-    for (let i = 0; i < excerpts.length; i++) {
-      // const excerpt = excerpts[i];
-      // const fromLine = excerpt.selection.fromLine;
-      // const toLine = excerpt.selection.toLine;
-      // const fromWord = excerpt.selection.fromWord;
-      // const toWord = excerpt.selection.toWord;
-      // let fromSubline = mishnaDoc.lines[fromLine].sublines.find(l => l.text.indexOf(fromWord)!==-1)
-      // if (!fromSubline) {
-      //     fromSubline = mishnaDoc.lines[fromLine].sublines[0]
-      // }
-      // let toSubline = mishnaDoc.lines[toLine].sublines.find(l => l.text.indexOf(toWord)!==-1)
-      // if (!toSubline) {
-      //     toSubline = mishnaDoc.lines[toLine].sublines[0]
-      // }
-      // excerpt.selection.fromSubline = fromSubline?.index;
-      // excerpt.selection.toSubline = toSubline?.index;
-    }
   }
 
   async saveExcerpt(
@@ -283,8 +253,6 @@ export class MishnaRepository {
         mishna: mishnaDoc.mishna,
         line: nextLine,
       };
-    } else {
-      console.log('NO NEXT LINE');
     }
   }
 
@@ -295,7 +263,6 @@ export class MishnaRepository {
     line: string,
     parallel: InternalParallelLink,
   ): Promise<any> {
-    console.log('saving ', this.getGUID(tractate, chapter, mishna));
     return this.mishnaModel.updateOne(
       {
         guid: this.getGUID(tractate, chapter, mishna),
@@ -312,15 +279,6 @@ export class MishnaRepository {
     line: string,
     parallel: InternalParallelLink,
   ): Promise<any> {
-    console.log(
-      'removing parallel from ',
-      tractate,
-      chapter,
-      mishna,
-      line,
-      parallel,
-    );
-    
     // Use query syntax to match only the core identifying fields
     return this.mishnaModel.updateOne(
       {
