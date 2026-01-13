@@ -20,7 +20,7 @@ import { CreateMishnaDto } from './dto/create-mishna.dto';
 import { UpdateMishnaLineDto } from './dto/save-mishna-line.dto';
 import { GetChapterDTO } from './dto/get-chapter.dto';
 import { tractateSettings } from './inc/tractates.settings';
-import { UserGroup, UserType } from '../middleware/userType';
+import { UserGroup } from '../middleware/userType';
 import { Response as ResponseFromExpress } from 'express';
 
 @Controller('mishna')

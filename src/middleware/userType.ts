@@ -10,10 +10,6 @@ export enum UserGroup  {
   Authenticated = "authenticated",
   Editor = "editor"
 }
-export enum UserType {
-  Editor,
-  Visitor,
-}
 
 function getUserGroup(decodedToken: any){
   if (!decodedToken) {
