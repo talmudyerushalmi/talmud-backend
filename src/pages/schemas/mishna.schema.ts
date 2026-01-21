@@ -35,6 +35,12 @@ export class Mishna extends Document {
   mishna: string;
 
   @Prop()
+  daf?: string;
+
+  @Prop()
+  amud?: string;
+
+  @Prop()
   lines: Line[];
 
   @Prop({ type: SchemaTypes.Mixed })
