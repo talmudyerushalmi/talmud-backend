@@ -32,6 +32,8 @@ import { UsersService } from './users/users.service';
 import { UsersRepository } from './users/users.repository';
 import { ActionsMishnaController } from './actions.mishna.controller';
 import { SynopsisService } from './synopsis.service';
+import { DafAmudMapping, DafAmudMappingSchema } from './schemas/daf-amud-mapping.schema';
+import { DafAmudMappingRepository } from './daf-amud-mapping.repository';
 
 @Module({
   imports: [
@@ -41,6 +43,7 @@ import { SynopsisService } from './synopsis.service';
       { name: Related.name, schema: RelatedSchema },
       { name: Manuscripts.name, schema: ManuscriptSchema },
       { name: User.name, schema: UserSchema },
+      { name: DafAmudMapping.name, schema: DafAmudMappingSchema },
     ]),
     ConsoleModule,
     SettingsModule,
@@ -70,6 +73,7 @@ import { SynopsisService } from './synopsis.service';
     RelatedRepository,
     ManuscriptsRepository,
     UsersRepository,
+    DafAmudMappingRepository,
   ],
   exports: [
     PagesService,
@@ -77,6 +81,7 @@ import { SynopsisService } from './synopsis.service';
     SynopsisService,
     TractateRepository,
     MishnaRepository,
+    DafAmudMappingRepository,
   ],
 })
 export class PagesModule {
