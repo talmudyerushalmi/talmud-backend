@@ -1,15 +1,13 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { Controller, Get, Param } from '@nestjs/common';
-import { MishnaRepository } from './mishna.repository';
 import { NavigationService } from './navigation.service';
-import { DafAmudMappingRepository } from './daf-amud-mapping.repository';
+import { TractateRepository } from './tractate.repository';
 
 @Controller('navigation')
 export class NavigationtController {
   constructor(
     private navigationService: NavigationService,
-    private mishnaRepository: MishnaRepository,
-    private dafAmudMappingRepository: DafAmudMappingRepository,
+    private tractateRepository: TractateRepository,
   ) {}
 
   @Get()
@@ -20,53 +18,44 @@ export class NavigationtController {
     };
   }
 
-  @Get('daf-amud/:tractate/:daf/:amud')
-  async getDafAmudMapping(
+  /**
+   * Unified navigation endpoint that handles both:
+   * 1. Direct Chapter/Mishna navigation: /navigation/:tractate/:chapter/:mishna
+   * 2. Daf/Amud navigation: /navigation/:tractate/:daf/:amud (automatically detects and converts)
+   * 
+   * The endpoint intelligently determines if the parameters are Daf/Amud or Chapter/Mishna
+   * based on the Tractate's dafs array.
+   */
+  @Get(':tractate/:param1/:param2')
+  async navigate(
     @Param('tractate') tractate: string,
-    @Param('daf') daf: string,
-    @Param('amud') amud: string,
+    @Param('param1') param1: string,
+    @Param('param2') param2: string,
   ) {
-    const mapping = await this.dafAmudMappingRepository.findByDafAmud(
-      tractate,
-      daf,
-      amud,
-    );
-    if (!mapping) {
-      return null;
+    // Check if this is Daf/Amud navigation by looking up in tractate
+    const tractateDoc = await this.tractateRepository.get(tractate);
+    
+    if (tractateDoc?.dafs) {
+      const dafEntry = tractateDoc.dafs.find(d => d.id === param1);
+      if (dafEntry) {
+        const amudEntry = dafEntry.amudim.find(a => a.amud === param2);
+        if (amudEntry) {
+          // This is Daf/Amud navigation - convert and navigate
+          const result = await this.navigationService.getMishnaForNavigation(
+            tractate,
+            amudEntry.chapter,
+            amudEntry.halacha,
+          );
+          
+          return {
+            ...result,
+            system_line: amudEntry.system_line,
+          };
+        }
+      }
     }
-    return {
-      chapter: mapping.chapter,
-      halacha: mapping.halacha,
-      system_line: mapping.system_line,
-    };
-  }
-
-  @Get('dafs/:tractate')
-  async getAllDafsForTractate(@Param('tractate') tractate: string) {
-    const dafs = await this.dafAmudMappingRepository.getAllDafsForTractate(
-      tractate,
-    );
-    return { dafs };
-  }
-
-  @Get('amudim/:tractate/:daf')
-  async getAmudimsForDaf(
-    @Param('tractate') tractate: string,
-    @Param('daf') daf: string,
-  ) {
-    const amudim = await this.dafAmudMappingRepository.getAmudimsForDaf(
-      tractate,
-      daf,
-    );
-    return { amudim };
-  }
-
-  @Get(':tractate/:chapter/:mishna')
-  async getMishnaForNavigation(
-    @Param('tractate') tractate: string,
-    @Param('chapter') chapter: string,
-    @Param('mishna') mishna: string,
-    ) {
-    return this.navigationService.getMishnaForNavigation(tractate, chapter, mishna);
+    
+    // Default: treat as Chapter/Mishna navigation
+    return this.navigationService.getMishnaForNavigation(tractate, param1, param2);
   }
 }

@@ -9,6 +9,7 @@ class MishnaRef {
   @Prop( { type: MongooseSchema.Types.ObjectId , ref: Mishna.name })
   mishnaRef: Types.ObjectId
 }
+
 @Schema()
 export class Chapter {
   id: string;
@@ -16,6 +17,29 @@ export class Chapter {
   mishnaiot: MishnaRef[]
 }
 
+@Schema()
+export class AmudMapping {
+  @Prop()
+  amud: string;
+  
+  @Prop()
+  chapter: string;
+  
+  @Prop()
+  halacha: string;
+  
+  @Prop()
+  system_line: string;
+}
+
+@Schema()
+export class Daf {
+  @Prop()
+  id: string;
+  
+  @Prop({ default: [] })
+  amudim: AmudMapping[];
+}
 
 @Schema()
 export class Tractate extends Document {
@@ -27,9 +51,12 @@ export class Tractate extends Document {
 
   @Prop()
   title_heb: string;
+  
   @Prop({ default:[]})
   chapters: Chapter[]
 
+  @Prop({ default: [] })
+  dafs: Daf[]
 }
 
 export const TractateSchema = SchemaFactory.createForClass(Tractate);
