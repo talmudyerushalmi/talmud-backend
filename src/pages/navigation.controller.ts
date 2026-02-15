@@ -23,8 +23,9 @@ export class NavigationtController {
    * 1. Direct Chapter/Mishna navigation: /navigation/:tractate/:chapter/:mishna
    * 2. Daf/Amud navigation: /navigation/:tractate/:daf/:amud (automatically detects and converts)
    * 
-   * The endpoint intelligently determines if the parameters are Daf/Amud or Chapter/Mishna
-   * based on the Tractate's dafs array.
+   * The endpoint intelligently determines if the parameters are Daf/Amud or Chapter/Mishna:
+   * - Daf/Amud: Hebrew letters (א, ב, לו, לז, etc.)
+   * - Chapter/Mishna: Numbers (001, 002, 009, etc.)
    */
   @Get(':tractate/:param1/:param2')
   async navigate(
@@ -32,25 +33,30 @@ export class NavigationtController {
     @Param('param1') param1: string,
     @Param('param2') param2: string,
   ) {
-    // Check if this is Daf/Amud navigation by looking up in tractate
-    const tractateDoc = await this.tractateRepository.get(tractate);
+    // Check if param1 is a number (Chapter/Mishna) or Hebrew letters (Daf/Amud)
+    const isChapterMishna = /^\d+$/.test(param1);
     
-    if (tractateDoc?.dafs) {
-      const dafEntry = tractateDoc.dafs.find(d => d.id === param1);
-      if (dafEntry) {
-        const amudEntry = dafEntry.amudim.find(a => a.amud === param2);
-        if (amudEntry) {
-          // This is Daf/Amud navigation - convert and navigate
-          const result = await this.navigationService.getMishnaForNavigation(
-            tractate,
-            amudEntry.chapter,
-            amudEntry.halacha,
-          );
-          
-          return {
-            ...result,
-            system_line: amudEntry.system_line,
-          };
+    if (!isChapterMishna) {
+      // Hebrew letters detected - this is Daf/Amud navigation
+      const tractateDoc = await this.tractateRepository.get(tractate);
+      
+      if (tractateDoc?.dafs) {
+        const dafEntry = tractateDoc.dafs.find(d => d.id === param1);
+        if (dafEntry) {
+          const amudEntry = dafEntry.amudim.find(a => a.amud === param2);
+          if (amudEntry) {
+            // Convert Daf/Amud to Chapter/Mishna and return
+            const result = await this.navigationService.getMishnaForNavigation(
+              tractate,
+              amudEntry.chapter,
+              amudEntry.halacha,
+            );
+            
+            return {
+              ...result,
+              system_line: amudEntry.system_line,
+            };
+          }
         }
       }
     }
