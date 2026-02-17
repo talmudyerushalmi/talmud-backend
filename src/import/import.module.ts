@@ -11,6 +11,8 @@ import { NormalizeService } from './normalize.service';
 import { ParallelService } from '../pages/parallel.service';
 import { Tractate, TractateSchema } from '../pages/schemas/tractate.schema';
 import { Mishna, MishnaSchema } from '../pages/schemas/mishna.schema';
+import { ImportDafAmudService } from './import-daf-amud.service';
+import { ImportMishnaDafAmudService } from './import-mishna-daf-amud.service';
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { Mishna, MishnaSchema } from '../pages/schemas/mishna.schema';
   ],
   providers: [
     ImportService,
+    ImportDafAmudService,
+    ImportMishnaDafAmudService,
     SettingsService,
     ListService,
     NormalizeService,

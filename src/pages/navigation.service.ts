@@ -49,6 +49,8 @@ export class NavigationService {
       lines,
       previous: mishnaDoc.previous,
       next: mishnaDoc.next,
+      daf: mishnaDoc.daf,
+      amud: mishnaDoc.amud,
     };
   }
 

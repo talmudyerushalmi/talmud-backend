@@ -3,7 +3,7 @@ services:
   mongo:
     container_name: mongo-for-talmud
     restart: on-failure
-    image: mongo:latest
+    image: mongo:8.0
     ports:
       - 27017:27017
     volumes:
