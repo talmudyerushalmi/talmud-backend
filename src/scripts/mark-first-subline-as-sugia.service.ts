@@ -17,7 +17,7 @@ export class MarkFirstSublineAsSugiaService {
   })
   async markFirstSublineAsSugia(): Promise<void> {
     console.log('Starting to mark first sublines as Sugia...');
-    console.log('Processing Mishnas using cursor (streaming mode)...\n');
+    console.log('Processing Mishnas using optimized bulk operations...\n');
     
     try {
       let updatedCount = 0;
@@ -25,17 +25,15 @@ export class MarkFirstSublineAsSugiaService {
       let errorCount = 0;
       let skippedCount = 0;
       let processedCount = 0;
+      
+      const BATCH_SIZE = 50; // Process in batches
+      let batch = [];
 
-      // Use cursor instead of loading all at once - much more efficient!
+      // Use cursor for streaming
       const cursor = this.mishnaModel.find().cursor();
 
       for await (const mishna of cursor) {
         processedCount++;
-        
-        // Show progress every 100 mishnas
-        if (processedCount % 100 === 0) {
-          console.log(`Progress: ${processedCount} processed - Updated: ${updatedCount}, Already marked: ${alreadyMarkedCount}, Skipped: ${skippedCount}`);
-        }
         
         try {
           // Check if the Mishna has lines
@@ -64,19 +62,34 @@ export class MarkFirstSublineAsSugiaService {
 
           // Mark it as Sugia with "--"
           firstSubline.sugiaName = '--';
-          
-          // Mark the document as modified (important for nested properties)
           mishna.markModified('lines');
-
-          // Save the Mishna
-          await mishna.save();
           
-          updatedCount++;
+          // Add to batch
+          batch.push(mishna);
+          
+          // When batch is full, save all at once
+          if (batch.length >= BATCH_SIZE) {
+            await Promise.all(batch.map(m => m.save()));
+            updatedCount += batch.length;
+            batch = [];
+            
+            console.log(`Progress: ${processedCount} processed - Updated: ${updatedCount}, Already marked: ${alreadyMarkedCount}, Skipped: ${skippedCount}`);
+            
+            // Small pause between batches to let server breathe
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
 
         } catch (error) {
           console.error(`✗ Error processing Mishna ${mishna.tractate}/${mishna.chapter}/${mishna.mishna}:`, error.message);
           errorCount++;
         }
+      }
+      
+      // Save remaining batch
+      if (batch.length > 0) {
+        await Promise.all(batch.map(m => m.save()));
+        updatedCount += batch.length;
+        console.log(`Progress: ${processedCount} processed - Updated: ${updatedCount}, Already marked: ${alreadyMarkedCount}, Skipped: ${skippedCount}`);
       }
 
       console.log('\n=== Final Summary ===');
