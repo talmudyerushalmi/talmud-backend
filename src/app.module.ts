@@ -4,7 +4,6 @@ import { AppService } from './app.service';
 import { PagesModule } from './pages/pages.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ImportModule } from './import/import.module';
-import { ScriptsModule } from './scripts/scripts.module';
 import { SettingsModule } from './settings/settings.module';
 import { ConfigModule } from '@nestjs/config';
 import { UserMiddleware } from './middleware/userType';
@@ -17,7 +16,6 @@ import { UserMiddleware } from './middleware/userType';
     MongooseModule.forRoot(process.env.DB_CONNECTION, {}),
     PagesModule,
     ImportModule,
-    ScriptsModule,
     SettingsModule,
   ],
   controllers: [AppController],
