@@ -29,6 +29,20 @@ export class SublineService {
     line: string,
     updateLineDto: UpdateLineDto,
   ): Promise<Mishna> {
+    // Validate subSugiaName: must be 1-4 characters if provided
+    for (const subline of updateLineDto.sublines) {
+      if (subline.subSugiaName !== undefined && subline.subSugiaName !== null) {
+        const length = subline.subSugiaName.length;
+        
+        if (length < 1 || length > 4) {
+          throw new HttpException(
+            `subSugiaName must be 1-4 characters, got ${length}`,
+            HttpStatus.BAD_REQUEST,
+          );
+        }
+      }
+    }
+
     const mishnaDoc = await this.mishnaRepository.find(
       tractate,
       chapter,
