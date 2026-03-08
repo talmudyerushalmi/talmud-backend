@@ -24,6 +24,14 @@ export interface EditedText {
   content?: RawDraftContentState;
   editor?: any, // maybe can be removed
 }
+export class RabbiMention {
+  rabbiId: string;
+  rabbiName: string;
+  startIndex: number;
+  endIndex: number;
+  text: string;
+}
+
 export class SubLine {
   text: string;
   index: number;
@@ -31,7 +39,10 @@ export class SubLine {
   subSugiaName?: string;
   nosach: RawDraftContentState;
   originalText: string;
-  synopsis: Synopsis[]
+  synopsis: Synopsis[];
+  categories?: string[];
+  connections?: string[];
+  rabbiMentions?: RabbiMention[];
 }
 
 export interface SublinePair {
