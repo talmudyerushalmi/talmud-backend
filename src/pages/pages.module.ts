@@ -32,9 +32,6 @@ import { UsersService } from './users/users.service';
 import { UsersRepository } from './users/users.repository';
 import { ActionsMishnaController } from './actions.mishna.controller';
 import { SynopsisService } from './synopsis.service';
-import { RabbiController } from './rabbi.controller';
-import { RabbiService } from './rabbi.service';
-import { Rabbi, RabbiSchema } from './schemas/rabbi.schema';
 import { TaggingController } from './tagging.controller';
 import { TaggingService } from './tagging.service';
 
@@ -46,7 +43,6 @@ import { TaggingService } from './tagging.service';
       { name: Related.name, schema: RelatedSchema },
       { name: Manuscripts.name, schema: ManuscriptSchema },
       { name: User.name, schema: UserSchema },
-      { name: Rabbi.name, schema: RabbiSchema },
     ]),
     ConsoleModule,
     SettingsModule,
@@ -61,7 +57,6 @@ import { TaggingService } from './tagging.service';
     EditMishnaExcerptController,
     ManuscriptsController,
     UsersController,
-    RabbiController,
     TaggingController,
   ],
   providers: [
@@ -78,7 +73,6 @@ import { TaggingService } from './tagging.service';
     RelatedRepository,
     ManuscriptsRepository,
     UsersRepository,
-    RabbiService,
     TaggingService,
   ],
   exports: [
