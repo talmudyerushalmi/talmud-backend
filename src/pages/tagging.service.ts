@@ -23,8 +23,8 @@ export class TaggingService {
         text: subline.text,
         lineNumber: line.lineNumber,
         categories: subline.categories || [],
-        connections: subline.connections || [],
         rabbiMentions: subline.rabbiMentions || [],
+        comments: subline.comments || [],
       }))
     );
   }
@@ -45,9 +45,9 @@ export class TaggingService {
     for (const line of mishnaDoc.lines) {
       for (const subline of line.sublines || []) {
         if (subline.index === sublineIndex) {
-          if (dto.categories !== undefined) subline.categories = dto.categories;
-          if (dto.connections !== undefined) subline.connections = dto.connections;
+          if (dto.categories !== undefined) subline.categories = dto.categories as any;
           if (dto.rabbiMentions !== undefined) subline.rabbiMentions = dto.rabbiMentions as any;
+          if (dto.comments !== undefined) subline.comments = dto.comments as any;
           found = true;
           break;
         }
