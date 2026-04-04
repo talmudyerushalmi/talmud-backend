@@ -1,8 +1,8 @@
-import { IsArray, IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsIn, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CategoryConnectionDto {
-  @IsString()
+  @IsIn(['subline', 'external'])
   type: 'subline' | 'external';
 
   @IsOptional()

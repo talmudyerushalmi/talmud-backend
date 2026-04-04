@@ -1,7 +1,4 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Mishna } from './schemas/mishna.schema';
 import { MishnaRepository } from './mishna.repository';
 import { UpdateSublineTagsDto } from './dto/update-subline-tags.dto';
 
@@ -9,7 +6,6 @@ import { UpdateSublineTagsDto } from './dto/update-subline-tags.dto';
 export class TaggingService {
   constructor(
     private mishnaRepository: MishnaRepository,
-    @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>,
   ) {}
 
   async getSublines(tractate: string, chapter: string, mishna: string) {
