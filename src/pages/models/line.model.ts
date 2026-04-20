@@ -24,6 +24,32 @@ export interface EditedText {
   content?: RawDraftContentState;
   editor?: any, // maybe can be removed
 }
+export class CategoryConnection {
+  type: 'subline' | 'external';
+  sublineIndex?: number;
+  text?: string;
+}
+
+export class SublineCategory {
+  categoryId: string;
+  connections: CategoryConnection[];
+}
+
+export class RabbiMention {
+  rabbiId: string;
+  rabbiName: string;
+  startIndex: number;
+  endIndex: number;
+  text: string;
+  doubt?: boolean;
+}
+
+export class SublineComment {
+  text: string;
+  author: string;
+  timestamp: string;
+}
+
 export class SubLine {
   text: string;
   index: number;
@@ -31,7 +57,10 @@ export class SubLine {
   subSugiaName?: string;
   nosach: RawDraftContentState;
   originalText: string;
-  synopsis: Synopsis[]
+  synopsis: Synopsis[];
+  categories?: SublineCategory[];
+  rabbiMentions?: RabbiMention[];
+  comments?: SublineComment[];
 }
 
 export interface SublinePair {

@@ -32,6 +32,8 @@ import { UsersService } from './users/users.service';
 import { UsersRepository } from './users/users.repository';
 import { ActionsMishnaController } from './actions.mishna.controller';
 import { SynopsisService } from './synopsis.service';
+import { TaggingController } from './tagging.controller';
+import { TaggingService } from './tagging.service';
 
 @Module({
   imports: [
@@ -55,6 +57,7 @@ import { SynopsisService } from './synopsis.service';
     EditMishnaExcerptController,
     ManuscriptsController,
     UsersController,
+    TaggingController,
   ],
   providers: [
     PagesService,
@@ -70,6 +73,7 @@ import { SynopsisService } from './synopsis.service';
     RelatedRepository,
     ManuscriptsRepository,
     UsersRepository,
+    TaggingService,
   ],
   exports: [
     PagesService,
@@ -85,6 +89,7 @@ export class PagesModule {
       .apply(EditorMiddleware)
       .forRoutes(
         { path: 'edit/*', method: RequestMethod.ALL },
+        { path: 'tagging/*', method: RequestMethod.PUT },
         { path: 'users/comments/moderation*', method: RequestMethod.ALL },
       );
     consumer
