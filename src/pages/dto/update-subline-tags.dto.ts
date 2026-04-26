@@ -24,6 +24,14 @@ export class SublineCategoryDto {
   connections: CategoryConnectionDto[];
 }
 
+export class RabbiAlternativeDto {
+  @IsString()
+  rabbiId: string;
+
+  @IsString()
+  rabbiName: string;
+}
+
 export class RabbiMentionDto {
   @IsString()
   rabbiId: string;
@@ -43,6 +51,12 @@ export class RabbiMentionDto {
   @IsOptional()
   @IsBoolean()
   doubt?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => RabbiAlternativeDto)
+  alternatives?: RabbiAlternativeDto[];
 }
 
 export class SublineCommentDto {

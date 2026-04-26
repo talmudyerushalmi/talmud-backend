@@ -35,6 +35,11 @@ export class SublineCategory {
   connections: CategoryConnection[];
 }
 
+export class RabbiAlternative {
+  rabbiId: string;
+  rabbiName: string;
+}
+
 export class RabbiMention {
   rabbiId: string;
   rabbiName: string;
@@ -42,6 +47,7 @@ export class RabbiMention {
   endIndex: number;
   text: string;
   doubt?: boolean;
+  alternatives?: RabbiAlternative[];
 }
 
 export class SublineComment {
