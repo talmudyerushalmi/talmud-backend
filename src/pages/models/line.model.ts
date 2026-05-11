@@ -46,7 +46,12 @@ export class RabbiMention {
   startIndex: number;
   endIndex: number;
   text: string;
+  /** When true, the mention is marked as questionable and `alternatives` may be populated. */
   doubt?: boolean;
+  /**
+   * Alternative rabbi candidates suggested by the user.
+   * Only meaningful when `doubt === true` — the UI hides this list otherwise.
+   */
   alternatives?: RabbiAlternative[];
 }
 
