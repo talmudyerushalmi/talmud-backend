@@ -35,13 +35,24 @@ export class SublineCategory {
   connections: CategoryConnection[];
 }
 
+export class RabbiAlternative {
+  rabbiId: string;
+  rabbiName: string;
+}
+
 export class RabbiMention {
   rabbiId: string;
   rabbiName: string;
   startIndex: number;
   endIndex: number;
   text: string;
+  /** When true, the mention is marked as questionable and `alternatives` may be populated. */
   doubt?: boolean;
+  /**
+   * Alternative rabbi candidates suggested by the user.
+   * Only meaningful when `doubt === true` — the UI hides this list otherwise.
+   */
+  alternatives?: RabbiAlternative[];
 }
 
 export class SublineComment {
