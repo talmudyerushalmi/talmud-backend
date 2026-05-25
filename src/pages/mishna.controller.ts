@@ -40,13 +40,18 @@ export class MishnaController {
     @Param('tractate') tractate: string,
     @Param('chapter') chapter: string,
     @Param('mishna') mishna: string,
+    @Query('part') partRaw: string | undefined,
     @Response() res,
   ) {
     this.throwIfForbidden(tractate, res.locals.userGroup);
+    // `?part=N` is only meaningful when the halacha is split; the override service
+    // clamps to a valid value and the controller passes it along unchanged.
+    const part = partRaw !== undefined ? parseInt(partRaw, 10) : undefined;
     const mishnaDoc = await this.pagesService.getMishna(
       tractate,
       chapter,
       mishna,
+      { part: Number.isFinite(part!) ? part : undefined },
     );
     res.json(mishnaDoc);
   }

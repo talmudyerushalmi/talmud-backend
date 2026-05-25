@@ -22,6 +22,7 @@ import { MishnaLink } from './models/mishna.link.model';
 import { create } from 'xmlbuilder2';
 import { base64ToJson } from 'src/shared/base64ToJson';
 import { Line, Synopsis, SourceType } from './models/line.model';
+import { HalachaOverrideService } from './halacha-override.service';
 
 
 export interface iTractate {
@@ -33,6 +34,7 @@ export class PagesService {
   constructor(
     private tractateRepository: TractateRepository,
     private mishnaRepository: MishnaRepository,
+    private halachaOverrideService: HalachaOverrideService,
     @InjectModel(Tractate.name) private tractateModel: Model<Tractate>,
     @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>,
   ) {}
@@ -90,8 +92,30 @@ export class PagesService {
     tractate: string,
     chapter: string,
     mishna: string,
+    opts: { part?: number } = {},
   ): Promise<Mishna | any> {
-    //todo fix any
+    // If a halacha-override exists for this chapter and involves this halacha,
+    // the override service returns a composed payload (`unified` or `split`).
+    const resolved = await this.halachaOverrideService.resolveMishna(
+      tractate,
+      chapter,
+      mishna,
+      opts,
+    );
+    if (resolved && resolved.kind === 'unified') {
+      const composed = resolved.mishna;
+      await this.addParallelSynopsisToMishna(composed);
+      if (resolved.redirectTo) {
+        composed._redirectTo = resolved.redirectTo;
+      }
+      return composed;
+    }
+    if (resolved && resolved.kind === 'split') {
+      const composed = resolved.mishna;
+      await this.addParallelSynopsisToMishna(composed);
+      return composed;
+    }
+
     const find = await this.mishnaRepository
       .find(tractate, chapter, mishna);
     if (!find) {
@@ -184,6 +208,15 @@ export class PagesService {
     if (!mishnaDocument) {
       throw new BadRequestException('Mishna not found');
     }
+
+    // `totalMishnaiot` drives chapter-level pagination on the FE; shrink it by the
+    // number of unify operations so the count matches the overlaid nav list.
+    const totalMishnaiot = await this.halachaOverrideService.overlaidChapterCount(
+      tractate,
+      chapter,
+      mishnaiot.length,
+    );
+
     const richTextsMishnas = mishnaiot.map((m: Mishna) => {
       return {
         mishna: m.mishna,
@@ -194,7 +227,7 @@ export class PagesService {
     return {
       tractate,
       chapter,
-      totalMishnaiot: mishnaiot.length,
+      totalMishnaiot,
       richTextsMishnas,
       //@ts-ignore
       mishnaDocument: { ...mishnaDocument._doc },
@@ -220,11 +253,20 @@ export class PagesService {
   }
 
   async getTractate(tractate: string): Promise<Tractate> {
-    return this.tractateRepository.get(tractate);
+    const doc = await this.tractateRepository.get(tractate);
+    if (!doc) return doc;
+    // Overlay nav list with unify overrides (splits don't alter the list).
+    return this.halachaOverrideService.overlayTractateNavList(doc as any);
   }
 
   async getAllTractates(): Promise<any> {
-    return this.tractateRepository.getAll();
+    const tractates = await this.tractateRepository.getAll();
+    if (!Array.isArray(tractates)) return tractates;
+    return Promise.all(
+      tractates.map((t) =>
+        this.halachaOverrideService.overlayTractateNavList(t as any),
+      ),
+    );
   }
 
   getTractateSettings(tractate: string): any {
