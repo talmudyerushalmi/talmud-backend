@@ -9,6 +9,8 @@ import { MishnaRepository } from './mishna.repository';
 import { iTractate } from './pages.service';
 import { InternalParallelLink } from './models/line.model';
 import MiscUtils from '../shared/MiscUtils';
+import { HalachaOverrideService } from './halacha-override.service';
+import { HalachaOverrideRepository } from './halacha-override.repository';
 
 export enum LinkFormat {
   TractateChapterMishna = 'TractateChapterMishna',
@@ -18,6 +20,8 @@ export class NavigationService {
   constructor(
     private tractateRepository: TractateRepository,
     private mishnaRepository: MishnaRepository,
+    private halachaOverrideService: HalachaOverrideService,
+    private halachaOverrideRepository: HalachaOverrideRepository,
     @InjectModel(Tractate.name) private tractateModel: Model<Tractate>,
     @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>,
   ) {}
@@ -27,11 +31,71 @@ export class NavigationService {
     return this.tractateRepository.getAll();
   }
 
+  /**
+   * Returns the nav payload (lines / previous / next / daf / amud) used by the chapter +
+   * mishna chooser and the prev/next arrows. This is a separate code path from `getMishna`,
+   * so it has its own override application — without it, the arrows would still try to
+   * navigate to unified second-source URLs (which then `_redirectTo` back, creating loops).
+   *
+   *   - Unify: returns combined lines, `previous = first.previous`, `next = second.next`
+   *     so arrows skip the pair entirely.
+   *   - Passthrough: rewrites any `previous`/`next` marker that points at a unify's second
+   *     source to the canonical first source.
+   *   - Split: passthrough (the source mishna's full line list is returned; per-part line
+   *     navigation is handled by the in-page tab strip).
+   */
   async getMishnaForNavigation(
     tractate: string,
     chapter: string,
     mishna: string,
   ): Promise<any> {
+    const override = await this.halachaOverrideRepository.findByChapter(
+      tractate,
+      chapter,
+    );
+    const operations = override?.operations ?? [];
+
+    const unify = operations.find(
+      (op): op is Extract<typeof operations[number], { kind: 'unify' }> =>
+        op.kind === 'unify' &&
+        (op.sources[0] === mishna || op.sources[1] === mishna),
+    );
+
+    if (unify) {
+      const [firstId, secondId] = unify.sources;
+      const [first, second] = await Promise.all([
+        this.mishnaRepository.find(tractate, chapter, firstId),
+        this.mishnaRepository.find(tractate, chapter, secondId),
+      ]);
+      if (!first || !second) {
+        throw new HttpException('Could not find mishna', 404);
+      }
+      const lines = [...first.lines, ...second.lines].map((l) => ({
+        lineNumber: l.lineNumber,
+        mainLine: l.mainLine,
+      }));
+      // Apply the same `rewriteMarker` so any neighbor in another unify pair is canonicalized.
+      const previous = this.halachaOverrideService.rewriteMarker(
+        first.previous,
+        operations,
+      );
+      const next = this.halachaOverrideService.rewriteMarker(
+        second.next,
+        operations,
+      );
+      return {
+        // Echo the requested id; even if the user hit the second source, the corresponding
+        // `_redirectTo` from `pages.service` keeps the URL canonical.
+        mishna,
+        id: first.guid,
+        lines,
+        previous,
+        next,
+        daf: first.daf,
+        amud: first.amud,
+      };
+    }
+
     const mishnaDoc = await this.mishnaRepository.find(
       tractate,
       chapter,
@@ -47,8 +111,14 @@ export class NavigationService {
       mishna: mishnaDoc.mishna,
       id: mishnaDoc.guid,
       lines,
-      previous: mishnaDoc.previous,
-      next: mishnaDoc.next,
+      previous: this.halachaOverrideService.rewriteMarker(
+        mishnaDoc.previous,
+        operations,
+      ),
+      next: this.halachaOverrideService.rewriteMarker(
+        mishnaDoc.next,
+        operations,
+      ),
       daf: mishnaDoc.daf,
       amud: mishnaDoc.amud,
     };

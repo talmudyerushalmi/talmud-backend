@@ -25,7 +25,12 @@ import { sliceRichText } from './inc/draftjs-slice';
  * `null` means "no transformation needed — caller should use the raw Mishna doc".
  */
 export type ResolvedHalacha =
-  | { kind: 'unified'; mishna: any; redirectTo?: string }
+  | {
+      kind: 'unified';
+      mishna: any;
+      /** Canonical URL the FE should replace to (set only when the request hit the second source). */
+      redirectTo?: { tractate: string; chapter: string; mishna: string };
+    }
   | { kind: 'split'; mishna: any }
   | null;
 
@@ -207,8 +212,14 @@ export class HalachaOverrideService {
       ]);
       if (!first || !second) return null;
       const composed = this.composeUnify(first, second);
-      const redirectTo = mishnaId === secondId ? firstId : undefined;
-      return { kind: 'unified', mishna: composed, redirectTo };
+      // The composed Mishna's neighbor markers can themselves point at second-sources of
+      // OTHER unify pairs in the same chapter — rewrite them to the canonical first-source.
+      const overlaid = this.rewriteNeighborMarkers(composed, operations);
+      const redirectTo =
+        mishnaId === secondId
+          ? { tractate, chapter, mishna: firstId }
+          : undefined;
+      return { kind: 'unified', mishna: overlaid, redirectTo };
     }
 
     // Split: the source halacha is presented as 2-3 mini-halachas. `opts.part` (1-based)
@@ -228,10 +239,68 @@ export class HalachaOverrideService {
       const requested = opts.part ?? 1;
       const partIdx = clamp(requested, 1, totalParts) - 1; // 0-based
       const composed = this.composeSplit(sourceMishna, split, partIdx);
-      return { kind: 'split', mishna: composed };
+      // Split parts inherit `previous`/`next` from the source Mishna, so if a neighbor is
+      // the second source of a unify, rewrite it to the canonical first-source.
+      const overlaid = this.rewriteNeighborMarkers(composed, operations);
+      return { kind: 'split', mishna: overlaid };
     }
 
     return null;
+  }
+
+  /**
+   * Public passthrough hook: when a Mishna is NOT itself part of an override (i.e. the
+   * raw doc is being returned to the user), we still need to rewrite its `previous`/`next`
+   * markers if they happen to point at the SECOND source of a unify pair. Otherwise the
+   * FE takes a detour via the second-source URL (which then `_redirectTo`s back to the
+   * canonical first-source URL) every time the user clicks back/forward.
+   *
+   * Returns the Mishna unchanged if no unify operations exist for the chapter.
+   */
+  async applyNavOverlay<T = any>(
+    mishna: T,
+    tractate: string,
+    chapter: string,
+  ): Promise<T> {
+    const override = await this.halachaOverrideRepository.findByChapter(
+      tractate,
+      chapter,
+    );
+    if (!override?.operations?.length) return mishna;
+    return this.rewriteNeighborMarkers(mishna as any, override.operations);
+  }
+
+  /**
+   * Pure helper: given a single neighbor marker (`previous` or `next`), returns a
+   * canonicalized version where any reference to a unify's SECOND source is replaced
+   * with its FIRST source. Used by both this service and `NavigationService`.
+   */
+  rewriteMarker<T extends { mishna?: string } | undefined>(
+    marker: T,
+    operations: HalachaOperation[],
+  ): T {
+    if (!marker?.mishna) return marker;
+    const unifies = operations.filter(
+      (op): op is Extract<HalachaOperation, { kind: 'unify' }> => op.kind === 'unify',
+    );
+    const u = unifies.find((u) => u.sources[1] === marker.mishna);
+    if (!u) return marker;
+    return { ...marker, mishna: u.sources[0] } as T;
+  }
+
+  /**
+   * Rewrites `previous` / `next` markers on `mishna` so that any reference to a unify's
+   * second source is replaced with the corresponding first source (the canonical URL).
+   * Returns the Mishna unchanged if none of its markers point at a second source.
+   */
+  private rewriteNeighborMarkers(mishna: any, operations: HalachaOperation[]): any {
+    const base = unwrapMongoose(mishna);
+    const newPrevious = this.rewriteMarker(base.previous, operations);
+    const newNext = this.rewriteMarker(base.next, operations);
+    if (newPrevious === base.previous && newNext === base.next) {
+      return mishna;
+    }
+    return { ...base, previous: newPrevious, next: newNext };
   }
 
   /**
@@ -404,6 +473,11 @@ export class HalachaOverrideService {
       lines: mergedLines,
       excerpts: mergedExcerpts,
       richTextMishna: concatRichText(a.richTextMishna, b.richTextMishna),
+      // Navigation arrows must skip the pair entirely (spec: from \u05d5-\u05d6 go to \u05d7).
+      // `previous` from `a` is already what comes before the pair; `next` from `a` would
+      // wrongly point at `b` itself, so we take `b.next` instead.
+      previous: aBase.previous,
+      next: bBase.next,
       _unified: {
         sources: [a.mishna, b.mishna] as [string, string],
         canonicalId: a.mishna,

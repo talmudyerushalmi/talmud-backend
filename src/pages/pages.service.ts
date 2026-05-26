@@ -121,8 +121,16 @@ export class PagesService {
     if (!find) {
       throw new HttpException('Not found', HttpStatus.NOT_FOUND);
     } else {
-      await this.addParallelSynopsisToMishna(find);
-      return find;
+      // Even when the requested Mishna is itself passthrough, its `previous`/`next` may
+      // still reference a unified pair's second source. Rewrite those to the canonical
+      // first-source so the FE doesn't detour through the redirect on every arrow click.
+      const adjusted = await this.halachaOverrideService.applyNavOverlay(
+        find,
+        tractate,
+        chapter,
+      );
+      await this.addParallelSynopsisToMishna(adjusted);
+      return adjusted;
     }
   }
 
