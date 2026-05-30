@@ -26,8 +26,8 @@ export class MishnaCutDto {
 }
 
 /**
- * Merge two adjacent source Halachas into one virtual Halacha.
- * `sources` is two source Halacha ids in chapter order, e.g. ['006','007'].
+ * Merge 2 or 3 adjacent source Halachas into one virtual Halacha.
+ * `sources` is the source Halacha ids in chapter order, e.g. ['006','007','008'].
  * Adjacency and existence are enforced semantically in the service.
  */
 export class UnifyOperationDto {
@@ -36,9 +36,9 @@ export class UnifyOperationDto {
 
   @IsArray()
   @ArrayMinSize(2)
-  @ArrayMaxSize(2)
+  @ArrayMaxSize(3)
   @IsString({ each: true })
-  sources: [string, string];
+  sources: string[];
 }
 
 /**

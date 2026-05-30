@@ -18,8 +18,8 @@ export interface MishnaCut {
  * Discriminated union persisted under `operations`.
  *
  * `unify`:
- *   Two ADJACENT source Halachas are presented as a single Halacha. URL canonicalizes
- *   to `sources[0]`; a request for `sources[1]` returns a redirect signal.
+ *   2 or 3 ADJACENT source Halachas presented as a single Halacha. URL canonicalizes
+ *   to `sources[0]`; a request for any non-first source returns a redirect signal.
  *
  * `split`:
  *   One source Halacha is presented as 2 or 3 mini-Halachas. URL stays unchanged
@@ -36,7 +36,7 @@ export interface MishnaCut {
  * so each split point is consistent across both the Mishna's rich text and the Sugiot list.
  */
 export type HalachaOperation =
-  | { kind: 'unify'; sources: [string, string] }
+  | { kind: 'unify'; sources: string[] }
   | {
       kind: 'split';
       source: string;

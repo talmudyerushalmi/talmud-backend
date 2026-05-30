@@ -36,16 +36,16 @@ export type ResolvedHalacha =
 
 /**
  * Reference shape used in the tractate doc's `chapters[].mishnaiot` array.
- * We add an optional `unifiedWith` field so the FE can render combined labels
- * like "\u05d5-\u05d6" without the BE knowing about Hebrew letters.
+ * We add an optional `unifiedWithAll` field so the FE can render combined labels
+ * like "\u05d5-\u05d6" or "\u05d5-\u05d6-\u05d7" without the BE knowing about Hebrew letters.
  */
 export interface OverlaidMishnaRef {
   id: string;
   mishna: string;
   mishnaRef?: any;
-  /** When set, this entry represents a unified halacha pair: this entry is the first
-   *  source, and `unifiedWith` is the second source's id (e.g. '007'). */
-  unifiedWith?: string;
+  /** When set, this entry is the first source of a unify and `unifiedWithAll` lists ALL
+   *  sources in chapter order (length 2 or 3). The first element equals `mishna`. */
+  unifiedWithAll?: string[];
 }
 
 /**
@@ -201,24 +201,25 @@ export class HalachaOverrideService {
     // Unify takes precedence; the source can only be in one op anyway.
     const unify = operations.find(
       (op): op is Extract<HalachaOperation, { kind: 'unify' }> =>
-        op.kind === 'unify' &&
-        (op.sources[0] === mishnaId || op.sources[1] === mishnaId),
+        op.kind === 'unify' && op.sources.includes(mishnaId),
     );
     if (unify) {
-      const [firstId, secondId] = unify.sources;
-      const [first, second] = await Promise.all([
-        this.mishnaRepository.find(tractate, chapter, firstId),
-        this.mishnaRepository.find(tractate, chapter, secondId),
-      ]);
-      if (!first || !second) return null;
-      const composed = this.composeUnify(first, second);
-      // The composed Mishna's neighbor markers can themselves point at second-sources of
-      // OTHER unify pairs in the same chapter — rewrite them to the canonical first-source.
+      const sourceDocs = await Promise.all(
+        unify.sources.map((id) =>
+          this.mishnaRepository.find(tractate, chapter, id),
+        ),
+      );
+      if (sourceDocs.some((d) => !d)) return null;
+      const composed = this.composeUnify(sourceDocs as Mishna[]);
+      // The composed Mishna's neighbor markers can themselves point at non-first-sources
+      // of OTHER unify groups in the same chapter — rewrite them to the canonical first.
       const overlaid = this.rewriteNeighborMarkers(composed, operations);
+      // Any non-first source URL canonicalizes to the first source.
+      const firstId = unify.sources[0];
       const redirectTo =
-        mishnaId === secondId
-          ? { tractate, chapter, mishna: firstId }
-          : undefined;
+        mishnaId === firstId
+          ? undefined
+          : { tractate, chapter, mishna: firstId };
       return { kind: 'unified', mishna: overlaid, redirectTo };
     }
 
@@ -272,8 +273,9 @@ export class HalachaOverrideService {
 
   /**
    * Pure helper: given a single neighbor marker (`previous` or `next`), returns a
-   * canonicalized version where any reference to a unify's SECOND source is replaced
-   * with its FIRST source. Used by both this service and `NavigationService`.
+   * canonicalized version where any reference to a NON-FIRST source of a unify (i.e.
+   * sources[1] or sources[2]) is replaced with sources[0]. Used by both this service
+   * and `NavigationService`.
    */
   rewriteMarker<T extends { mishna?: string } | undefined>(
     marker: T,
@@ -283,7 +285,8 @@ export class HalachaOverrideService {
     const unifies = operations.filter(
       (op): op is Extract<HalachaOperation, { kind: 'unify' }> => op.kind === 'unify',
     );
-    const u = unifies.find((u) => u.sources[1] === marker.mishna);
+    // A marker is canonicalized if its mishna appears as a non-first source of any unify.
+    const u = unifies.find((u) => u.sources.indexOf(marker.mishna!) > 0);
     if (!u) return marker;
     return { ...marker, mishna: u.sources[0] } as T;
   }
@@ -408,20 +411,23 @@ export class HalachaOverrideService {
   }
 
   /**
-   * Composes a unified Mishna from two source documents. The result keeps the FIRST
-   * source's id as `mishna` (so the URL canonicalizes to it), concatenates the rich
-   * text via `concatRichText`, appends `b`'s lines after `a`'s with subline indices
-   * renumbered sequentially, and shifts `b`'s excerpt line indices by `a.lines.length`.
+   * Composes a unified Mishna from 2-3 source documents in chapter order. The result keeps
+   * the FIRST source's id as `mishna` (so the URL canonicalizes to it), folds rich text
+   * via `concatRichText`, appends each subsequent source's lines with subline indices
+   * renumbered globally, and shifts each subsequent source's excerpt line indices by the
+   * running total of lines already merged.
    *
-   * Each line and subline gets a `_sourceMishna` marker so the FE can render attribution
-   * (used by the "which one to edit?" modal). The composed payload also carries
-   * `_unified: { sources, canonicalId }` for the same reason.
+   * Each line, subline, and excerpt gets a `_sourceMishna` marker so the FE can render
+   * attribution (used by the "which one to edit?" modal). The composed payload also
+   * carries `_unified: { sources, canonicalId }`.
    */
-  private composeUnify(a: Mishna, b: Mishna): any {
-    const aLines = a.lines ?? [];
-    const bLines = b.lines ?? [];
-    const aBase = unwrapMongoose(a);
-    const bBase = unwrapMongoose(b);
+  private composeUnify(sources: Mishna[]): any {
+    if (sources.length < 2) {
+      // Defensive — semantic validation in `validateUnify` should already prevent this.
+      throw new Error('composeUnify expects at least 2 sources');
+    }
+    const firstBase = unwrapMongoose(sources[0]);
+    const lastBase = unwrapMongoose(sources[sources.length - 1]);
 
     let nextSublineIndex = 1;
     const renumberLine = (line: Line, sourceMishna: string) => {
@@ -439,48 +445,51 @@ export class HalachaOverrideService {
       };
     };
 
-    const mergedLines = [
-      ...aLines.map((l) => renumberLine(l, a.mishna)),
-      ...bLines.map((l) => renumberLine(l, b.mishna)),
-    ];
+    const mergedLines: any[] = [];
+    const mergedExcerpts: any[] = [];
+    let lineOffset = 0;
+    let mergedRichText = null as any;
 
-    const aLineCount = aLines.length;
-    const mergedExcerpts = [
-      ...((a.excerpts ?? []).map((e) => ({
-        ...unwrapMongoose(e),
-        _sourceMishna: a.mishna,
-      }))),
-      ...((b.excerpts ?? []).map((e) => {
+    for (const src of sources) {
+      const srcLines = src.lines ?? [];
+      for (const line of srcLines) {
+        mergedLines.push(renumberLine(line, src.mishna));
+      }
+      for (const e of src.excerpts ?? []) {
         const baseE = unwrapMongoose(e);
-        return {
+        mergedExcerpts.push({
           ...baseE,
           selection: baseE.selection
             ? {
                 ...baseE.selection,
-                fromLine: (baseE.selection.fromLine ?? 0) + aLineCount,
-                toLine: (baseE.selection.toLine ?? 0) + aLineCount,
+                fromLine: (baseE.selection.fromLine ?? 0) + lineOffset,
+                toLine: (baseE.selection.toLine ?? 0) + lineOffset,
               }
             : baseE.selection,
-          _sourceMishna: b.mishna,
-        };
-      })),
-    ];
+          _sourceMishna: src.mishna,
+        });
+      }
+      mergedRichText = mergedRichText
+        ? concatRichText(mergedRichText, src.richTextMishna)
+        : src.richTextMishna;
+      lineOffset += srcLines.length;
+    }
 
     return {
-      ...aBase,
+      ...firstBase,
       // URL identity stays the first source; the FE renders the unified display name.
-      mishna: a.mishna,
+      mishna: sources[0].mishna,
       lines: mergedLines,
       excerpts: mergedExcerpts,
-      richTextMishna: concatRichText(a.richTextMishna, b.richTextMishna),
-      // Navigation arrows must skip the pair entirely (spec: from \u05d5-\u05d6 go to \u05d7).
-      // `previous` from `a` is already what comes before the pair; `next` from `a` would
-      // wrongly point at `b` itself, so we take `b.next` instead.
-      previous: aBase.previous,
-      next: bBase.next,
+      richTextMishna: mergedRichText ?? { blocks: [], entityMap: {} },
+      // Navigation arrows must skip the group entirely.
+      // `previous` from the first source is what came before the group; `next` from the
+      // first source would wrongly point inside the group, so we take the LAST source's `next`.
+      previous: firstBase.previous,
+      next: lastBase.next,
       _unified: {
-        sources: [a.mishna, b.mishna] as [string, string],
-        canonicalId: a.mishna,
+        sources: sources.map((s) => s.mishna),
+        canonicalId: sources[0].mishna,
       },
     };
   }
@@ -523,22 +532,24 @@ export class HalachaOverrideService {
     mishnaiot: any[],
     operations: HalachaOperation[],
   ): OverlaidMishnaRef[] {
-    // Map: second-source-id -> first-source-id, and: first-source-id -> second-source-id.
-    const secondSources = new Set<string>();
-    const partnerOf = new Map<string, string>();
+    // Map: first-source-id -> all-sources, and: set of non-first sources to drop.
+    const nonFirstSources = new Set<string>();
+    const groupByFirst = new Map<string, string[]>();
     for (const op of operations) {
       if (op.kind === 'unify') {
-        partnerOf.set(op.sources[0], op.sources[1]);
-        secondSources.add(op.sources[1]);
+        groupByFirst.set(op.sources[0], op.sources);
+        for (let i = 1; i < op.sources.length; i++) {
+          nonFirstSources.add(op.sources[i]);
+        }
       }
     }
 
     const out: OverlaidMishnaRef[] = [];
     for (const ref of mishnaiot) {
       const base = unwrapMongoose(ref);
-      if (secondSources.has(base.mishna)) continue; // folded into the prior entry
-      const partner = partnerOf.get(base.mishna);
-      out.push(partner ? { ...base, unifiedWith: partner } : base);
+      if (nonFirstSources.has(base.mishna)) continue; // folded into the first-source entry
+      const group = groupByFirst.get(base.mishna);
+      out.push(group ? { ...base, unifiedWithAll: group } : base);
     }
     return out;
   }
@@ -557,10 +568,11 @@ export class HalachaOverrideService {
       chapter,
     );
     if (!override) return rawCount;
-    const unifyCount = (override.operations ?? []).filter(
-      (op) => op.kind === 'unify',
-    ).length;
-    return rawCount - unifyCount;
+    // Each unify of N sources collapses N halachas into 1, i.e. shrinks the count by N-1.
+    const shrinkage = (override.operations ?? []).reduce((sum, op) => {
+      return op.kind === 'unify' ? sum + (op.sources.length - 1) : sum;
+    }, 0);
+    return rawCount - shrinkage;
   }
 
   // ============================================================
@@ -588,8 +600,7 @@ export class HalachaOverrideService {
     operations.forEach((op, opIdx) => {
       if (op.kind === 'unify') {
         this.validateUnify(op, sourceIds, sourceSet, opIdx);
-        claim(op.sources[0], opIdx);
-        claim(op.sources[1], opIdx);
+        op.sources.forEach((s) => claim(s, opIdx));
       } else if (op.kind === 'split') {
         this.validateSplit(op, sourceSet, mishnas, opIdx);
         claim(op.source, opIdx);
@@ -608,23 +619,32 @@ export class HalachaOverrideService {
     sourceSet: Set<string>,
     opIdx: number,
   ): void {
-    const [a, b] = op.sources;
-    if (a === b) {
+    if (op.sources.length < 2 || op.sources.length > 3) {
       throw new BadRequestException(
-        `Unify operation ${opIdx}: sources must be two DISTINCT halachas`,
+        `Unify operation ${opIdx}: must have 2 or 3 sources (got ${op.sources.length})`,
       );
     }
-    if (!sourceSet.has(a) || !sourceSet.has(b)) {
+    if (new Set(op.sources).size !== op.sources.length) {
       throw new BadRequestException(
-        `Unify operation ${opIdx}: source halacha not found in chapter (${a} or ${b})`,
+        `Unify operation ${opIdx}: sources must be DISTINCT halachas`,
       );
     }
-    const ia = sourceIds.indexOf(a);
-    const ib = sourceIds.indexOf(b);
-    if (ib !== ia + 1) {
-      throw new BadRequestException(
-        `Unify operation ${opIdx}: sources must be ADJACENT in chapter order (got ${a},${b})`,
-      );
+    for (const s of op.sources) {
+      if (!sourceSet.has(s)) {
+        throw new BadRequestException(
+          `Unify operation ${opIdx}: source halacha not found in chapter (${s})`,
+        );
+      }
+    }
+    // Each consecutive pair must be adjacent in the chapter's halacha order.
+    for (let i = 1; i < op.sources.length; i++) {
+      const prevIdx = sourceIds.indexOf(op.sources[i - 1]);
+      const currIdx = sourceIds.indexOf(op.sources[i]);
+      if (currIdx !== prevIdx + 1) {
+        throw new BadRequestException(
+          `Unify operation ${opIdx}: sources must be ADJACENT in chapter order (got ${op.sources.join(',')})`,
+        );
+      }
     }
   }
 

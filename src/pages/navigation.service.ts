@@ -57,34 +57,34 @@ export class NavigationService {
 
     const unify = operations.find(
       (op): op is Extract<typeof operations[number], { kind: 'unify' }> =>
-        op.kind === 'unify' &&
-        (op.sources[0] === mishna || op.sources[1] === mishna),
+        op.kind === 'unify' && op.sources.includes(mishna),
     );
 
     if (unify) {
-      const [firstId, secondId] = unify.sources;
-      const [first, second] = await Promise.all([
-        this.mishnaRepository.find(tractate, chapter, firstId),
-        this.mishnaRepository.find(tractate, chapter, secondId),
-      ]);
-      if (!first || !second) {
+      const sourceDocs = await Promise.all(
+        unify.sources.map((id) =>
+          this.mishnaRepository.find(tractate, chapter, id),
+        ),
+      );
+      if (sourceDocs.some((d) => !d)) {
         throw new HttpException('Could not find mishna', 404);
       }
-      const lines = [...first.lines, ...second.lines].map((l) => ({
-        lineNumber: l.lineNumber,
-        mainLine: l.mainLine,
-      }));
-      // Apply the same `rewriteMarker` so any neighbor in another unify pair is canonicalized.
+      const first = sourceDocs[0]!;
+      const last = sourceDocs[sourceDocs.length - 1]!;
+      const lines = sourceDocs
+        .flatMap((d) => d!.lines ?? [])
+        .map((l) => ({ lineNumber: l.lineNumber, mainLine: l.mainLine }));
+      // Apply `rewriteMarker` so any neighbor in another unify group is canonicalized.
       const previous = this.halachaOverrideService.rewriteMarker(
         first.previous,
         operations,
       );
       const next = this.halachaOverrideService.rewriteMarker(
-        second.next,
+        last.next,
         operations,
       );
       return {
-        // Echo the requested id; even if the user hit the second source, the corresponding
+        // Echo the requested id; even if the user hit a non-first source, the corresponding
         // `_redirectTo` from `pages.service` keeps the URL canonical.
         mishna,
         id: first.guid,
