@@ -250,6 +250,129 @@ export class HalachaOverrideService {
   }
 
   /**
+   * Post-process raw search results so the FE can build correct deep-links into split /
+   * unified halachas:
+   *   - Split: stamps `part: N` (1-based) on the result, computed from the result's
+   *     `lineNumber` against the source halacha's sugia boundaries. Intro lines (before
+   *     the first named sugia) belong to part 1, matching `composeSplit`'s rule.
+   *   - Unify: if the result's guid points at a NON-FIRST source of a unify group, the
+   *     guid is rewritten to the canonical first source so the search link bypasses the
+   *     redirect round-trip on click.
+   *
+   * Performs at most one override fetch + one source-mishna fetch per unique affected
+   * (chapter, mishna), so it scales linearly with the result set, not quadratically.
+   */
+  async decorateSearchResults<
+    T extends { guid: string; lineNumber: string },
+  >(tractate: string, results: T[]): Promise<(T & { part?: number })[]> {
+    if (results.length === 0) return results as (T & { part?: number })[];
+
+    const allOverrides =
+      (await this.halachaOverrideRepository.findAllForTractate?.(tractate)) ??
+      [];
+    if (allOverrides.length === 0)
+      return results as (T & { part?: number })[];
+
+    // Look up overrides by chapter for O(1) per-result access.
+    const overrideByChapter = new Map(
+      allOverrides.map((o) => [o.chapter, o] as const),
+    );
+
+    // Per-source-mishna sugia cache. Only loaded for halachas that actually have a split
+    // override AND show up in this result batch.
+    const sugiaCache = new Map<string, SugiaInfo[]>();
+    const loadSugias = async (
+      chapter: string,
+      mishnaId: string,
+    ): Promise<SugiaInfo[]> => {
+      const cacheKey = `${chapter}|${mishnaId}`;
+      const cached = sugiaCache.get(cacheKey);
+      if (cached) return cached;
+      const m = await this.mishnaRepository.find(tractate, chapter, mishnaId);
+      const sugias = m ? this.extractSugias(m.lines ?? []) : [];
+      // Also cache the source's line-number → array-index map for the same key, to
+      // avoid re-scanning `lines` per result.
+      sugiaCache.set(cacheKey, sugias);
+      if (m) {
+        lineIndexCache.set(
+          cacheKey,
+          new Map(m.lines.map((l, i) => [l.lineNumber ?? '', i] as const)),
+        );
+      }
+      return sugias;
+    };
+    const lineIndexCache = new Map<string, Map<string, number>>();
+
+    const decorated: (T & { part?: number })[] = [];
+    for (const r of results) {
+      // GUID format is `<tractate>_<chapter>_<mishna>` — tractate may contain underscores
+      // (e.g. "avoda_zara"), but chapter/mishna are always the last two 3-digit segments.
+      const parts = r.guid.split('_');
+      if (parts.length < 3) {
+        decorated.push(r);
+        continue;
+      }
+      const chapter = parts[parts.length - 2];
+      const mishnaId = parts[parts.length - 1];
+
+      const override = overrideByChapter.get(chapter);
+      if (!override) {
+        decorated.push(r);
+        continue;
+      }
+      const operations = override.operations ?? [];
+
+      // Unify canonical rewrite (if the result lives in a non-first source).
+      const unify = operations.find(
+        (op): op is Extract<HalachaOperation, { kind: 'unify' }> =>
+          op.kind === 'unify' && op.sources.indexOf(mishnaId) > 0,
+      );
+      if (unify) {
+        const canonical = unify.sources[0];
+        // Tractate prefix may contain underscores (e.g. "avoda_zara"), so reconstruct it
+        // by joining everything BEFORE the trailing chapter+mishna pair.
+        const tractatePrefix = parts.slice(0, -2).join('_');
+        decorated.push({
+          ...r,
+          guid: `${tractatePrefix}_${chapter}_${canonical}`,
+        });
+        continue;
+      }
+
+      // Split → compute the part by line index.
+      const split = operations.find(
+        (op): op is Extract<HalachaOperation, { kind: 'split' }> =>
+          op.kind === 'split' && op.source === mishnaId,
+      );
+      if (split) {
+        const sugias = await loadSugias(chapter, mishnaId);
+        const lineIndexMap = lineIndexCache.get(`${chapter}|${mishnaId}`);
+        const lineIdx = lineIndexMap?.get(r.lineNumber);
+        if (sugias.length === 0 || lineIdx === undefined) {
+          // Defensive: shouldn't happen, but bail to part 1 silently.
+          decorated.push(r);
+          continue;
+        }
+        // sugiaBoundaries are indices in the sugia list at which each new part begins.
+        // Map them to absolute line indices once.
+        const boundaryLineIdxs = split.sugiaBoundaries.map(
+          (b) => sugias[b]?.firstLineIndex ?? Infinity,
+        );
+        let part = 1;
+        for (const bIdx of boundaryLineIdxs) {
+          if (lineIdx >= bIdx) part++;
+          else break;
+        }
+        decorated.push({ ...r, part });
+        continue;
+      }
+
+      decorated.push(r);
+    }
+    return decorated;
+  }
+
+  /**
    * Public passthrough hook: when a Mishna is NOT itself part of an override (i.e. the
    * raw doc is being returned to the user), we still need to rewrite its `previous`/`next`
    * markers if they happen to point at the SECOND source of a unify pair. Otherwise the

@@ -245,7 +245,14 @@ export class PagesService {
 
   async searchText(query: string): Promise<any> {
     const queryObj = base64ToJson(query);
-    return this.mishnaRepository.searchText(queryObj);
+    const raw = await this.mishnaRepository.searchText(queryObj);
+    // Override-aware decoration: stamps `part` on results inside a split halacha and
+    // rewrites guids to canonical sources for unified halachas, so search-result clicks
+    // land directly on the correct URL.
+    return this.halachaOverrideService.decorateSearchResults(
+      queryObj.tractate,
+      raw,
+    );
   }
 
   async saveMishna(
