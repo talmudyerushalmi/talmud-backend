@@ -1,27 +1,72 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { MishnaRepository } from './mishna.repository';
 import { UpdateSublineTagsDto } from './dto/update-subline-tags.dto';
+import { HalachaOverrideService } from './halacha-override.service';
 
 @Injectable()
 export class TaggingService {
   constructor(
     private mishnaRepository: MishnaRepository,
+    private halachaOverrideService: HalachaOverrideService,
   ) {}
 
-  async getSublines(tractate: string, chapter: string, mishna: string) {
+  /**
+   * Returns the flat list of sublines that drive the tagged sidebar / connection lines.
+   *
+   * Two callers, two index spaces:
+   *  - Admin tagging page (`/admin/tagging/...`) wants RAW source-document sublines with
+   *    their ORIGINAL indices — that's the layer editors persist tags into. It calls
+   *    without `compose`.
+   *  - The view side (`MishnaPage` in tagged mode) needs sublines whose indices line up
+   *    with the displayed mishna (which is itself override-aware). It passes `compose=true`
+   *    and, for splits, the current `part`. We then route through the same compose
+   *    pipeline `pages.service.getMishna` uses so the FE's join-by-index becomes correct.
+   *
+   * When `compose` is set but the mishna has no override, we transparently fall back to
+   * raw — keeps the contract simple for the view-side caller.
+   */
+  async getSublines(
+    tractate: string,
+    chapter: string,
+    mishna: string,
+    opts: { compose?: boolean; part?: number } = {},
+  ) {
+    if (opts.compose) {
+      const resolved = await this.halachaOverrideService.resolveMishna(
+        tractate,
+        chapter,
+        mishna,
+        { part: opts.part },
+      );
+      if (resolved) {
+        return this.flattenSublines(resolved.mishna);
+      }
+      // No override → fall through to raw, matching the admin behavior.
+    }
+
     const mishnaDoc = await this.mishnaRepository.find(tractate, chapter, mishna);
     if (!mishnaDoc) {
       throw new HttpException('Mishna not found', HttpStatus.NOT_FOUND);
     }
-    return mishnaDoc.lines.flatMap(line =>
-      (line.sublines || []).map(subline => ({
+    return this.flattenSublines(mishnaDoc);
+  }
+
+  /**
+   * Flattens a (possibly composed) Mishna into the `TaggingSubline[]` shape the FE
+   * consumes. The composed payload's `subline.index` is already renumbered to match
+   * the displayed view, so the FE's `taggingData.find(t => t.index === subline.index)`
+   * join lines up.
+   */
+  private flattenSublines(mishna: any) {
+    return (mishna.lines ?? []).flatMap((line: any) =>
+      (line.sublines || []).map((subline: any) => ({
         index: subline.index,
         text: subline.text,
         lineNumber: line.lineNumber,
         categories: subline.categories || [],
         rabbiMentions: subline.rabbiMentions || [],
         comments: subline.comments || [],
-      }))
+      })),
     );
   }
 

@@ -437,6 +437,60 @@ export class HalachaOverrideService {
    *   - filters `excerpts` to lines in range and remaps line indices
    *   - emits a `_split` marker the FE uses to render the in-page tab strip
    */
+  /**
+   * Rewrites `categories[].connections[].sublineIndex` on the given composed sublines
+   * to use the renumbered (local) indices. Each subline carries `_sourceMishna` and
+   * `_originalIndex` markers (stamped by composeSplit/composeUnify), which we use to
+   * build a per-source `originalIndex -> newIndex` lookup. Without this rewrite, the
+   * tagged sidebar shows stale numbers ("שורה 5" when no subline 5 is in view) and
+   * `CategoryConnectionLines` fails to find DOM refs by index.
+   *
+   * Connections of type `subline` whose original target is missing from the composed
+   * slice (e.g. a tag on part 1 of a split that links into part 2) are dropped — the
+   * intended workflow is split-first / tag-after, so cross-part connections are stale
+   * mistakes rather than meaningful links. The persisted data is untouched on the
+   * source mishna, so reverting the split brings them back.
+   *
+   * `external` connections (numeric-free text refs), `rabbiMentions` (char offsets,
+   * not subline refs) and `comments` are left as-is.
+   *
+   * Mutates each subline's `categories` array in place.
+   */
+  private rewriteCategoryConnections(sublines: any[]): void {
+    const mapBySource = new Map<string, Map<number, number>>();
+    for (const s of sublines) {
+      const sourceKey = s._sourceMishna ?? '';
+      if (!mapBySource.has(sourceKey)) {
+        mapBySource.set(sourceKey, new Map());
+      }
+      if (s._originalIndex != null) {
+        mapBySource.get(sourceKey)!.set(s._originalIndex, s.index);
+      }
+    }
+
+    for (const s of sublines) {
+      if (!s.categories?.length) continue;
+      const map = mapBySource.get(s._sourceMishna ?? '');
+      if (!map) continue;
+      s.categories = s.categories.map((cat: any) => {
+        const baseCat = unwrapMongoose(cat);
+        const rewritten = (baseCat.connections ?? [])
+          .map((c: any) => {
+            const baseC = unwrapMongoose(c);
+            if (baseC.type !== 'subline') return baseC;
+            const newIdx =
+              baseC.sublineIndex != null
+                ? map.get(baseC.sublineIndex)
+                : undefined;
+            if (newIdx == null) return null; // cross-slice or unknown — drop
+            return { ...baseC, sublineIndex: newIdx };
+          })
+          .filter((c: any) => c !== null);
+        return { ...baseCat, connections: rewritten };
+      });
+    }
+  }
+
   private composeSplit(
     source: Mishna,
     op: Extract<HalachaOperation, { kind: 'split' }>,
@@ -483,6 +537,13 @@ export class HalachaOverrideService {
           _sourceMishna: source.mishna,
         };
       });
+
+    // Rewrite category-connection subline refs to match the renumbered indices.
+    // Cross-part connections (e.g. a tag in this part pointing into another part)
+    // are dropped here; see `rewriteCategoryConnections` for rationale.
+    this.rewriteCategoryConnections(
+      partLines.flatMap((l) => l.sublines ?? []),
+    );
 
     // Excerpts: keep only those whose selection lies fully inside the part's line range,
     // and remap their line indices to the part-local 0-based space.
@@ -597,6 +658,13 @@ export class HalachaOverrideService {
         : src.richTextMishna;
       lineOffset += srcLines.length;
     }
+
+    // Rewrite category-connection subline refs to match the renumbered (global-across-
+    // sources) indices. Unify keeps every source subline in view, so no connections
+    // should be dropped here; the helper is still defensive about unknown targets.
+    this.rewriteCategoryConnections(
+      mergedLines.flatMap((l) => l.sublines ?? []),
+    );
 
     return {
       ...firstBase,
