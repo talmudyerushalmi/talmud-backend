@@ -274,9 +274,16 @@ export class PagesService {
     return this.halachaOverrideService.overlayTractateNavList(doc as any);
   }
 
-  async getAllTractates(): Promise<any> {
+  /**
+   * `opts.raw=true` returns the un-overlaid tractate list — used by the admin nav bar
+   * so editors can navigate to each underlying source halacha independently
+   * (e.g. ב and ג separately when ב-ג is unified). View-side callers omit `raw` and
+   * keep today's override-aware merged navigation.
+   */
+  async getAllTractates(opts: { raw?: boolean } = {}): Promise<any> {
     const tractates = await this.tractateRepository.getAll();
     if (!Array.isArray(tractates)) return tractates;
+    if (opts.raw) return tractates;
     return Promise.all(
       tractates.map((t) =>
         this.halachaOverrideService.overlayTractateNavList(t as any),
