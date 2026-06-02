@@ -88,12 +88,30 @@ export class PagesService {
     }
   }
 
+  /**
+   * `opts.raw=true` bypasses ALL halacha-override processing — used by the admin edit
+   * data path so editors always operate on the underlying source document (e.g. editing
+   * ב from a unified ב-ג only sees ב's lines; editing a split ד sees the full source
+   * doc, not a single part). View callers omit `raw` and keep today's override-aware
+   * behavior (compose for unify/split, rewrite neighbor markers for passthrough).
+   */
   async getMishna(
     tractate: string,
     chapter: string,
     mishna: string,
-    opts: { part?: number } = {},
+    opts: { part?: number; raw?: boolean } = {},
   ): Promise<Mishna | any> {
+    if (opts.raw) {
+      const find = await this.mishnaRepository.find(tractate, chapter, mishna);
+      if (!find) {
+        throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+      }
+      // Skip nav overlay entirely; the raw doc's previous/next reflect the source
+      // chain, which is what admin nav (also raw) expects.
+      await this.addParallelSynopsisToMishna(find);
+      return find;
+    }
+
     // If a halacha-override exists for this chapter and involves this halacha,
     // the override service returns a composed payload (`unified` or `split`).
     const resolved = await this.halachaOverrideService.resolveMishna(
