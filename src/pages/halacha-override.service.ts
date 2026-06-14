@@ -456,7 +456,17 @@ export class HalachaOverrideService {
    *
    * Mutates each subline's `categories` array in place.
    */
-  private rewriteCategoryConnections(sublines: any[]): void {
+  /**
+   * Builds a `sourceMishna -> (originalSublineIndex -> newLocalIndex)` lookup from
+   * composed sublines. Each subline carries `_sourceMishna` and `_originalIndex`
+   * markers stamped by composeSplit / composeUnify.
+   *
+   * Shared by every helper that needs to remap persisted subline references
+   * (category connections, excerpt selections, ...) onto the renumbered space.
+   */
+  private buildSublineIndexMap(
+    sublines: any[],
+  ): Map<string, Map<number, number>> {
     const mapBySource = new Map<string, Map<number, number>>();
     for (const s of sublines) {
       const sourceKey = s._sourceMishna ?? '';
@@ -467,6 +477,11 @@ export class HalachaOverrideService {
         mapBySource.get(sourceKey)!.set(s._originalIndex, s.index);
       }
     }
+    return mapBySource;
+  }
+
+  private rewriteCategoryConnections(sublines: any[]): void {
+    const mapBySource = this.buildSublineIndexMap(sublines);
 
     for (const s of sublines) {
       if (!s.categories?.length) continue;
@@ -489,6 +504,48 @@ export class HalachaOverrideService {
         return { ...baseCat, connections: rewritten };
       });
     }
+  }
+
+  /**
+   * Rewrites `selection.fromSubline` / `selection.toSubline` on composed excerpts
+   * so the side panel ("add-ons" — talmudic parallels, citations, ...) highlights
+   * the right lines after split / unify.
+   *
+   * Excerpt `fromLine` / `toLine` (array indices) are already shifted into the
+   * composed line space at the point this is called. The subline refs are stored
+   * as document-global `subline.index` values from the source mishna (see
+   * `excerptUtils.ts`), so once compose renumbers sublines they're stale — exactly
+   * the same bug class as `rewriteCategoryConnections`.
+   *
+   * The excerpt's `_sourceMishna` marker (stamped by both compose paths) tells us
+   * which source map to apply. If a subline ref isn't in the map (defensive — for
+   * a split the line-range filter should already have dropped the excerpt) the
+   * field is left untouched rather than crashing the page.
+   *
+   * Returns a new array; never mutates the input excerpts.
+   */
+  private rewriteExcerptSelections(
+    excerpts: any[],
+    sublines: any[],
+  ): any[] {
+    const mapBySource = this.buildSublineIndexMap(sublines);
+    return excerpts.map((e) => {
+      const map = mapBySource.get(e._sourceMishna ?? '');
+      if (!map || !e.selection) return e;
+      const sel = e.selection;
+      const fromSubline =
+        sel.fromSubline != null ? map.get(sel.fromSubline) : undefined;
+      const toSubline =
+        sel.toSubline != null ? map.get(sel.toSubline) : undefined;
+      return {
+        ...e,
+        selection: {
+          ...sel,
+          ...(fromSubline != null ? { fromSubline } : {}),
+          ...(toSubline != null ? { toSubline } : {}),
+        },
+      };
+    });
   }
 
   private composeSplit(
@@ -547,7 +604,7 @@ export class HalachaOverrideService {
 
     // Excerpts: keep only those whose selection lies fully inside the part's line range,
     // and remap their line indices to the part-local 0-based space.
-    const partExcerpts = (source.excerpts ?? [])
+    const partExcerptsRaw = (source.excerpts ?? [])
       .map((e) => {
         const baseE = unwrapMongoose(e);
         if (!baseE.selection) return null;
@@ -571,6 +628,14 @@ export class HalachaOverrideService {
         };
       })
       .filter((e): e is NonNullable<typeof e> => e !== null);
+
+    // Excerpt subline refs (`selection.fromSubline` / `selection.toSubline`) are
+    // document-global indices from the source mishna; rewrite them to match the
+    // renumbered part-local sublines so the side panel highlights the right rows.
+    const partExcerpts = this.rewriteExcerptSelections(
+      partExcerptsRaw,
+      partLines.flatMap((l) => l.sublines ?? []),
+    );
 
     // Rich text: slice the Mishna at the configured cut points and pick this part's slice.
     // The slicer returns N+1 slices for N cuts — exactly aligned with our part count.
@@ -662,16 +727,20 @@ export class HalachaOverrideService {
     // Rewrite category-connection subline refs to match the renumbered (global-across-
     // sources) indices. Unify keeps every source subline in view, so no connections
     // should be dropped here; the helper is still defensive about unknown targets.
-    this.rewriteCategoryConnections(
-      mergedLines.flatMap((l) => l.sublines ?? []),
-    );
+    const allSublines = mergedLines.flatMap((l) => l.sublines ?? []);
+    this.rewriteCategoryConnections(allSublines);
+
+    // Same remap, applied to excerpt subline refs so the side panel highlights the
+    // right rows in the unified view. Excerpt line indices were already shifted by
+    // `lineOffset` during the merge above.
+    const finalExcerpts = this.rewriteExcerptSelections(mergedExcerpts, allSublines);
 
     return {
       ...firstBase,
       // URL identity stays the first source; the FE renders the unified display name.
       mishna: sources[0].mishna,
       lines: mergedLines,
-      excerpts: mergedExcerpts,
+      excerpts: finalExcerpts,
       richTextMishna: mergedRichText ?? { blocks: [], entityMap: {} },
       // Navigation arrows must skip the group entirely.
       // `previous` from the first source is what came before the group; `next` from the
