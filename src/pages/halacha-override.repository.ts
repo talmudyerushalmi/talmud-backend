@@ -28,7 +28,8 @@ export class HalachaOverrideRepository {
   /**
    * Upsert by (tractate, chapter). `operations` is the FULL desired list — empty array is allowed
    * and means "chapter has no overrides" (we keep the doc for `updatedBy`/`updatedAt` audit;
-   * use `deleteByChapter` to fully revert).
+   * use `deleteByChapter` to fully revert). `updatedAt` / `createdAt` are auto-managed by
+   * Mongoose via `timestamps: true` on the schema.
    */
   async upsert(
     tractate: string,
@@ -45,7 +46,6 @@ export class HalachaOverrideRepository {
             chapter,
             operations,
             updatedBy,
-            updatedAt: new Date(),
           },
         },
         { upsert: true, new: true, setDefaultsOnInsert: true },

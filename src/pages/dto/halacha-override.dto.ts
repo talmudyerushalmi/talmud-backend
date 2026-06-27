@@ -5,6 +5,7 @@ import {
   IsArray,
   IsIn,
   IsInt,
+  IsNotEmpty,
   IsString,
   Min,
   ValidateNested,
@@ -18,6 +19,7 @@ import { Type } from 'class-transformer';
  */
 export class MishnaCutDto {
   @IsString()
+  @IsNotEmpty()
   blockKey: string;
 
   @IsInt()
@@ -38,6 +40,7 @@ export class UnifyOperationDto {
   @ArrayMinSize(2)
   @ArrayMaxSize(3)
   @IsString({ each: true })
+  @IsNotEmpty({ each: true })
   sources: string[];
 }
 
@@ -56,6 +59,7 @@ export class SplitOperationDto {
   kind: 'split';
 
   @IsString()
+  @IsNotEmpty()
   source: string;
 
   @IsArray()

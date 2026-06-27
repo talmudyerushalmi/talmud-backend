@@ -52,12 +52,12 @@ export type HalachaOperation =
  * are awkward; structural validation lives in the DTO layer and semantic validation
  * (adjacency, coverage, boundaries within range) lives in the service.
  */
-@Schema({ collection: 'halacha_overrides', minimize: false })
+@Schema({ collection: 'halacha_overrides', minimize: false, timestamps: true })
 export class HalachaOverride extends Document {
-  @Prop({ required: true, index: true })
+  @Prop({ index: true })
   tractate: string;
 
-  @Prop({ required: true, index: true })
+  @Prop({ index: true })
   chapter: string;
 
   @Prop({ type: [SchemaTypes.Mixed], default: [] })
@@ -65,9 +65,6 @@ export class HalachaOverride extends Document {
 
   @Prop()
   updatedBy?: string;
-
-  @Prop({ default: Date.now })
-  updatedAt?: Date;
 }
 
 export const HalachaOverrideSchema = SchemaFactory.createForClass(HalachaOverride);
