@@ -9,8 +9,8 @@ import { MishnaRepository } from './mishna.repository';
 import { iTractate } from './pages.service';
 import { InternalParallelLink } from './models/line.model';
 import MiscUtils from '../shared/MiscUtils';
-import { HalachaOverrideService } from './halacha-override.service';
 import { HalachaOverrideRepository } from './halacha-override.repository';
+import { rewriteMarker } from './inc/composeRewriters';
 
 export enum LinkFormat {
   TractateChapterMishna = 'TractateChapterMishna',
@@ -20,7 +20,6 @@ export class NavigationService {
   constructor(
     private tractateRepository: TractateRepository,
     private mishnaRepository: MishnaRepository,
-    private halachaOverrideService: HalachaOverrideService,
     private halachaOverrideRepository: HalachaOverrideRepository,
     @InjectModel(Tractate.name) private tractateModel: Model<Tractate>,
     @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>,
@@ -75,14 +74,8 @@ export class NavigationService {
         .flatMap((d) => d!.lines ?? [])
         .map((l) => ({ lineNumber: l.lineNumber, mainLine: l.mainLine }));
       // Apply `rewriteMarker` so any neighbor in another unify group is canonicalized.
-      const previous = this.halachaOverrideService.rewriteMarker(
-        first.previous,
-        operations,
-      );
-      const next = this.halachaOverrideService.rewriteMarker(
-        last.next,
-        operations,
-      );
+      const previous = rewriteMarker(first.previous, operations);
+      const next = rewriteMarker(last.next, operations);
       return {
         // Echo the requested id; even if the user hit a non-first source, the corresponding
         // `_redirectTo` from `pages.service` keeps the URL canonical.
@@ -111,14 +104,8 @@ export class NavigationService {
       mishna: mishnaDoc.mishna,
       id: mishnaDoc.guid,
       lines,
-      previous: this.halachaOverrideService.rewriteMarker(
-        mishnaDoc.previous,
-        operations,
-      ),
-      next: this.halachaOverrideService.rewriteMarker(
-        mishnaDoc.next,
-        operations,
-      ),
+      previous: rewriteMarker(mishnaDoc.previous, operations),
+      next: rewriteMarker(mishnaDoc.next, operations),
       daf: mishnaDoc.daf,
       amud: mishnaDoc.amud,
     };
