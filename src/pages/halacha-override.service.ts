@@ -17,7 +17,7 @@ import {
 } from './dto/halacha-override.dto';
 import { Mishna } from './schemas/mishna.schema';
 import { Line, SubLine } from './models/line.model';
-import { concatRichText } from './inc/draftjs-merge';
+import { concatRichText } from './inc/draftjsMerge';
 import { sliceRichText } from './inc/draftjs-slice';
 
 /**

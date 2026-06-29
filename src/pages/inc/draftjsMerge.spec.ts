@@ -1,5 +1,5 @@
 import { RawDraftContentState } from 'draft-js';
-import { concatRichText } from './draftjs-merge';
+import { concatRichText } from './draftjsMerge';
 
 const block = (
   key: string,
