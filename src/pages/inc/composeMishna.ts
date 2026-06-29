@@ -23,10 +23,18 @@ export function composeSplit(
   op: Extract<HalachaOperation, { kind: 'split' }>,
   partIdx: number,
 ): any {
+  const totalParts = op.sugiaBoundaries.length + 1;
+  if (partIdx < 0 || partIdx >= totalParts) {
+    // Defensive — `resolveMishna` clamps the user-provided `?part=...` into the valid
+    // range before calling us. A future caller that bypasses that path would otherwise
+    // produce silently empty/garbled output instead of a clear failure.
+    throw new Error(
+      `composeSplit: partIdx ${partIdx} out of range [0, ${totalParts})`,
+    );
+  }
   const sourceLines = source.lines ?? [];
   const sourceBase = unwrapMongoose(source);
   const sugias = extractSugias(sourceLines);
-  const totalParts = op.sugiaBoundaries.length + 1;
 
   // Resolve the source's line index range for this part using the sugia boundaries.
   // The first part owns sugias[0..b0), the second owns [b0..b1), and so on.
