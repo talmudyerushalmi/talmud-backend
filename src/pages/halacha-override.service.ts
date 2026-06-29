@@ -49,10 +49,6 @@ export class HalachaOverrideService {
     private readonly mishnaRepository: MishnaRepository,
   ) {}
 
-  // ============================================================
-  // Read API
-  // ============================================================
-
   /**
    * Returns the override doc (without composition). Composition will be layered
    * by the read path in Phase 2/3. Returns `null` if no overrides exist.
@@ -79,10 +75,6 @@ export class HalachaOverrideService {
       richTextMishna: m.richTextMishna ?? null,
     }));
   }
-
-  // ============================================================
-  // Write API
-  // ============================================================
 
   /**
    * Validates and upserts the layout. The DTO has already passed structural validation
@@ -119,10 +111,6 @@ export class HalachaOverrideService {
     return this.halachaOverrideRepository.deleteByChapter(tractate, chapter);
   }
 
-  // ============================================================
-  // Composition (read path)
-  // ============================================================
-
   /**
    * Apply overrides to a single-halacha request. Returns a transformed payload when
    * the halacha is involved in a `unify` operation; returns `null` when the caller
@@ -134,6 +122,10 @@ export class HalachaOverrideService {
    *     lines / excerpts, and a `_unified` marker.
    *   - Second source ('007'): same composed view, plus `_redirectTo='006'` so the FE
    *     replaces its URL to the canonical id.
+   *
+   * For split: `opts.part` (1-based) selects which mini-halacha to render. Missing values
+   * default to part 1; out-of-range values are clamped into `[1, totalParts]` (so e.g.
+   * `?part=99` on a 3-part split lands on part 3 rather than failing).
    */
   async resolveMishna(
     tractate: string,
@@ -175,7 +167,8 @@ export class HalachaOverrideService {
     }
 
     // Split: the source halacha is presented as 2-3 mini-halachas. `opts.part` (1-based)
-    // selects which mini-halacha to render; invalid/missing values default to part 1.
+    // selects which mini-halacha to render; missing values default to part 1, out-of-range
+    // values are clamped into `[1, totalParts]`.
     const split = operations.find(
       (op): op is Extract<HalachaOperation, { kind: 'split' }> =>
         op.kind === 'split' && op.source === mishnaId,
@@ -230,8 +223,10 @@ export class HalachaOverrideService {
     );
 
     // Per-source-mishna sugia cache. Only loaded for halachas that actually have a split
-    // override AND show up in this result batch.
+    // override AND show up in this result batch. The line-index cache is keyed identically
+    // and populated alongside, to avoid re-scanning `lines` per result.
     const sugiaCache = new Map<string, SugiaInfo[]>();
+    const lineIndexCache = new Map<string, Map<string, number>>();
     const loadSugias = async (
       chapter: string,
       mishnaId: string,
@@ -241,8 +236,6 @@ export class HalachaOverrideService {
       if (cached) return cached;
       const m = await this.mishnaRepository.find(tractate, chapter, mishnaId);
       const sugias = m ? extractSugias(m.lines ?? []) : [];
-      // Also cache the source's line-number → array-index map for the same key, to
-      // avoid re-scanning `lines` per result.
       sugiaCache.set(cacheKey, sugias);
       if (m) {
         lineIndexCache.set(
@@ -252,7 +245,6 @@ export class HalachaOverrideService {
       }
       return sugias;
     };
-    const lineIndexCache = new Map<string, Map<string, number>>();
 
     const decorated: (T & { part?: number })[] = [];
     for (const r of results) {
@@ -357,9 +349,8 @@ export class HalachaOverrideService {
     tractate: T,
   ): Promise<T> {
     const allOverrides =
-      await this.halachaOverrideRepository.findAllForTractate?.(tractate.id);
-    // If the repo method isn't available (e.g. older code path), bail out gracefully.
-    if (!allOverrides || allOverrides.length === 0) return tractate;
+      await this.halachaOverrideRepository.findAllForTractate(tractate.id);
+    if (allOverrides.length === 0) return tractate;
 
     const overrideByChapter = new Map(
       allOverrides.map((o) => [o.chapter, o] as const),
