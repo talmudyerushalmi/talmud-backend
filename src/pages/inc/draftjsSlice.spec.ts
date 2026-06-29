@@ -1,23 +1,24 @@
 import { RawDraftContentState } from 'draft-js';
-import { sliceRichText } from './draftjs-slice';
+import { sliceRichText } from './draftjsSlice';
 
 type Block = RawDraftContentState['blocks'][number];
+type InlineRange = Block['inlineStyleRanges'][number];
+type EntityRange = Block['entityRanges'][number];
 
 const block = (
   key: string,
   text: string,
-  inline: { style: string; offset: number; length: number }[] = [],
-  entity: { key: number; offset: number; length: number }[] = [],
-): Block =>
-  ({
-    key,
-    type: 'unstyled',
-    text,
-    depth: 0,
-    inlineStyleRanges: inline,
-    entityRanges: entity,
-    data: {},
-  } as unknown as Block);
+  inline: InlineRange[] = [],
+  entity: EntityRange[] = [],
+): Block => ({
+  key,
+  type: 'unstyled',
+  text,
+  depth: 0,
+  inlineStyleRanges: inline,
+  entityRanges: entity,
+  data: {},
+});
 
 describe('sliceRichText', () => {
   it('returns a single slice when no cuts are provided', () => {

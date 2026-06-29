@@ -18,7 +18,7 @@ import {
 import { Mishna } from './schemas/mishna.schema';
 import { Line, SubLine } from './models/line.model';
 import { concatRichText } from './inc/draftjsMerge';
-import { sliceRichText } from './inc/draftjs-slice';
+import { sliceRichText } from './inc/draftjsSlice';
 
 /**
  * Result of resolving a halacha against a chapter's overrides.
