@@ -54,7 +54,7 @@ export class MishnaController {
       chapter,
       mishna,
       {
-        part: Number.isFinite(part!) ? part : undefined,
+        part: Number.isFinite(part) ? part : undefined,
         raw: raw === 'true',
       },
     );
