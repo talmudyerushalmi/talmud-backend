@@ -20,11 +20,10 @@ export class TaggingController {
     @Query('compose') compose?: string,
     @Query('part') part?: string,
   ) {
-    const parsedPart = part != null ? Number(part) : undefined;
+    const parsedPart = part != null ? parseInt(part, 10) : undefined;
     return this.taggingService.getSublines(tractate, chapter, mishna, {
       compose: compose === 'true',
-      part:
-        parsedPart != null && Number.isFinite(parsedPart) ? parsedPart : undefined,
+      part: Number.isFinite(parsedPart) ? parsedPart : undefined,
     });
   }
 
