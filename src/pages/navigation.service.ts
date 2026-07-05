@@ -10,6 +10,7 @@ import { iTractate } from './pages.service';
 import { InternalParallelLink } from './models/line.model';
 import MiscUtils from '../shared/MiscUtils';
 import { HalachaOverrideRepository } from './halacha-override.repository';
+import { HalachaOperation } from './schemas/halacha-override.schema';
 import { rewriteMarker } from './inc/composeRewriters';
 
 export enum LinkFormat {
@@ -34,14 +35,16 @@ export class NavigationService {
    * Returns the nav payload (lines / previous / next / daf / amud) used by the chapter +
    * mishna chooser and the prev/next arrows. This is a separate code path from `getMishna`,
    * so it has its own override application — without it, the arrows would still try to
-   * navigate to unified second-source URLs (which then `_redirectTo` back, creating loops).
+   * navigate to unified non-canonical source URLs (which then `_redirectTo` back, creating
+   * loops).
    *
-   *   - Unify: returns combined lines, `previous = first.previous`, `next = second.next`
-   *     so arrows skip the pair entirely.
-   *   - Passthrough: rewrites any `previous`/`next` marker that points at a unify's second
-   *     source to the canonical first source.
-   *   - Split: passthrough (the source mishna's full line list is returned; per-part line
-   *     navigation is handled by the in-page tab strip).
+   *   - Unify (2 or 3 sources): returns combined lines from all sources,
+   *     `previous = first.previous` and `next = last.next` so arrows skip the entire
+   *     unified group in one hop.
+   *   - Passthrough: rewrites any `previous`/`next` marker that points at a unify's
+   *     non-canonical source to the canonical (first) source.
+   *   - Split: passthrough (the source mishna's full line list is returned; per-part
+   *     line navigation is handled by the in-page tab strip).
    */
   async getMishnaForNavigation(
     tractate: string,
@@ -55,7 +58,7 @@ export class NavigationService {
     const operations = override?.operations ?? [];
 
     const unify = operations.find(
-      (op): op is Extract<typeof operations[number], { kind: 'unify' }> =>
+      (op): op is Extract<HalachaOperation, { kind: 'unify' }> =>
         op.kind === 'unify' && op.sources.includes(mishna),
     );
 
