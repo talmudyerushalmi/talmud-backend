@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { MishnaRepository } from './mishna.repository';
 import { UpdateSublineTagsDto } from './dto/update-subline-tags.dto';
 import { HalachaOverrideService } from './halacha-override.service';
+import { Line } from './models/line.model';
 
 @Injectable()
 export class TaggingService {
@@ -57,9 +58,9 @@ export class TaggingService {
    * the displayed view, so the FE's `taggingData.find(t => t.index === subline.index)`
    * join lines up.
    */
-  private flattenSublines(mishna: any) {
-    return (mishna.lines ?? []).flatMap((line: any) =>
-      (line.sublines || []).map((subline: any) => ({
+  private flattenSublines(mishna: { lines?: Line[] }) {
+    return (mishna.lines ?? []).flatMap((line) =>
+      (line.sublines ?? []).map((subline) => ({
         index: subline.index,
         text: subline.text,
         lineNumber: line.lineNumber,
