@@ -41,6 +41,8 @@ import {
 import { HalachaOverrideRepository } from './halacha-override.repository';
 import { HalachaOverrideService } from './halacha-override.service';
 import { HalachaOverrideController } from './halacha-override.controller';
+import { AiTaggingService } from './ai-tagging.service';
+import { AiTaggingController } from './ai-tagging.controller';
 
 @Module({
   imports: [
@@ -67,6 +69,7 @@ import { HalachaOverrideController } from './halacha-override.controller';
     UsersController,
     TaggingController,
     HalachaOverrideController,
+    AiTaggingController,
   ],
   providers: [
     PagesService,
@@ -85,6 +88,7 @@ import { HalachaOverrideController } from './halacha-override.controller';
     TaggingService,
     HalachaOverrideRepository,
     HalachaOverrideService,
+    AiTaggingService,
   ],
   exports: [
     PagesService,
