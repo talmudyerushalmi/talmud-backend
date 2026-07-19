@@ -227,8 +227,12 @@ function collectSugyaSublines(
 
 function hasAnyAnnotation(entry: SublineWithLine): boolean {
   const s = entry.subline;
+  // Pending AI suggestions aren't real annotations yet — don't count them.
+  const approvedCategories = (s.categories ?? []).filter(
+    (c) => c.status !== 'pending',
+  );
   return (
-    (s.categories && s.categories.length > 0) ||
+    approvedCategories.length > 0 ||
     (s.rabbiMentions && s.rabbiMentions.length > 0) ||
     (s.comments && s.comments.length > 0)
   );
@@ -236,7 +240,10 @@ function hasAnyAnnotation(entry: SublineWithLine): boolean {
 
 function enrichAnnotations(subline: SubLine): ExportAnnotations {
   return {
-    categories: (subline.categories ?? []).map(enrichCategory),
+    // Exclude pending AI suggestions from exports — only approved tags ship.
+    categories: (subline.categories ?? [])
+      .filter((c) => c.status !== 'pending')
+      .map(enrichCategory),
     rabbiMentions: subline.rabbiMentions ?? [],
     comments: subline.comments ?? [],
   };

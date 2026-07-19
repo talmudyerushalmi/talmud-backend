@@ -1,6 +1,10 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Put, Query } from '@nestjs/common';
 import { TaggingService } from './tagging.service';
 import { UpdateSublineTagsDto } from './dto/update-subline-tags.dto';
+import {
+  ApplyAiTagsDto,
+  ResolveAiTagsDto,
+} from './dto/ai-tagging-apply.dto';
 
 @Controller('tagging')
 export class TaggingController {
@@ -36,5 +40,37 @@ export class TaggingController {
     @Body() dto: UpdateSublineTagsDto,
   ) {
     return this.taggingService.updateSublineTags(tractate, chapter, mishna, sublineIndex, dto);
+  }
+
+  /**
+   * Applies a batch of AI suggestions (one sugya) as pending categories.
+   * PUT so it's covered by `EditorMiddleware` (see `PagesModule.configure`).
+   */
+  @Put(':tractate/:chapter/:mishna/ai/apply')
+  applyAiTags(
+    @Param('tractate') tractate: string,
+    @Param('chapter') chapter: string,
+    @Param('mishna') mishna: string,
+    @Body() dto: ApplyAiTagsDto,
+  ) {
+    return this.taggingService.applyAiTags(tractate, chapter, mishna, dto);
+  }
+
+  /** Approves/dismisses pending AI categories on a single subline. */
+  @Put(':tractate/:chapter/:mishna/sublines/:sublineIndex/ai/resolve')
+  resolveAiTags(
+    @Param('tractate') tractate: string,
+    @Param('chapter') chapter: string,
+    @Param('mishna') mishna: string,
+    @Param('sublineIndex', ParseIntPipe) sublineIndex: number,
+    @Body() dto: ResolveAiTagsDto,
+  ) {
+    return this.taggingService.resolveAiTags(
+      tractate,
+      chapter,
+      mishna,
+      sublineIndex,
+      dto,
+    );
   }
 }
