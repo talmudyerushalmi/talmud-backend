@@ -62,3 +62,12 @@ export class ResolveAiTagsDto {
   @IsString()
   categoryId?: string;
 }
+
+/**
+ * Payload for saving the single global AI-tagging instruction document (the
+ * plain-text "instruction file" editors send to the AI alongside a sugya).
+ */
+export class SaveAiInstructionsDto {
+  @IsString()
+  content: string;
+}

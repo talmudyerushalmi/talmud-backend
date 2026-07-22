@@ -4,11 +4,27 @@ import { UpdateSublineTagsDto } from './dto/update-subline-tags.dto';
 import {
   ApplyAiTagsDto,
   ResolveAiTagsDto,
+  SaveAiInstructionsDto,
 } from './dto/ai-tagging-apply.dto';
 
 @Controller('tagging')
 export class TaggingController {
   constructor(private readonly taggingService: TaggingService) {}
+
+  /**
+   * The single global AI instruction document. GET is open (read-only);
+   * PUT is Editor-gated via the `tagging/*` PUT middleware. Declared before the
+   * `:tractate/...` param routes so the static path matches unambiguously.
+   */
+  @Get('ai/instructions')
+  getAiInstructions() {
+    return this.taggingService.getAiInstructions();
+  }
+
+  @Put('ai/instructions')
+  saveAiInstructions(@Body() dto: SaveAiInstructionsDto) {
+    return this.taggingService.saveAiInstructions(dto.content);
+  }
 
   /**
    * `?compose=true` opts into halacha-override processing (used by the view side so

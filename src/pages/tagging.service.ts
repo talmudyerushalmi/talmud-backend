@@ -1,4 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { MishnaRepository } from './mishna.repository';
 import { UpdateSublineTagsDto } from './dto/update-subline-tags.dto';
 import {
@@ -7,12 +9,17 @@ import {
 } from './dto/ai-tagging-apply.dto';
 import { HalachaOverrideService } from './halacha-override.service';
 import { Line, SubLine } from './models/line.model';
+import { Settings } from '../settings/schemas/settings.schema';
+
+/** Settings document id under which the global AI instruction text is stored. */
+const AI_INSTRUCTIONS_SETTINGS_ID = 'ai_tagging_instructions';
 
 @Injectable()
 export class TaggingService {
   constructor(
     private mishnaRepository: MishnaRepository,
     private halachaOverrideService: HalachaOverrideService,
+    @InjectModel(Settings.name) private settingsModel: Model<Settings>,
   ) {}
 
   /**
@@ -263,6 +270,35 @@ export class TaggingService {
       (c) => c.status === 'pending',
     );
     if (!stillPending) delete subline.pendingOriginalCategories;
+  }
+
+  /* ==========================================================================
+   *  AI instruction file — a single global plain-text document editors send to
+   *  the AI alongside a sugya. Stored in the shared `Settings` collection so it
+   *  persists across sessions and editors.
+   * ========================================================================*/
+
+  async getAiInstructions(): Promise<{ content: string; updatedAt?: string }> {
+    const doc = await this.settingsModel.findOne({
+      id: AI_INSTRUCTIONS_SETTINGS_ID,
+    });
+    const stored = (doc?.settings ?? {}) as {
+      content?: string;
+      updatedAt?: string;
+    };
+    return { content: stored.content ?? '', updatedAt: stored.updatedAt };
+  }
+
+  async saveAiInstructions(
+    content: string,
+  ): Promise<{ content: string; updatedAt: string }> {
+    const updatedAt = new Date().toISOString();
+    await this.settingsModel.findOneAndUpdate(
+      { id: AI_INSTRUCTIONS_SETTINGS_ID },
+      { id: AI_INSTRUCTIONS_SETTINGS_ID, settings: { content, updatedAt } },
+      { upsert: true, new: true },
+    );
+    return { content, updatedAt };
   }
 
   /** Builds an index → SubLine map across all lines of a mishna doc. */
