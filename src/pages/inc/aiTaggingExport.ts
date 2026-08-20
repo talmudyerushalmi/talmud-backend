@@ -206,19 +206,26 @@ interface SublineWithLine {
 }
 
 /**
- * Flattens every subline that belongs to `sugya` — i.e. every subline of every
- * line in the sugya's `[firstLineIndex, firstLineIndex + lineCount)` range.
+ * Flattens exactly the `sublineCount` sublines that belong to `sugya`, starting
+ * from `firstSublineIndex`. Scanning at subline granularity (not line granularity)
+ * is critical: when two sugias share a line — the previous sugia ends mid-line and
+ * this one starts on the same line — a line-based sweep would incorrectly pick up
+ * the previous sugia's tail-end sublines.
  */
 function collectSugyaSublines(
   lines: Line[],
   sugya: SugiaInfo,
 ): SublineWithLine[] {
   const out: SublineWithLine[] = [];
-  const end = Math.min(lines.length, sugya.firstLineIndex + sugya.lineCount);
-  for (let i = sugya.firstLineIndex; i < end; i++) {
+  const startIdx = sugya.firstSublineIndex;
+  const remaining = sugya.sublineCount;
+
+  for (let i = sugya.firstLineIndex; i < lines.length && out.length < remaining; i++) {
     const line = lines[i];
     const lineNumber = line.lineNumber ?? '';
     for (const subline of line.sublines ?? []) {
+      if (subline.index < startIdx) continue;
+      if (out.length >= remaining) break;
       out.push({ subline, lineNumber });
     }
   }

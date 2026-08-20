@@ -125,6 +125,27 @@ function validateSplit(
     prev = b;
   }
 
+  // Reject mid-line sugya boundaries. `composeSplit` slices `lines` on line boundaries;
+  // if the previous sugia's last line overlaps the next sugia's first line (i.e. they
+  // share a line), the slice would either drop or duplicate sublines. Detect this by
+  // checking whether the previous sugia's line range extends into the next sugia's
+  // starting line.
+  for (const b of op.sugiaBoundaries) {
+    const prevSugia = sugias[b - 1];
+    const nextSugia = sugias[b];
+    if (
+      prevSugia &&
+      nextSugia &&
+      prevSugia.firstLineIndex + prevSugia.lineCount > nextSugia.firstLineIndex
+    ) {
+      throw new BadRequestException(
+        `Split operation ${opIdx}: sugia boundary at index ${b} occurs mid-line — ` +
+          `sugya "${prevSugia.sugiaName}" and sugya "${nextSugia.sugiaName}" share line ${nextSugia.firstLineNumber}. ` +
+          `Split parts must begin at the start of a line.`,
+      );
+    }
+  }
+
   // Each mishnaCut must address a real (blockKey, offset) inside richTextMishna.
   const rtm = sourceMishna.richTextMishna;
   if (!rtm || !Array.isArray(rtm.blocks) || rtm.blocks.length === 0) {
