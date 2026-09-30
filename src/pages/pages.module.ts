@@ -34,6 +34,13 @@ import { ActionsMishnaController } from './actions.mishna.controller';
 import { SynopsisService } from './synopsis.service';
 import { TaggingController } from './tagging.controller';
 import { TaggingService } from './tagging.service';
+import {
+  HalachaOverride,
+  HalachaOverrideSchema,
+} from './schemas/halacha-override.schema';
+import { HalachaOverrideRepository } from './halacha-override.repository';
+import { HalachaOverrideService } from './halacha-override.service';
+import { HalachaOverrideController } from './halacha-override.controller';
 
 @Module({
   imports: [
@@ -43,6 +50,7 @@ import { TaggingService } from './tagging.service';
       { name: Related.name, schema: RelatedSchema },
       { name: Manuscripts.name, schema: ManuscriptSchema },
       { name: User.name, schema: UserSchema },
+      { name: HalachaOverride.name, schema: HalachaOverrideSchema },
     ]),
     ConsoleModule,
     SettingsModule,
@@ -58,6 +66,7 @@ import { TaggingService } from './tagging.service';
     ManuscriptsController,
     UsersController,
     TaggingController,
+    HalachaOverrideController,
   ],
   providers: [
     PagesService,
@@ -74,6 +83,8 @@ import { TaggingService } from './tagging.service';
     ManuscriptsRepository,
     UsersRepository,
     TaggingService,
+    HalachaOverrideRepository,
+    HalachaOverrideService,
   ],
   exports: [
     PagesService,
@@ -81,6 +92,7 @@ import { TaggingService } from './tagging.service';
     SynopsisService,
     TractateRepository,
     MishnaRepository,
+    HalachaOverrideService,
   ],
 })
 export class PagesModule {

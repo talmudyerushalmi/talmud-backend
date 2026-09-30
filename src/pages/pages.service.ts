@@ -22,6 +22,7 @@ import { MishnaLink } from './models/mishna.link.model';
 import { create } from 'xmlbuilder2';
 import { base64ToJson } from 'src/shared/base64ToJson';
 import { Line, Synopsis, SourceType } from './models/line.model';
+import { HalachaOverrideService } from './halacha-override.service';
 
 
 export interface iTractate {
@@ -33,6 +34,7 @@ export class PagesService {
   constructor(
     private tractateRepository: TractateRepository,
     private mishnaRepository: MishnaRepository,
+    private halachaOverrideService: HalachaOverrideService,
     @InjectModel(Tractate.name) private tractateModel: Model<Tractate>,
     @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>,
   ) {}
@@ -86,19 +88,67 @@ export class PagesService {
     }
   }
 
+  /**
+   * `opts.raw=true` bypasses ALL halacha-override processing — used by the admin edit
+   * data path so editors always operate on the underlying source document (e.g. editing
+   * ב from a unified ב-ג only sees ב's lines; editing a split ד sees the full source
+   * doc, not a single part). View callers omit `raw` and keep today's override-aware
+   * behavior (compose for unify/split, rewrite neighbor markers for passthrough).
+   */
   async getMishna(
     tractate: string,
     chapter: string,
     mishna: string,
+    opts: { part?: number; raw?: boolean } = {},
   ): Promise<Mishna | any> {
-    //todo fix any
+    if (opts.raw) {
+      const find = await this.mishnaRepository.find(tractate, chapter, mishna);
+      if (!find) {
+        throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+      }
+      // Skip nav overlay entirely; the raw doc's previous/next reflect the source
+      // chain, which is what admin nav (also raw) expects.
+      await this.addParallelSynopsisToMishna(find);
+      return find;
+    }
+
+    // If a halacha-override exists for this chapter and involves this halacha,
+    // the override service returns a composed payload (`unified` or `split`).
+    const resolved = await this.halachaOverrideService.resolveMishna(
+      tractate,
+      chapter,
+      mishna,
+      opts,
+    );
+    if (resolved && resolved.kind === 'unified') {
+      const composed = resolved.mishna;
+      await this.addParallelSynopsisToMishna(composed);
+      if (resolved.redirectTo) {
+        composed._redirectTo = resolved.redirectTo;
+      }
+      return composed;
+    }
+    if (resolved && resolved.kind === 'split') {
+      const composed = resolved.mishna;
+      await this.addParallelSynopsisToMishna(composed);
+      return composed;
+    }
+
     const find = await this.mishnaRepository
       .find(tractate, chapter, mishna);
     if (!find) {
       throw new HttpException('Not found', HttpStatus.NOT_FOUND);
     } else {
-      await this.addParallelSynopsisToMishna(find);
-      return find;
+      // Even when the requested Mishna is itself passthrough, its `previous`/`next` may
+      // still reference a unified pair's second source. Rewrite those to the canonical
+      // first-source so the FE doesn't detour through the redirect on every arrow click.
+      const adjusted = await this.halachaOverrideService.applyNavOverlay(
+        find,
+        tractate,
+        chapter,
+      );
+      await this.addParallelSynopsisToMishna(adjusted);
+      return adjusted;
     }
   }
 
@@ -184,6 +234,15 @@ export class PagesService {
     if (!mishnaDocument) {
       throw new BadRequestException('Mishna not found');
     }
+
+    // `totalMishnaiot` drives chapter-level pagination on the FE; shrink it by the
+    // number of unify operations so the count matches the overlaid nav list.
+    const totalMishnaiot = await this.halachaOverrideService.overlaidChapterCount(
+      tractate,
+      chapter,
+      mishnaiot.length,
+    );
+
     const richTextsMishnas = mishnaiot.map((m: Mishna) => {
       return {
         mishna: m.mishna,
@@ -194,7 +253,7 @@ export class PagesService {
     return {
       tractate,
       chapter,
-      totalMishnaiot: mishnaiot.length,
+      totalMishnaiot,
       richTextsMishnas,
       //@ts-ignore
       mishnaDocument: { ...mishnaDocument._doc },
@@ -204,7 +263,14 @@ export class PagesService {
 
   async searchText(query: string): Promise<any> {
     const queryObj = base64ToJson(query);
-    return this.mishnaRepository.searchText(queryObj);
+    const raw = await this.mishnaRepository.searchText(queryObj);
+    // Override-aware decoration: stamps `part` on results inside a split halacha and
+    // rewrites guids to canonical sources for unified halachas, so search-result clicks
+    // land directly on the correct URL.
+    return this.halachaOverrideService.decorateSearchResults(
+      queryObj.tractate,
+      raw,
+    );
   }
 
   async saveMishna(
@@ -220,11 +286,27 @@ export class PagesService {
   }
 
   async getTractate(tractate: string): Promise<Tractate> {
-    return this.tractateRepository.get(tractate);
+    const doc = await this.tractateRepository.get(tractate);
+    if (!doc) return doc;
+    // Overlay nav list with unify overrides (splits don't alter the list).
+    return this.halachaOverrideService.overlayTractateNavList(doc as any);
   }
 
-  async getAllTractates(): Promise<any> {
-    return this.tractateRepository.getAll();
+  /**
+   * `opts.raw=true` returns the un-overlaid tractate list — used by the admin nav bar
+   * so editors can navigate to each underlying source halacha independently
+   * (e.g. ב and ג separately when ב-ג is unified). View-side callers omit `raw` and
+   * keep today's override-aware merged navigation.
+   */
+  async getAllTractates(opts: { raw?: boolean } = {}): Promise<any> {
+    const tractates = await this.tractateRepository.getAll();
+    if (!Array.isArray(tractates)) return tractates;
+    if (opts.raw) return tractates;
+    return Promise.all(
+      tractates.map((t) =>
+        this.halachaOverrideService.overlayTractateNavList(t as any),
+      ),
+    );
   }
 
   getTractateSettings(tractate: string): any {

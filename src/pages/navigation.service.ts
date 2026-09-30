@@ -9,6 +9,9 @@ import { MishnaRepository } from './mishna.repository';
 import { iTractate } from './pages.service';
 import { InternalParallelLink } from './models/line.model';
 import MiscUtils from '../shared/MiscUtils';
+import { HalachaOverrideRepository } from './halacha-override.repository';
+import { HalachaOperation } from './schemas/halacha-override.schema';
+import { rewriteMarker } from './inc/composeRewriters';
 
 export enum LinkFormat {
   TractateChapterMishna = 'TractateChapterMishna',
@@ -18,6 +21,7 @@ export class NavigationService {
   constructor(
     private tractateRepository: TractateRepository,
     private mishnaRepository: MishnaRepository,
+    private halachaOverrideRepository: HalachaOverrideRepository,
     @InjectModel(Tractate.name) private tractateModel: Model<Tractate>,
     @InjectModel(Mishna.name) private mishnaModel: Model<Mishna>,
   ) {}
@@ -27,11 +31,67 @@ export class NavigationService {
     return this.tractateRepository.getAll();
   }
 
+  /**
+   * Returns the nav payload (lines / previous / next / daf / amud) used by the chapter +
+   * mishna chooser and the prev/next arrows. This is a separate code path from `getMishna`,
+   * so it has its own override application — without it, the arrows would still try to
+   * navigate to unified non-canonical source URLs (which then `_redirectTo` back, creating
+   * loops).
+   *
+   *   - Unify (2 or 3 sources): returns combined lines from all sources,
+   *     `previous = first.previous` and `next = last.next` so arrows skip the entire
+   *     unified group in one hop.
+   *   - Passthrough: rewrites any `previous`/`next` marker that points at a unify's
+   *     non-canonical source to the canonical (first) source.
+   *   - Split: passthrough (the source mishna's full line list is returned; per-part
+   *     line navigation is handled by the in-page tab strip).
+   */
   async getMishnaForNavigation(
     tractate: string,
     chapter: string,
     mishna: string,
   ): Promise<any> {
+    const override = await this.halachaOverrideRepository.findByChapter(
+      tractate,
+      chapter,
+    );
+    const operations = override?.operations ?? [];
+
+    const unify = operations.find(
+      (op): op is Extract<HalachaOperation, { kind: 'unify' }> =>
+        op.kind === 'unify' && op.sources.includes(mishna),
+    );
+
+    if (unify) {
+      const sourceDocs = await Promise.all(
+        unify.sources.map((id) =>
+          this.mishnaRepository.find(tractate, chapter, id),
+        ),
+      );
+      if (sourceDocs.some((d) => !d)) {
+        throw new HttpException('Could not find mishna', 404);
+      }
+      const first = sourceDocs[0]!;
+      const last = sourceDocs[sourceDocs.length - 1]!;
+      const lines = sourceDocs
+        .flatMap((d) => d!.lines ?? [])
+        .map((l) => ({ lineNumber: l.lineNumber, mainLine: l.mainLine }));
+      // Apply `rewriteMarker` so any neighbor in another unify group is canonicalized.
+      const previous = rewriteMarker(first.previous, operations);
+      const next = rewriteMarker(last.next, operations);
+      return {
+        // Echo the requested id; even if the user hit a non-first source, the corresponding
+        // `_redirectTo` from `pages.service` keeps the URL canonical.
+        mishna,
+        id: first.guid,
+        lines,
+        previous,
+        next,
+        daf: first.daf,
+        amud: first.amud,
+      };
+    }
+
     const mishnaDoc = await this.mishnaRepository.find(
       tractate,
       chapter,
@@ -47,8 +107,8 @@ export class NavigationService {
       mishna: mishnaDoc.mishna,
       id: mishnaDoc.guid,
       lines,
-      previous: mishnaDoc.previous,
-      next: mishnaDoc.next,
+      previous: rewriteMarker(mishnaDoc.previous, operations),
+      next: rewriteMarker(mishnaDoc.next, operations),
       daf: mishnaDoc.daf,
       amud: mishnaDoc.amud,
     };

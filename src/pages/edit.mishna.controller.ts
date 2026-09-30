@@ -27,6 +27,11 @@ export class EditMishnaController {
     private parallelService: ParallelService,
   ) {}
 
+  /**
+   * Always returns the RAW source mishna document — no halacha-override processing —
+   * since this endpoint is the admin edit data path. Editors operate on the underlying
+   * source doc; the view side has its own (override-aware) `/mishna/...` endpoint.
+   */
   @Get('/:tractate/:chapter/:mishna')
   async getMishna(
     @Param('tractate') tractate: string,
@@ -37,6 +42,7 @@ export class EditMishnaController {
       tractate,
       chapter,
       mishna,
+      { raw: true },
     );
     const tractateSettings = this.pagesService.getTractateSettings(tractate);
 
