@@ -169,9 +169,15 @@ export class TaggingService {
       const original =
         subline.pendingOriginalCategories ?? subline.categories ?? [];
       subline.pendingOriginalCategories = original;
+      // Preserve any AI-provided connections (defensive copy; `?? []` keeps
+      // the schema invariant that `connections` is always an array).
       subline.categories = entry.categories.map((c) => ({
         categoryId: c.categoryId,
-        connections: [],
+        connections: (c.connections ?? []).map((con) => ({
+          type: con.type,
+          sublineIndex: con.sublineIndex,
+          text: con.text,
+        })),
         status: 'pending' as const,
         reason: c.reason,
       }));

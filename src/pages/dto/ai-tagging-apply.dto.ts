@@ -9,9 +9,28 @@ import {
 import { Type } from 'class-transformer';
 
 /**
+ * One cross-reference the AI attached to a category (e.g. "this קושיה relates
+ * back to subline 159"). Mirrors `CategoryConnection` in `line.model.ts`.
+ */
+export class AiConnectionDto {
+  @IsIn(['subline', 'external'])
+  type: 'subline' | 'external';
+
+  @IsOptional()
+  @IsNumber()
+  sublineIndex?: number;
+
+  @IsOptional()
+  @IsString()
+  text?: string;
+}
+
+/**
  * One AI-suggested category for a subline, as normalized by the FE from the
- * uploaded results file (`categories[].id` → `categoryId`, `categories[].reason`).
- * Connections are never provided by the AI — editors add them after approval.
+ * uploaded results file (`categories[].id` → `categoryId`, plus `reason` and
+ * optional `connections`). Connections from recent AI pipelines point at other
+ * sublines in the same sugya ({type: 'subline', sublineIndex: N}); editors can
+ * add or remove them after approval.
  */
 export class AiCategorySuggestionDto {
   @IsString()
@@ -20,6 +39,12 @@ export class AiCategorySuggestionDto {
   @IsOptional()
   @IsString()
   reason?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AiConnectionDto)
+  connections?: AiConnectionDto[];
 }
 
 /** AI suggestions for a single subline, keyed by the global `SubLine.index`. */
