@@ -22,6 +22,17 @@ export class SublineCategoryDto {
   @ValidateNested({ each: true })
   @Type(() => CategoryConnectionDto)
   connections: CategoryConnectionDto[];
+
+  // status / reason are optional so pending-AI metadata survives the global
+  // `whitelist: true` ValidationPipe when categories round-trip through the
+  // regular save endpoint.
+  @IsOptional()
+  @IsIn(['pending'])
+  status?: 'pending';
+
+  @IsOptional()
+  @IsString()
+  reason?: string;
 }
 
 export class RabbiAlternativeDto {

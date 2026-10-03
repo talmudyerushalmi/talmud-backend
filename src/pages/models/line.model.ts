@@ -33,6 +33,17 @@ export class CategoryConnection {
 export class SublineCategory {
   categoryId: string;
   connections: CategoryConnection[];
+  /**
+   * Present ONLY for AI-suggested tags awaiting editor review. Absent means the
+   * tag is a regular/approved tag. Editors approve (drops this flag) or dismiss
+   * (removes the tag) pending categories in the tagging screen.
+   */
+  status?: 'pending';
+  /**
+   * AI-provided rationale for the suggested tag. Populated on upload and kept
+   * even after approval so it stays available for later reference.
+   */
+  reason?: string;
 }
 
 export class RabbiAlternative {
@@ -72,6 +83,13 @@ export class SubLine {
   categories?: SublineCategory[];
   rabbiMentions?: RabbiMention[];
   comments?: SublineComment[];
+  /**
+   * Snapshot of `categories` captured the moment an AI batch replaced them with
+   * pending suggestions. Used to restore the pre-AI tags when the editor
+   * dismisses the whole batch. Present only while a pending AI batch is active;
+   * cleared once every pending category on this subline has been resolved.
+   */
+  pendingOriginalCategories?: SublineCategory[];
 }
 
 export interface SublinePair {

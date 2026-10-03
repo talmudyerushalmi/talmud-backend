@@ -41,6 +41,9 @@ import {
 import { HalachaOverrideRepository } from './halacha-override.repository';
 import { HalachaOverrideService } from './halacha-override.service';
 import { HalachaOverrideController } from './halacha-override.controller';
+import { AiTaggingService } from './ai-tagging.service';
+import { AiTaggingController } from './ai-tagging.controller';
+import { Settings, SettingsSchema } from '../settings/schemas/settings.schema';
 
 @Module({
   imports: [
@@ -51,6 +54,7 @@ import { HalachaOverrideController } from './halacha-override.controller';
       { name: Manuscripts.name, schema: ManuscriptSchema },
       { name: User.name, schema: UserSchema },
       { name: HalachaOverride.name, schema: HalachaOverrideSchema },
+      { name: Settings.name, schema: SettingsSchema },
     ]),
     ConsoleModule,
     SettingsModule,
@@ -67,6 +71,7 @@ import { HalachaOverrideController } from './halacha-override.controller';
     UsersController,
     TaggingController,
     HalachaOverrideController,
+    AiTaggingController,
   ],
   providers: [
     PagesService,
@@ -85,6 +90,7 @@ import { HalachaOverrideController } from './halacha-override.controller';
     TaggingService,
     HalachaOverrideRepository,
     HalachaOverrideService,
+    AiTaggingService,
   ],
   exports: [
     PagesService,
