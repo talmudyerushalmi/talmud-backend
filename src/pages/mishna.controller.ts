@@ -4,8 +4,6 @@ import {
   Controller,
   Get,
   Header,
-  HttpException,
-  HttpStatus,
   Param,
   Post,
   Put,
@@ -19,21 +17,11 @@ import { PagesService } from './pages.service';
 import { CreateMishnaDto } from './dto/create-mishna.dto';
 import { UpdateMishnaLineDto } from './dto/save-mishna-line.dto';
 import { GetChapterDTO } from './dto/get-chapter.dto';
-import { tractateSettings } from './inc/tractates.settings';
-import { UserGroup } from '../middleware/userType';
 import { Response as ResponseFromExpress } from 'express';
 
 @Controller('mishna')
 export class MishnaController {
   constructor(private pagesService: PagesService) {}
-
-  private throwIfForbidden(tractate: string, userGroup: UserGroup) {
-    const canView =
-      tractateSettings[tractate]?.public || userGroup === UserGroup.Editor;
-    if (!canView) {
-      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
-    }
-  }
 
   @Get('/:tractate/:chapter/:mishna')
   async getMishna(
@@ -44,7 +32,6 @@ export class MishnaController {
     @Query('raw') raw: string | undefined,
     @Response() res,
   ) {
-    this.throwIfForbidden(tractate, res.locals.userGroup);
     // `?part=N` is only meaningful when the halacha is split; the override service
     // clamps to a valid value and the controller passes it along unchanged.
     // `?raw=true` bypasses override processing — used by the admin edit data path.
@@ -83,7 +70,6 @@ export class MishnaController {
     @Query() query: GetChapterDTO,
     @Response() res,
   ) {
-    this.throwIfForbidden(tractate, res.locals.userGroup);
     const chapterDoc = await this.pagesService.getChapter(
       tractate,
       chapter,
