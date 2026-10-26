@@ -54,11 +54,14 @@ fdescribe('App health (e2e)', () => {
         });
     });
 
-    it('should not fetch a mishna which is not public', () => {
+    it('should fetch any tractate mishna when reading is public', () => {
       testModule.usergroup = UserGroup.Unauthenticated   
       return request(app.getHttpServer())
         .get('/mishna/taaniyot/004?mishna=1')
-        .expect(403)
+        .expect(200)
+        .expect(({ body }) => {
+          expect(body.tractate).toEqual('taaniyot');
+        });
     });
   })
 
